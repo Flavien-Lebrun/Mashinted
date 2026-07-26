@@ -561,31 +561,117 @@ li.pile__element:not(:last-child) {
 }
 
 /* <--- Aggregator ---> */
-/* Add to extension content styles */
-/*.mashinted-fav-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.85);
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.15s ease;
-  color: #8e8e93;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+/* Custom Aggregated Card Styling */
+.mashinted-image-bg {
+    background-color: rgb(232, 226, 213);
 }
 
-.mashinted-fav-btn:hover {
-  transform: scale(1.1);
-  background: #ffffff;
+.mashinted-fav-icon {
+    width: 16px;
 }
 
-.mashinted-fav-btn.is-active {
-  color: #ff3b30;
-}*/
+.mashinted-trash-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.mashinted-fee-icon {
+    width: 12px;
+}
+
+/* Tooltips & Info Button */
+.mashinted-info-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: var(--color-greyscale-level-5, #f2f2f2);
+    border: 1px solid var(--color-greyscale-level-4, #e6e6e6);
+    color: var(--color-text-secondary, #767676);
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.mashinted-info-btn:hover,
+.mashinted-info-btn--active {
+    border-color: var(--color-primary, #007782);
+    background-color: var(--color-greyscale-level-4, #e6e6e6);
+    color: var(--color-primary, #007782);
+}
+
+.mashinted-suffix-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mashinted-tooltip-box {
+    display: none;
+    position: absolute;
+    top: 75%;
+    right: 25px;
+    margin-top: 4px;
+    width: 270px;
+    padding: 12px 14px;
+    background-color: var(--color-background-primary, #ffffff);
+    border: 1px solid var(--color-greyscale-level-4, #e6e6e6);
+    border-radius: var(--border-radius-medium, 8px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    z-index: 9999;
+    text-align: left;
+    white-space: normal;
+}
+
+.mashinted-tooltip-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.mashinted-tooltip-desc {
+    margin: 0;
+    line-height: 1.45;
+}
+
+.mashinted-tooltip-list {
+    margin: 8px 0 0 0;
+    padding-left: 16px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--color-text-secondary, #767676);
+}
+
+/* Controls Wrapper */
+.mashinted-controls-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+.mashinted-info-tooltip-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mashinted-controls-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 260px;
+    padding: 10px 12px;
+    background-color: var(--color-background-primary, #ffffff);
+    color: var(--color-text-primary, #111111);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    border: 1px solid var(--color-greyscale-level-4, #e5e5e5);
+    border-radius: var(--border-radius-medium, 8px);
+    z-index: 9999;
+}

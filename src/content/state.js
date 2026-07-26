@@ -45,23 +45,6 @@ function subscribeToCountChanges(callback) {
     callback(currentPageBlockedCount);
 }
 
-export {
-    observedGridItems,
-    activeTrashElements,
-    scheduledInjections,
-    blockedGridItems,
-    gridItemRetryTimers,
-    hideFinalizationTimers,
-    initBlockedItemsFromStorage,
-    incrementPageBlockedCount,
-    resetPageBlockedCount,
-    subscribeToCountChanges,
-};
-
-// src/content/state.js
-
-// ... Your existing state declarations (blockedGridItems, observedGridItems, etc.) ...
-
 // 1. Session state storage dictionary mapped to lowercase brand strings
 export const brandSessionStats = new Map();
 
@@ -110,3 +93,16 @@ function notifyBrandStatsListeners() {
         }
     }
 }
+
+export {
+    observedGridItems,
+    activeTrashElements,
+    scheduledInjections,
+    blockedGridItems,
+    gridItemRetryTimers,
+    hideFinalizationTimers,
+    initBlockedItemsFromStorage,
+    incrementPageBlockedCount,
+    resetPageBlockedCount,
+    subscribeToCountChanges,
+};

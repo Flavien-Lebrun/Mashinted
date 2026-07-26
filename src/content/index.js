@@ -1,7 +1,7 @@
 import './styles.css';
 
 import { initializeTrashEngine } from './trash-engine.js';
-import { startSavedSearchesObserver } from './aggregator.js';
+import { startSavedSearchesObserver } from './aggregator/modal-injector.js';
 import { ensureBrandBlacklistStorageReady } from './storage.js';
 import { startPageTransitionObserver, startObserver } from './observers.js';
 
