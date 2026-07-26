@@ -1,8 +1,8 @@
-// src/content/storage.js
-
-const BLACKLIST_STORAGE_KEY = 'bannedBrands';
-const FAVORITES_STORAGE_KEY = 'mashinted_favorites'; // Added for cross-page aggregator favorites
-const DEFAULT_BANNED_BRANDS = ['h&m', 'shein', 'zara'];
+import { 
+    BLACKLIST_STORAGE_KEY, 
+    FAVORITES_STORAGE_KEY, 
+    DEFAULT_BANNED_BRANDS 
+} from './constants.js';
 
 let cachedBannedBrands = [];
 let blacklistReadyPromise = null;
@@ -114,7 +114,7 @@ function isBlacklistedBrand(brandName) {
 }
 
 // ==========================================
-// NEW: Favorites Storage Management
+// Favorites Storage Management
 // ==========================================
 
 function getFavorites() {
@@ -149,8 +149,6 @@ async function removeFavorite(productId) {
 
 export {
     addBrand,
-    BLACKLIST_STORAGE_KEY,
-    FAVORITES_STORAGE_KEY,
     clearAllBrands,
     ensureBrandBlacklistStorageReady,
     getAllBrands,
