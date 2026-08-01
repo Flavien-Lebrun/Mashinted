@@ -4,6 +4,7 @@ import { initializeTrashEngine } from './trash-engine.js';
 import { startSavedSearchesObserver } from './aggregator/modal-injector.js';
 import { ensureBrandBlacklistStorageReady } from './storage.js';
 import { startPageTransitionObserver, startObserver } from './observers.js';
+import { startFavouriteListFilter } from './favourites/favourite-filter.js';
 
 import {
     setupCounterWidgetSubscription,
@@ -15,8 +16,22 @@ console.log('[Mashinted] Content script loaded.');
 let isReactHydrated = false;
 let isStorageReady = false;
 
+// Helper to check if current URL is the specific target page
+function isFavouriteListPage() {
+    return window.location.pathname.includes('/member/items/favourite_list');
+}
+
 function tryInitializeApp() {
     if (isReactHydrated && isStorageReady) {
+        
+        // --- ROUTING LOGIC: Check URL before running standard mashup ---
+        if (isFavouriteListPage()) {
+            console.log('[Mashinted] On favourite list page: Suspending standard actions and running alternative module.');
+            ensureCounterWidgetMounted();
+            startFavouriteListFilter();
+            return; // Exit so standard observers don't fire
+        }
+
         console.log('[Mashinted] Hydration + Storage ready! Upgrading widget & starting observers.');
 
         // Upgrades the loading chip created by fast-widget-loader.js to the real interactive widget
@@ -61,6 +76,11 @@ ensureBrandBlacklistStorageReady()
 
 async function init() {
   await ensureBrandBlacklistStorageReady();
+
+  // Guard `init()` as well to match the same logic if called separately
+  if (isFavouriteListPage()) {
+      return;
+  }
 
   // Main grid item observers
   startObserver();
