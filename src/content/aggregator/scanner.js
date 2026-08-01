@@ -1,25 +1,60 @@
-import { isSearchBookmarked } from './distribution.js';
+/**
+ * @file scanner.js
+ * @brief Scans Vinted DOM containers for saved searches, unread counts, and bookmarked status.
+ */
 
 /**
- * Scans saved search items within the container.
+ * @brief Inspects a saved search link row element to verify if it is bookmarked.
+ * 
+ * @param {HTMLElement} searchRowElement - DOM row element to check.
+ * @returns {boolean} True if search is bookmarked, false otherwise.
+ */
+export function isSearchBookmarked(searchRowElement) {
+    if (!searchRowElement || !(searchRowElement instanceof HTMLElement)) return false;
+
+    const hasBookmarkAttr = searchRowElement.querySelector('[data-testid="saved-search-bookmark"]');
+    if (hasBookmarkAttr) return true;
+
+    const suffix = searchRowElement.querySelector('.web_ui__Cell__suffix');
+    if (suffix) {
+        return Boolean(suffix.querySelector('svg'));
+    }
+
+    return false;
+}
+
+/**
+ * @brief Scans saved search DOM nodes within a container and compiles item counts.
+ * 
+ * @param {HTMLElement} containerElement - Parent container element holding saved search rows.
+ * @returns {Object} Structured scan results containing active items list and summary texts.
  */
 export function scanSavedSearches(containerElement) {
-    const searchCells = containerElement.querySelectorAll('a[data-testid^="saved-search-"]');
+    if (!containerElement || !(containerElement instanceof HTMLElement)) {
+        return {
+            items: [],
+            totalCount: 0,
+            totalFormatted: '',
+            breakdownText: "You're up to date"
+        };
+    }
 
+    const searchCells = containerElement.querySelectorAll('a[data-testid^="saved-search-"]');
     const bookmarkedSearches = [];
     let cumulativeCount = 0;
 
-    searchCells.forEach(cell => {
-        if (cell.id === 'mashinted-aggregator-a') return;
+    for (let i = 0; i < searchCells.length; i++) {
+        const cell = searchCells[i];
 
-        // Use imported function directly
-        if (!isSearchBookmarked(cell)) return;
+        if (cell.id === 'mashinted-aggregator-a') continue;
+        if (!isSearchBookmarked(cell)) continue;
 
         const countSpan = cell.querySelector('[data-testid="item-count-inline"]');
         const rawCountText = countSpan ? countSpan.textContent.trim() : '0';
         const numericCount = parseInt(rawCountText.replace(/\+/g, ''), 10) || 0;
 
-        const titleSpan = cell.querySelector('.web_ui__Cell__title span.u-ellipsis') || cell.querySelector('.web_ui__Cell__title');
+        const titleSpan = cell.querySelector('.web_ui__Cell__title span.u-ellipsis') ||
+                          cell.querySelector('.web_ui__Cell__title');
         const searchName = titleSpan ? titleSpan.textContent.trim() : 'Search';
         const searchUrl = cell.getAttribute('href') || '';
 
@@ -32,14 +67,14 @@ export function scanSavedSearches(containerElement) {
         });
 
         cumulativeCount += numericCount;
-    });
+    }
 
-    const activeSearches = bookmarkedSearches.filter(s => s.count > 0);
+    const activeSearches = bookmarkedSearches.filter((s) => s.count > 0);
 
     let breakdownText = "You're up to date";
     if (activeSearches.length > 0) {
         breakdownText = activeSearches
-            .map(s => `${s.name} (+${s.count > 99 ? '99' : s.count})`)
+            .map((s) => `${s.name} (+${s.count > 99 ? '99' : s.count})`)
             .join(', ');
     }
 

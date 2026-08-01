@@ -1,11 +1,18 @@
 /**
- * Safely fetches external catalog HTML using absolute URL resolution,
- * standard Vinted request headers, and standard timeout handling.
+ * @file api.js
+ * @brief Handles external catalog fetch operations and DOM HTML parsing for catalog item extraction.
+ */
+
+/**
+ * @brief Safely fetches external catalog HTML using absolute URL resolution and CSRF headers.
+ * 
+ * @param {string} urlPath - Relative or absolute search path string.
+ * @returns {Promise<string|null>} HTML string on success, or null on failure/timeout.
  */
 export async function fetchExternalCatalogHtml(urlPath) {
     try {
         const fullUrl = new URL(urlPath, window.location.origin).toString();
-        console.log(`[Mashinted Debug] Executing fetch to absolute URL: ${fullUrl}`);
+        console.log(`[Mashinted Debug] Executing fetch to URL: ${fullUrl}`);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -32,7 +39,7 @@ export async function fetchExternalCatalogHtml(urlPath) {
         console.log(`[Mashinted Debug] Fetch HTTP status: ${response.status} (${response.statusText})`);
 
         if (!response.ok) {
-            console.error(`[Mashinted Debug] HTTP error response ${response.status} for URL: ${fullUrl}`);
+            console.error(`[Mashinted Debug] HTTP error ${response.status} for URL: ${fullUrl}`);
             return null;
         }
 
@@ -52,36 +59,67 @@ export async function fetchExternalCatalogHtml(urlPath) {
 }
 
 /**
- * Parses catalog HTML string into structured item objects.
+ * @brief Parses catalog HTML string into an array of structured item data objects.
+ * 
+ * @param {string} htmlString - Raw catalog HTML response.
+ * @param {number} [maxLimit=15] - Maximum item count to parse.
+ * @returns {Array<Object>} Extracted item metadata records.
  */
 export function parseCatalogItems(htmlString, maxLimit = 15) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
+    
+    // Select grid item wrappers
     const itemContainers = doc.querySelectorAll('[data-testid="grid-item"], .feed-grid__item, .web_ui__ItemBox__container');
 
     const items = [];
+    const limit = Math.min(itemContainers.length, maxLimit);
 
-    for (let i = 0; i < Math.min(itemContainers.length, maxLimit); i++) {
+    for (let i = 0; i < limit; i++) {
         const itemContainer = itemContainers[i];
 
-        const brandEl = itemContainer.querySelector('[data-testid="feed-item--description-title"]');
-        const subtitleEl = itemContainer.querySelector('[data-testid="feed-item--description-subtitle"]');
-        const priceEl = itemContainer.querySelector('[data-testid="feed-item--price-text"], .title-content p, .web_ui__ItemBox__title--price');
-        const totalPriceEl = itemContainer.querySelector('[data-testid="total-combined-price"]');
-        const imgEl = itemContainer.querySelector('[data-testid="feed-item--image--img"], img');
+        // 1. Universal Ends-With ($=) and Contains (*=) Selectors for dynamic data-testid attributes
+        const brandEl = itemContainer.querySelector(
+            '[data-testid$="--description-title"], [data-testid*="description-title"], .new-item-box__description p'
+        );
+
+        const subtitleEl = itemContainer.querySelector(
+            '[data-testid$="--description-subtitle"], [data-testid*="description-subtitle"]'
+        );
+
+        const priceEl = itemContainer.querySelector(
+            '[data-testid$="--price-text"], [data-testid*="price-text"], .title-content p, .web_ui__ItemBox__title--price'
+        );
+
+        const totalPriceEl = itemContainer.querySelector(
+            '[data-testid="total-combined-price"], [data-testid*="total-combined-price"]'
+        );
+
+        const imgEl = itemContainer.querySelector(
+            '[data-testid$="--image--img"], [data-testid*="image--img"], img'
+        );
+
         const linkEl = itemContainer.querySelector('a[href*="/items/"]');
 
+        // Extract Product URL and ID
         const productUrl = linkEl ? linkEl.getAttribute('href') : '';
         const productIdMatch = productUrl.match(/\/items\/(\d+)/);
-        const productId = productIdMatch ? productIdMatch[1] : `agg-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+        const productId = productIdMatch 
+            ? productIdMatch[1] 
+            : `agg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
 
-        let brandName = brandEl?.textContent?.trim() || '';
-        let subtitleText = subtitleEl?.textContent?.trim() || '';
+        // Text extraction
+        const brandName = brandEl?.textContent?.trim() || '';
+        const subtitleText = subtitleEl?.textContent?.trim() || '';
         let itemPrice = priceEl?.textContent?.trim() || '';
         let totalPrice = totalPriceEl?.textContent?.trim() || '';
 
         if (!itemPrice && totalPrice) itemPrice = totalPrice;
         if (!totalPrice && itemPrice) totalPrice = itemPrice;
+
+        const resolvedItemUrl = productUrl
+            ? (productUrl.startsWith('http') ? productUrl : `${window.location.origin}${productUrl}`)
+            : window.location.origin;
 
         items.push({
             id: productId,
@@ -90,7 +128,7 @@ export function parseCatalogItems(htmlString, maxLimit = 15) {
             price: itemPrice || '—',
             totalPrice: totalPrice || itemPrice || '—',
             imageUrl: imgEl?.getAttribute('src') || imgEl?.getAttribute('data-src') || '',
-            itemUrl: productUrl ? (productUrl.startsWith('http') ? productUrl : `https://www.vinted.fr${productUrl}`) : 'https://www.vinted.fr',
+            itemUrl: resolvedItemUrl
         });
     }
 

@@ -1,11 +1,50 @@
+/**
+ * @file modal-injector.js
+ * @brief Injector component that attaches the Mashinted aggregator action button and tooltips into Vinted's saved searches modal.
+ */
+
 import { scanSavedSearches } from './scanner.js';
 import { processScannedSearches } from './index.js';
+import { LOGO_SVG_STRING } from '../constants.js';
+import { closeSavedSearchesModal, cleanupPreviousAggregation } from './modal-helpers.js';
+import { createAggregatorProgressBanner } from './grid-item-transfer.js';
 
+/**
+ * @brief Helper to generate consistent aggregator tooltip markup.
+ * @returns {string} Safe HTML string for aggregator info tooltips.
+ */
+function createAggregatorTooltipContent() {
+    return `
+        <div class="web_ui__Text__text web_ui__Text__left web_ui__Text__primary mashinted-tooltip-title">
+            New items aggregator
+        </div>
+        <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__secondary mashinted-tooltip-desc">
+            This button has the purpose of displaying all the new items from your saved searches.<br>
+            To optimize performance and avoid rate limits, loading limits are applied:
+        </p>
+        <ul class="mashinted-tooltip-list">
+            <li><span class="web_ui__Text__amplified">Total ≤ 99 items:</span> All new items are fetched.</li>
+            <li><span class="web_ui__Text__amplified">Total > 99 items:</span> Automatically capped at <span class="web_ui__Text__amplified">30 items max</span> per search.</li>
+        </ul>
+    `;
+}
+
+/**
+ * @brief Injects the primary Mashinted aggregator trigger row into Vinted's saved searches modal dropdown.
+ */
 export function injectSavedSearchButton() {
-    const savedSearchesContent = document.querySelector('.saved-searches__content')
-        || document.querySelector('[data-testid="saved-searches--content"] .saved-searches__content');
+    // 1. Locate the container
+    const savedSearchesContent = document.querySelector('[class*="SavedSearchesList-module-scss-module__AJSRMG__content"]') ||
+                                 document.querySelector('[data-testid="saved-searches--content"] > div') ||
+                                 document.querySelector('[data-testid="saved-searches--content"]');
 
-    if (!savedSearchesContent || savedSearchesContent.querySelector('#mashinted-aggregator-a')) {
+    if (!savedSearchesContent || document.querySelector('#mashinted-aggregator-a')) {
+        return;
+    }
+
+    // 2. Ensure Vinted has loaded saved search links inside
+    const hasItems = savedSearchesContent.querySelector('a[data-testid^="saved-search-"]');
+    if (!hasItems) {
         return;
     }
 
@@ -18,18 +57,22 @@ export function injectSavedSearchButton() {
     link.id = 'mashinted-aggregator-a';
     link.className = 'web_ui__Cell__cell web_ui__Cell__default web_ui__Cell__navigating web_ui__Cell__link u-position-relative';
     link.href = '#';
-    link.setAttribute('aria-label', `New items ${scanData.totalFormatted} ${scanData.breakdownText}`);
+    link.setAttribute('aria-label', `Discover what you've missed ${scanData.totalFormatted} ${scanData.breakdownText}`);
     link.setAttribute('data-testid', 'mashinted-aggregator-button');
+
+    const displayStyle = scanData.totalCount > 0 ? '' : 'mashinted-u-hidden';
 
     link.innerHTML = `
         <div class="web_ui__Cell__content">
             <div class="web_ui__Cell__heading">
                 <div class="web_ui__Cell__title" data-testid="mashinted-aggregator-title">
                     <div class="u-flexbox">
-                        <div class="u-ui-padding-right-small u-no-wrap" id="mashinted-count-wrapper" style="display: ${scanData.totalCount > 0 ? 'block' : 'none'};">
-                            <span class="web_ui__Text__text web_ui__Text__body web_ui__Text__left web_ui__Text__primary" data-testid="item-count-inline">${scanData.totalFormatted}</span>
+                        <div class="u-ui-padding-right-small u-no-wrap mashinted-aggregator-count-wrapper ${displayStyle}" id="mashinted-count-wrapper">
+                            <span class="web_ui__Text__text web_ui__Text__body web_ui__Text__left web_ui__Text__primary u-flexbox u-align-items-center mashinted-aggregator-icon" data-testid="item-count-inline">
+                                ${LOGO_SVG_STRING}
+                            </span>
                         </div>
-                        <span class="u-ellipsis u-flex-1 mashinted-title-text">New items</span>
+                        <span class="u-ellipsis u-flex-1 mashinted-title-text">Discover what you've missed</span>
                     </div>
                 </div>
             </div>
@@ -48,18 +91,7 @@ export function injectSavedSearchButton() {
 
     const tooltip = document.createElement('div');
     tooltip.className = 'mashinted-tooltip-box web_ui__Card__card web_ui__Card__flat';
-    tooltip.innerHTML = `
-        <div class="web_ui__Text__text web_ui__Text__subtitle web_ui__Text__left web_ui__Text__primary mashinted-tooltip-title">
-            ⚡ Loading Limits
-        </div>
-        <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__secondary mashinted-tooltip-desc">
-            To optimize performance and avoid rate limits:
-        </p>
-        <ul class="mashinted-tooltip-list">
-            <li><strong>Total ≤ 99 items:</strong> All new items are fetched.</li>
-            <li><strong>Total > 99 items:</strong> Automatically capped at <strong>30 items max</strong> per search.</li>
-        </ul>
-    `;
+    tooltip.innerHTML = createAggregatorTooltipContent();
 
     link.appendChild(tooltip);
 
@@ -67,7 +99,7 @@ export function injectSavedSearchButton() {
     let isClickOpen = false;
 
     const setTooltipState = (visible) => {
-        tooltip.style.display = visible ? 'block' : 'none';
+        tooltip.classList.toggle('mashinted-tooltip--visible', visible);
         infoBtn.classList.toggle('mashinted-info-btn--active', visible);
     };
 
@@ -103,30 +135,38 @@ export function injectSavedSearchButton() {
 
         link.setAttribute('data-loading', 'true');
 
-        const countWrapper = link.querySelector('#mashinted-count-wrapper');
-        const countSpan = link.querySelector('[data-testid="item-count-inline"]');
-        const breakdownSpan = link.querySelector('.mashinted-breakdown-text');
+        closeSavedSearchesModal();
+
+        const feedGrid = document.querySelector('.feed-grid') ||
+                         document.querySelector('[data-testid="grid-item"]')?.parentElement ||
+                         document.querySelector('#content');
+
+        if (!feedGrid) {
+            console.error('Mashinted: Feed grid target container not found.');
+            link.removeAttribute('data-loading');
+            return;
+        }
+
+        cleanupPreviousAggregation();
+
+        const progressBanner = createAggregatorProgressBanner('Initialisation de l\'agrégation...');
+        feedGrid.prepend(progressBanner.element);
 
         try {
-            if (breakdownSpan) breakdownSpan.textContent = 'Fetching items...';
+            const itemsToProcess = currentScan.items.slice().reverse();
 
-            const count = await processScannedSearches(currentScan.items, (statusText) => {
-                if (breakdownSpan) breakdownSpan.textContent = statusText;
-            });
+            const count = await processScannedSearches(itemsToProcess, (statusText) => {
+                progressBanner.updateStep(statusText);
+            }, progressBanner);
 
-            if (breakdownSpan) breakdownSpan.textContent = `✅ ${count} item(s) injected!`;
-            if (countSpan) countSpan.textContent = `+${count}`;
-            if (countWrapper) countWrapper.style.display = 'block';
+            progressBanner.complete(`✅ ${count} article(s) injecté(s) avec succès !`);
+
         } catch (err) {
-            if (breakdownSpan) breakdownSpan.textContent = `❌ ${err.message || 'Error'}`;
+            console.error('Mashinted Aggregator Error:', err);
+            progressBanner.updateStep(`❌ Erreur: ${err.message || 'Agrégation échouée'}`);
+            setTimeout(() => progressBanner.remove(), 4000);
         } finally {
-            setTimeout(() => {
-                const freshScan = scanSavedSearches(savedSearchesContent);
-                if (countSpan) countSpan.textContent = freshScan.totalFormatted;
-                if (countWrapper) countWrapper.style.display = freshScan.totalCount > 0 ? 'block' : 'none';
-                if (breakdownSpan) breakdownSpan.textContent = freshScan.breakdownText;
-                link.removeAttribute('data-loading');
-            }, 3000);
+            link.removeAttribute('data-loading');
         }
     });
 
@@ -135,7 +175,13 @@ export function injectSavedSearchButton() {
     savedSearchesContent.prepend(outerContainer);
 }
 
+/**
+ * @brief Renders a secondary fetch control button with tooltip container.
+ * @param {HTMLElement} parentElement - DOM container to receive controls.
+ */
 export function renderFetchControlsContainer(parentElement) {
+    if (!parentElement) return;
+
     const wrapper = document.createElement('div');
     wrapper.className = 'mashinted-controls-wrapper';
 
@@ -150,28 +196,17 @@ export function renderFetchControlsContainer(parentElement) {
     const infoIcon = document.createElement('button');
     infoIcon.type = 'button';
     infoIcon.className = 'mashinted-info-btn';
-    infoIcon.innerHTML = '?';
+    infoIcon.innerText = '?';
     infoIcon.setAttribute('aria-label', 'Informations sur les limites de chargement');
 
     const tooltip = document.createElement('div');
     tooltip.className = 'mashinted-controls-tooltip';
-    tooltip.innerHTML = `
-        <div class="web_ui__Text__text web_ui__Text__subtitle web_ui__Text__left web_ui__Text__primary mashinted-tooltip-title">
-            ⚡ Limites de chargement
-        </div>
-        <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__secondary mashinted-tooltip-desc">
-            Pour éviter les ralentissements et ne pas dépasser les limites de l'API :
-        </p>
-        <ul class="mashinted-tooltip-list">
-            <li><strong>Total ≤ 99 articles :</strong> Tous les nouveaux articles sont récupérés.</li>
-            <li><strong>Total > 99 articles :</strong> Chaque recherche est automatiquement plafonnée à <strong>30 articles maximum</strong>.</li>
-        </ul>
-    `;
+    tooltip.innerHTML = createAggregatorTooltipContent();
 
     let isOpen = false;
 
     const setControlTooltipState = (visible) => {
-        tooltip.style.display = visible ? 'block' : 'none';
+        tooltip.classList.toggle('mashinted-tooltip--visible', visible);
         infoIcon.classList.toggle('mashinted-info-btn--active', visible);
     };
 
@@ -200,18 +235,33 @@ export function renderFetchControlsContainer(parentElement) {
     parentElement.appendChild(wrapper);
 }
 
+/**
+ * @brief Starts observing the DOM body for saved search overlay arrivals and auto-injects the action button.
+ */
 export function startSavedSearchesObserver() {
-    let timeoutId = null;
+    let animationFrameId = null;
 
-    const observer = new MutationObserver(() => {
-        if (timeoutId) clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-            const modalBody = document.querySelector('[data-testid="saved-searches--content"], .saved-searches__content');
-            if (modalBody) {
-                injectSavedSearchButton();
-            }
-        }, 150);
+    const checkAndInject = () => {
+        const hasSavedItems = document.querySelector('a[data-testid^="saved-search-"]');
+        const alreadyInjected = document.querySelector('#mashinted-aggregator-a');
+
+        if (hasSavedItems && !alreadyInjected) {
+            injectSavedSearchButton();
+        }
+    };
+
+    const observer = new MutationObserver((mutations) => {
+        const hasNewNodes = mutations.some((m) => m.addedNodes.length > 0);
+        if (!hasNewNodes) return;
+
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        animationFrameId = requestAnimationFrame(checkAndInject);
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
+    checkAndInject();
 }
