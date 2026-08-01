@@ -14,6 +14,8 @@ The primary objective of **Mashup Vinted** is to filter product listings from th
 * **On-Demand Blacklisting:** A trash icon is injected into every product listing card. Clicking this icon immediately adds the associated brand to the blacklist.
 * **Dynamic Filtering:** Any matching product listing is smoothly hidden from view without breaking the native page flow or leaving layout gaps.
 * **Real-Time Analytics:** The extension tracks both total listings blocked and per-brand session statistics (`statsSnapshot`).
+* **Cross-Search Feed Aggregation:** Extracts pending items from bookmarked saved searches via a specialized background fetcher/parser, clearing default page grids progressively and injecting multi-search results into unified catalog grids.
+* **Favorites Storage Management:** Persists cross-page aggregated favorite items locally using `chrome.storage.local` with `FAVORITES_STORAGE_KEY`.
 
 ---
 
@@ -72,6 +74,30 @@ The modal acts as the main control center for managing the local blocklist.
 * **State-Connected Counters (`statsSnapshot`):** Receives a live `statsSnapshot` Map/Object from `state.js`. Items rendering in the list check `statsSnapshot.get(normalizedName)` to render a session counter tag (e.g., `+12`) next to the brand name if count `> 0`.
 * **Interactive Checkboxes:** Unchecking a brand removes it from `unselectedBrands`, calls `onDeleteBrand(brand)`, and dims the row (`.mashinted-row-muted`). Re-checking invokes `onAddBrand(brand)`.
 * **Inline Quick-Add Row:** Typing a search query with no exact match dynamically injects a `"Block <Query>"` row at the bottom with a `+` action button for 1-click addition.
+
+### 2.4 Saved Search Aggregator & Injection UI (`src/content/aggregator/`)
+
+The aggregator scans bookmarked saved searches and fetches pending updates into a unified view.
+
+#### Architectural Components & Distribution
+
+* **Scan & Distribution (`scanner.js` & `distribution.js`):**
+  * Evaluates bookmarked search rows (`a[data-testid^="saved-search-"]`).
+  * If the global pending total across all searches is **$\le 99$ items**, all new items are fetched.
+  * If the global pending total **$> 99$ items**, an overload cap is triggered, limiting each search to a maximum of **30 items**.
+* **Clean & Guard Observer (`clean-guard.js`):**
+  * Progressively purges default Vinted feed elements (`REMOVABLE_SELECTORS`) using `requestAnimationFrame` frame batches.
+  * Attaches a dedicated `MutationObserver` (`startGridInterceptorGuard`) that intercepts and removes default feed items while background fetching takes place.
+  * Tags injected extension cards with `data-mashinted-aggregated="true"` (`markAsMashintedElement`) so the guard observer never removes them.
+* **Frame-Buffered Feed Clearance (`getRemovableGridElements` & `removeBatchInFrames`):**
+  * Instead of blocking execution with artificial delays (`sleep`), feed purging utilizes `requestAnimationFrame` to batch-remove native Vinted items in 12-element frame windows.
+  * Targets native feed elements using `REMOVABLE_SELECTORS` while explicitly skipping any nodes marked with `data-mashinted-aggregated="true"` to ensure custom injected cards are preserved during background sweeps.
+* **Card & Divider Factory (`grid-item-transfer.js`):**
+  * Constructs aggregated item cards with title, brand, price, user handle, favorite buttons, and search group divider nodes (`createSearchDividerNode`).
+  * Integrates favorite toggles directly with `saveFavorite` and `removeFavorite` in `storage.js`.
+* **Modal UI Injector (`modal-injector.js`):**
+  * Injects the "New items" button (`#mashinted-aggregator-a`) into `.saved-searches__content`.
+  * Renders interactive tooltip popups explaining loading limitations and real-time execution statuses (`Fetching items...`, `✅ X item(s) injected!`).
 
 ---
 
@@ -232,3 +258,54 @@ function getProductId(gridItem) {
     1. **Targeted Focus:** Captures the precise DOM selector shift on Vinted's base price element (`.title-content p` vs `total-combined-price`) that caused the `—` display bug.
     2. **Technical Details:** Explains the specific resolution mechanism (fallback chain + title regex parsing + cross-field sync) without adding bloat.
     3. **Consistency:** Matches the date stamp, bullet structure, and code/attribute formatting of the rest of Section 7.
+
+### 7.5 Module Separation & State Modernization [26-07-2026]
+
+* **Issue:** Aggregator components, storage utilities, and state managers contained inline circular dependencies (`isSearchBookmarked`, missing `REMOVABLE_SELECTORS`, relative path errors).
+* **Fix:**
+  * Centralized DOM selectors and storage key constants into `src/content/constants.js`.
+  * Moved DOM tracking primitives (`WeakSet`, `WeakMap`, `blockedGridItems`) and pub/sub brand session stat listeners into `src/content/state.js`.
+  * Isolated storage operations (`getFavorites`, `saveFavorite`, `removeFavorite`, `addBrand`) in `src/content/storage.js`.
+  * Decoupled grid purging logic (`clean-guard.js`) and UI controls (`modal-injector.js`) into dedicated single-responsibility aggregator files.
+
+### 7.6 Saved Searches Modal Injection Failure [30-07-2026]
+
+* **Issue:** Clicking the header search bar failed to inject the "Saved Searches Aggregator" control button above the list items.
+* **Root Causes:**
+  1. **Selector Mismatch:** `injectSavedSearchButton` queried `[data-testid="saved-searches--content"] .saved-searches__content`. Vinted updated its layout to treat `[data-testid="saved-searches--content"]` as the direct container holding the module wrapper `SavedSearchesList-module-scss-module__AJSRMG__content`, rendering the old child selector `null`.
+  2. **Skeleton / Async Race Condition:** `startSavedSearchesObserver` ran `scanSavedSearches` as soon as the outer modal container entered the DOM, before React finished rendering the inner search item links (`a[data-testid^="saved-search-"]`), resulting in skipped injections.
+  3. **Debounce Starvation:** A fixed `setTimeout` in the observer continuously reset during modal animation cycles, missing the window when elements settled.
+* **Fix:**
+  * Updated `injectSavedSearchButton` selector chain to target `[class*="SavedSearchesList-module-scss-module__AJSRMG__content"]` and added a pre-check enforcing `a[data-testid^="saved-search-"]` existence before parsing.
+  * Replaced the observer's `setTimeout` with a `requestAnimationFrame` loop that checks for rendered item links on DOM mutations, guaranteeing atomic injection right after React paints the inner items.
+
+### 7.7 Programmatic Dismissal of Vinted Overlay Modal [31-07-2026]
+
+* **Issue:** Initiating aggregation required dismissing Vinted's full-screen search dropdown modal (`SearchBar-module-scss-module__CwEmMW__background`). Calling standard `.click()` on the overlay backdrop failed because React listens for low-level pointer events, keeping the dropdown open and blocking feed visibility.
+* **Root Cause:** Next.js/React modal dismissal hooks (`useOnClickOutside`) listen to `mousedown` and `pointerdown` events on `data-testid="search-bar-background"` rather than bubbling `click` events.
+* **Fix:** 
+  * Implemented `closeSavedSearchesModal()` which dispatches synthetic `MouseEvent('mousedown')` and `MouseEvent('mouseup')` events directly to `[data-testid="search-bar-background"]` before calling `.click()`.
+  * Added an explicit `.blur()` call on the active search input and a temporary `display: none` layout buffer on the modal container (`div.u-position-absolute.u-fill-width`) to guarantee instantaneous visual collapse.
+
+### 7.8 Grid Container Destruction & Parent Fallback Layout Collapse [31-07-2026]
+
+* **Issue:** Re-running the aggregator caused listings to break out of the 5-column grid layout and append directly into `<main class="site u-background-white">`, wiping out page structure.
+* **Root Cause:** The feed cleanup routine (`clearGridProgressively`) previously wiped out the parent grid wrapper `<div class="homepage-blocks" data-testid="homepage-blocks">` itself. During subsequent aggregation runs, `getActiveGridContainer()` failed to locate the grid container and fell back to higher-level elements like `<main>`.
+* **Fix:**
+  * Modified `clearGridProgressively` to target only child nodes via `targetGrid.querySelectorAll(REMOVABLE_SELECTORS)` and empty remaining children via `targetGrid.replaceChildren()`, preserving the parent grid wrapper shell.
+  * Updated `getActiveGridContainer()` with a self-healing fallback that detects if `homepage-blocks` was destroyed by React hydration and dynamically reconstructs the `<div class="HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks" data-testid="homepage-blocks">` element inside `.HomeLayout-module-scss-module__XNM03a__homepage`.
+
+### 7.9 DOM Ordering vs CSS Grid Placement in Reverse Injection Loops [31-07-2026]
+
+* **Issue:** Injected search categories and card items were rendering out of sequence in the visual grid layout when attempting relative positioning.
+* **Root Cause:** When appending elements into CSS Grid without explicit grid coordinates, visual layout order relies strictly on DOM document order. Inserting cards using `dividerNode.insertAdjacentElement('afterend', item)` in natural array order placed items backwards relative to the section divider.
+* **Fix:**
+  * Maintained DOM ordering logic by reversing the card array (`createdWrappers.length - 1` down to `0`) when using `dividerNode.insertAdjacentElement('afterend', createdWrappers[j])`.
+  * Pushing `Item N` through `Item 1` sequentially places `Item 1` directly adjacent to `dividerNode`, producing the correct DOM sequence `[Divider] -> [Item 1] -> [Item 2] -> ... -> [Item N]` and preserving natural reading order in CSS Grid.
+
+### 7.10 Component Decoupling & Markup Centralization [01-08-2026]
+
+* **Issue:** `grid-item-transfer.js` grew bloated with complex API toggle logic, large inline HTML template strings, and utility visual state handlers, making the codebase difficult to maintain.
+* **Fix:**
+* **Extracted Helpers (`modal-helpers.js`):** Moved Vinted native favorite API synchronization (`toggleVintedNativeFavorite`), button visual state updaters (`updateButtonVisualState`), and the progress status banner factory (`createAggregatorProgressBanner`) into a dedicated helper module.
+* **Centralized Templates (`constants.js`):** Extracted the massive multi-line `card.innerHTML` string template (`GRID_ITEM_TEMPLATE`) and placeholder replacement variables out of the component logic and into `constants.js` to streamline component readability.

@@ -1,14 +1,20 @@
+/**
+ * @file clean-guard.js
+ * @brief DOM Interceptor and Feed Cleaning Utilities for Mashinted Aggregator.
+ * @details Handles progressive clearing of native Vinted feed elements, mutation guard observation, 
+ *          and custom node tagging to prevent extension card removal.
+ */
+
 import { REMOVABLE_SELECTORS } from '../constants.js';
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 /**
- * Explicitly tags an element and all child elements so guard observer never purges them
+ * @brief Explicitly tags an element and all its children so guard observers do not purge them.
+ * @param {HTMLElement} element - The root DOM element to mark as aggregated extension content.
  */
 export function markAsMashintedElement(element) {
     if (!element || !(element instanceof HTMLElement)) return;
+
     element.setAttribute('data-mashinted-aggregated', 'true');
-    element.dataset.mashintedAggregated = 'true';
 
     const children = element.querySelectorAll('*');
     for (let i = 0; i < children.length; i++) {
@@ -16,28 +22,58 @@ export function markAsMashintedElement(element) {
     }
 }
 
+/**
+ * @brief Checks if a given node or its parents are marked as custom Mashinted content.
+ * @param {Node|HTMLElement} node - The DOM node to evaluate.
+ * @returns {boolean} True if the node belongs to an aggregated extension component.
+ */
 export function isMashintedElement(node) {
     if (!node || !node.hasAttribute) return false;
-    return node.hasAttribute('data-mashinted-aggregated') || Boolean(node.closest && node.closest('[data-mashinted-aggregated]'));
+    return node.hasAttribute('data-mashinted-aggregated') || 
+           Boolean(node.closest && node.closest('[data-mashinted-aggregated]'));
 }
 
+/**
+ * @brief Evaluates whether an element matches native feed selectors and is not an extension item.
+ * @param {HTMLElement} element - The element to check against removable selectors.
+ * @returns {boolean} True if the element is an unwanted native feed card.
+ */
 export function isUnwantedGridElement(element) {
     if (!element || !element.matches) return false;
     if (isMashintedElement(element)) return false;
     return element.matches(REMOVABLE_SELECTORS);
 }
 
+/**
+ * @brief Collects all removable native feed elements inside a container.
+ * @param {HTMLElement} container - Target container holding grid elements.
+ * @returns {HTMLElement[]} Array of non-Mashinted removable DOM elements.
+ */
+export function getRemovableGridElements(container) {
+    if (!container) return [];
+    return Array.from(container.querySelectorAll(REMOVABLE_SELECTORS)).filter(
+        (node) => !isMashintedElement(node)
+    );
+}
+
+/**
+ * @brief Synchronously purges unwanted native feed cards from a container.
+ * @param {HTMLElement} container - Target container to clean.
+ */
 export function purgeUnwantedGridItems(container) {
     if (!container) return;
 
-    const unwantedNodes = Array.from(container.querySelectorAll(REMOVABLE_SELECTORS))
-        .filter(node => !isMashintedElement(node));
-
-    for (const node of unwantedNodes) {
-        node.remove();
+    const unwantedNodes = getRemovableGridElements(container);
+    for (let i = 0; i < unwantedNodes.length; i++) {
+        unwantedNodes[i].remove();
     }
 }
 
+/**
+ * @brief Starts a MutationObserver to intercept and immediately remove newly injected native feed cards.
+ * @param {HTMLElement} gridContainer - The active grid container to observe.
+ * @returns {MutationObserver} Active observer instance.
+ */
 export function startGridInterceptorGuard(gridContainer) {
     const observer = new MutationObserver((mutations) => {
         let needsPurge = false;
@@ -68,33 +104,13 @@ export function startGridInterceptorGuard(gridContainer) {
     return observer;
 }
 
-export async function clearGridProgressively(gridContainer, batchSize = 12) {
-    if (!gridContainer) return;
-
-    hideLoadMoreButton(gridContainer);
-
-    let attempts = 0;
-    const maxAttempts = 5;
-
-    while (attempts < maxAttempts) {
-        const itemsToRemove = getRemovableGridElements(gridContainer);
-        if (itemsToRemove.length === 0) break;
-
-        await removeBatchInFrames(itemsToRemove, batchSize);
-        await sleep(100);
-        attempts++;
-    }
-
-    purgeUnwantedGridItems(gridContainer);
-}
-
-function getRemovableGridElements(container) {
-    return Array.from(container.querySelectorAll(REMOVABLE_SELECTORS)).filter(
-        node => !isMashintedElement(node)
-    );
-}
-
-function removeBatchInFrames(elements, batchSize) {
+/**
+ * @brief Removes array of elements across multiple requestAnimationFrame frames to ensure 60fps smoothness.
+ * @param {HTMLElement[]} elements - Array of DOM elements to remove.
+ * @param {number} batchSize - Number of elements to remove per animation frame.
+ * @returns {Promise<void>} Resolves when all elements are removed.
+ */
+export function removeBatchInFrames(elements, batchSize) {
     return new Promise((resolve) => {
         let index = 0;
 
@@ -119,19 +135,38 @@ function removeBatchInFrames(elements, batchSize) {
     });
 }
 
+/**
+ * @brief Progressively clears standard feed elements from the target grid without deleting the container shell.
+ * @param {HTMLElement} targetGrid - Target container to progressively clear.
+ * @param {number} [batchSize=12] - Elements per frame batch.
+ * @returns {Promise<void>}
+ */
+export async function clearGridProgressively(targetGrid, batchSize = 12) {
+    if (!targetGrid) return;
+
+    const removableElements = getRemovableGridElements(targetGrid);
+    if (removableElements.length > 0) {
+        await removeBatchInFrames(removableElements, batchSize);
+    }
+}
+
+/**
+ * @brief Hides native "Load More" pagination buttons in the grid to prevent infinite scroll overlap.
+ * @param {HTMLElement} gridContainer - Container element or document context.
+ */
 export function hideLoadMoreButton(gridContainer) {
-    const loadMoreBtn = document.querySelector('[data-testid="feed-load-more-button"]')
-        || gridContainer?.querySelector('[data-testid="feed-load-more-button"]');
+    const loadMoreBtn = document.querySelector('[data-testid="feed-load-more-button"]') ||
+                        gridContainer?.querySelector('[data-testid="feed-load-more-button"]');
 
     if (!loadMoreBtn) return;
 
-    loadMoreBtn.style.display = 'none';
+    loadMoreBtn.classList.add('mashinted-u-hidden');
 
-    const wrapper = loadMoreBtn.closest('.u-flexbox.u-align-items-center.u-flex-direction-column')
-        || loadMoreBtn.parentElement;
+    const wrapper = loadMoreBtn.closest('.u-flexbox.u-align-items-center.u-flex-direction-column') ||
+                    loadMoreBtn.parentElement;
 
     if (wrapper) {
-        wrapper.style.display = 'none';
+        wrapper.classList.add('mashinted-u-hidden');
         wrapper.setAttribute('data-mashinted-hidden', 'true');
     }
 }

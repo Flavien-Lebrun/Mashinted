@@ -1,6 +1,7 @@
 // src/content/counter-widget.js
 import { subscribeToCountChanges, getBrandSessionSnapshot } from './state.js';
 import { getAllBrands, addBrand, removeBrand } from './storage.js';
+import { LOGO_SVG_STRING } from './constants.js';
 import { createConfigModal } from './modal.js';
 
 const WIDGET_ID = 'mashinted-counter-widget';
@@ -126,9 +127,12 @@ function ensureCounterWidgetMounted() {
                   <div>
                     <div class="u-position-relative">
                       <button class="web_ui__Chip__chip web_ui__Chip__outlined web_ui__Chip__round" type="button" aria-pressed="false">
+                      <div class="u-flexbox u-align-items-center u-ui-padding-right-small">
+                        ${LOGO_SVG_STRING}
+                    </div>
                         <div class="web_ui__Chip__text">
                           <span class="web_ui__Text__text web_ui__Text__subtitle web_ui__Text__left web_ui__Text__amplified">
-                            Blocked:
+                             Blocked:
                           </span>
                         </div>
                         <div class="web_ui__Chip__suffix web_ui__Text__amplified">

@@ -2,13 +2,14 @@
   "manifest_version": 3,
   "name": "Mashinted",
   "version": "1.0",
-  "permissions": ["storage"],
+  "permissions": ["storage", "activeTab", "cookies", "scripting"],
   "background": {
     "service_worker": "src/background/index.js",
     "type": "module"
   },
   "host_permissions": [
-    "https://www.vinted.fr/*", 
+    "https://www.vinted.fr/*",
+    "https://*.vinted.fr/*", 
     "https://www.vinted.com/*"
   ],
     "content_scripts": [
