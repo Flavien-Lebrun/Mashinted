@@ -40,7 +40,7 @@ function getSectionId(searchName) {
 export function getActiveGridContainer() {
     // 1. Check if standard Vinted homepage block container exists
     let grid = document.querySelector('[data-testid="homepage-blocks"]') ||
-               document.querySelector('.HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks');
+        document.querySelector('.HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks');
 
     if (grid && document.body.contains(grid)) {
         return grid;
@@ -48,8 +48,8 @@ export function getActiveGridContainer() {
 
     // 2. Fallback: Locate home layout parent if container was destroyed
     const homeLayout = document.querySelector('.HomeLayout-module-scss-module__XNM03a__homepage') ||
-                       document.querySelector('.container') ||
-                       document.querySelector('#content');
+        document.querySelector('.container') ||
+        document.querySelector('#content');
 
     if (homeLayout) {
         console.warn('Mashinted: Grid container missing. Reconstructing target grid node.');
@@ -165,14 +165,21 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
 
                     // Build array of card items for section
                     const createdWrappers = [];
-                    for (const itemData of validItems) {
+                    for (let index = 0; index < validItems.length; index++) {
+                        const itemData = validItems[index];
                         const cardNode = createAggregatedItemCard(itemData, search.name);
                         if (!cardNode || !(cardNode instanceof HTMLElement)) continue;
 
                         const wrapper = wrapCardForGrid(cardNode, targetGrid);
                         wrapper.setAttribute('data-section-id', sectionId);
                         markAsMashintedElement(wrapper);
-                        
+
+                        // FIX: Force the first item of this category to start on a new row, 
+                        // stopping items from the previous category from filling trailing gaps.
+                        if (index === 0) {
+                            wrapper.classList.add('mashinted-section-start');
+                        }
+
                         createdWrappers.push(wrapper);
                         injectedTotal++;
                     }

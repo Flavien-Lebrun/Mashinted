@@ -309,3 +309,17 @@ function getProductId(gridItem) {
 * **Fix:**
 * **Extracted Helpers (`modal-helpers.js`):** Moved Vinted native favorite API synchronization (`toggleVintedNativeFavorite`), button visual state updaters (`updateButtonVisualState`), and the progress status banner factory (`createAggregatorProgressBanner`) into a dedicated helper module.
 * **Centralized Templates (`constants.js`):** Extracted the massive multi-line `card.innerHTML` string template (`GRID_ITEM_TEMPLATE`) and placeholder replacement variables out of the component logic and into `constants.js` to streamline component readability.
+
+### 7.11 CSS Grid Auto-Placement Spillover & Category Boundary Leakage [01-08-2026]
+
+* **Issue:** When injecting category section dividers spanning full width (`grid-column: 1 / -1`), categories with item counts that don't neatly fill a row (e.g., 3 items in a 4-column layout) left trailing whitespace. CSS Grid's auto-placement algorithm naturally backfilled these gaps by pulling the first item of the *subsequent* category upward into the previous row.
+* **Root Cause:** In modern CSS Grid, items auto-flow seamlessly across track boundaries into any available preceding whitespace unless explicitly constrained by row placement or grid packaging.
+* **Fix:**
+* Updated category item injection loops in `index.js` to target the **first card** of each category (`index === 0`) and apply a `.mashinted-section-start` utility class.
+* Added structural CSS rules enforcing that section dividers span full width (`grid-column: 1 / -1 !important`) and that section-starting items explicitly lock to column index 1 (`grid-column-start: 1 !important`), completely neutralizing upward item drift across category boundaries.
+
+
+* **What was distilled & why:**
+1. **Targeted Focus:** Explains how CSS Grid's auto-placement algorithm handles trailing gaps after full-width elements and why items leak across category sections.
+2. **Technical Details:** Documents the exact fix involving index tracking (`index === 0`) combined with explicit CSS column locking (`grid-column-start: 1`).
+3. **Consistency:** Mirrors the exact timestamp, formatting rules, and technical terminology used across the entire Section 7 debugging log.

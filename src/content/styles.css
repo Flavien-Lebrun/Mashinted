@@ -693,8 +693,8 @@ li.pile__element:not(:last-child) {
 }
 
 .mashinted-grid-divider {
-    grid-column: 1 / -1;
-    width: 100%;
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
     margin: 24px 0 16px 0;
     padding: 12px 16px;
     background-color: #f7f9fa;
@@ -711,6 +711,11 @@ li.pile__element:not(:last-child) {
 
 .mashinted-grid-divider:hover {
     background-color: #edf2f4;
+}
+
+/* Force the very first item card of a section to clear and start on a brand new row */
+.mashinted-section-start {
+    grid-column-start: 1 !important;
 }
 
 .mashinted-divider-left,
@@ -768,4 +773,9 @@ li.pile__element:not(:last-child) {
 .mashinted-u-hidden,
 [data-mashinted-hidden="true"] {
     display: none !important;
+}
+
+/* Ensure the grid doesn't aggressively backfill earlier holes */
+.HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks {
+    grid-auto-flow: row !important;
 }
