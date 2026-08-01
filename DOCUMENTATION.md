@@ -323,3 +323,13 @@ function getProductId(gridItem) {
 1. **Targeted Focus:** Explains how CSS Grid's auto-placement algorithm handles trailing gaps after full-width elements and why items leak across category sections.
 2. **Technical Details:** Documents the exact fix involving index tracking (`index === 0`) combined with explicit CSS column locking (`grid-column-start: 1`).
 3. **Consistency:** Mirrors the exact timestamp, formatting rules, and technical terminology used across the entire Section 7 debugging log.
+
+## 7.12 Favorite List Sectional Grouping, Zoom-Out Deletion, and Native API Sync [01-08-2026]
+
+* **Issue:** The Vinted Favorites page lacked categorical organization between available and sold items, and bulk-clearing sold favorites required manual, repetitive un-favoriting clicks.
+* **Root Cause:** Vinted renders all bookmarked items in a flat, unsorted stream. Furthermore, lazy-loaded batch feeds populate asynchronously via infinite scroll container hooks, causing initial layout passes to miss newly appended nodes.
+* **Fix:**
+* **Batched Lazy-Loading Guard:** Implemented a dual interval/mutation observation loop in `startFavouriteListFilter` to safely catch and re-group items as Vinted loads them in lazy chunks.
+* **Categorical Section Partitioning:** Automatically categorized grid items into 'Vendus' (sold) and 'Disponibles' (available) using native Vinted status attributes (`[data-testid$="--status"]`) or text matching.
+* **Interactive 'Tout supprimer' Action:** Injected a custom borderless bulk-action button alongside the counter badge inside the 'Vendus' section divider.
+* **Zoom-Out Collapse & Native API Dispatch:** Connected the bulk-clear action to trigger staggered zoom-out animations (`transform: scale(0.7)`, opacity fade, and max-height collapse) while programmatically firing `.click()` on each item's native Vinted favorite toggle button (`button[data-testid$="--favourite"]`) to synchronize changes with Vinted's servers.
