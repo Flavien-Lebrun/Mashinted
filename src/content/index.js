@@ -2,7 +2,7 @@ import './styles.css';
 
 import { initializeTrashEngine } from './trash-engine.js';
 import { startSavedSearchesObserver } from './aggregator/modal-injector.js';
-import { ensureBrandBlacklistStorageReady } from './storage.js';
+import { ensureBrandBlacklistStorageReady } from '../utils/storage.js';
 import { startPageTransitionObserver, startObserver } from './observers.js';
 import { startFavouriteListFilter } from './favourites/favourite-filter.js';
 

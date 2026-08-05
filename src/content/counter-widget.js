@@ -1,7 +1,7 @@
 // src/content/counter-widget.js
 import { subscribeToCountChanges, getBrandSessionSnapshot } from './state.js';
-import { getAllBrands, addBrand, removeBrand } from './storage.js';
-import { LOGO_SVG_STRING } from './constants.js';
+import { getAllBrands, addBrand, removeBrand } from '../utils/storage.js';
+import { LOGO_SVG_STRING } from '../utils/constants.js';
 import { createConfigModal } from './modal.js';
 
 const WIDGET_ID = 'mashinted-counter-widget';

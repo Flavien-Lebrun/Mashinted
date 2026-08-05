@@ -1,6 +1,6 @@
 import { getProductId, blockGridItem, extractBrandName } from './grid-item.js';
 import { blockedGridItems } from './state.js';
-import { addBrand } from './storage.js';
+import { addBrand } from '../utils/storage.js';
 
 function verifyAndInjectTrashButtons() {
     const favButtons = document.querySelectorAll('[data-testid$="--favourite"]');

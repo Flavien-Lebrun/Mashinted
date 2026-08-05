@@ -1,7 +1,7 @@
 import {
     HOMEPAGE_BLOCKS_SELECTOR,
     ROOT_OBSERVER_DISCONNECT_DELAY_MS,
-} from './constants.js';
+} from '../utils/constants.js';
 
 import {
     watchGridItemsWithin,

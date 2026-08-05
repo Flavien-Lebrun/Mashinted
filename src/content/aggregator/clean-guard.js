@@ -5,7 +5,7 @@
  *          and custom node tagging to prevent extension card removal.
  */
 
-import { REMOVABLE_SELECTORS } from '../constants.js';
+import { REMOVABLE_SELECTORS } from '../../utils/constants.js';
 
 /**
  * @brief Explicitly tags an element and all its children so guard observers do not purge them.
