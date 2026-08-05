@@ -3,8 +3,8 @@
  * @brief Factory functions for rendering aggregated cards and section dividers.
  */
 
-import { GRID_ITEM_TEMPLATE } from '../constants.js';
-import { saveFavorite, removeFavorite, addBrand } from '../storage.js';
+import { GRID_ITEM_TEMPLATE } from '../../utils/constants.js';
+import { saveFavorite, removeFavorite, addBrand } from '../../utils/storage.js';
 import { extractBrandName, blockGridItem } from '../grid-item.js';
 import {
     escapeHtml,

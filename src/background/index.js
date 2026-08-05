@@ -1,4 +1,4 @@
-import { ensureBrandBlacklistStorageReady } from '../content/storage.js';
+import { ensureBrandBlacklistStorageReady } from '../utils/storage.js';
 
 chrome.runtime.onInstalled.addListener((details) => {
     if (details.reason !== chrome.runtime.OnInstalledReason.INSTALL) {

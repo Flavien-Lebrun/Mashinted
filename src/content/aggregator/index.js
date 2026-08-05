@@ -12,7 +12,7 @@ import {
     hideLoadMoreButton,
     markAsMashintedElement
 } from './clean-guard.js';
-import { isBlacklistedBrand } from '../storage.js';
+import { isBlacklistedBrand } from '../../utils/storage.js';
 import { calculateFetchDistribution } from './distribution.js';
 import { fetchExternalCatalogHtml, parseCatalogItems } from './api.js';
 import { createAggregatedItemCard, createSearchDividerNode } from './grid-item-transfer.js';

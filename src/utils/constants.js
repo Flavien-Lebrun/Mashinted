@@ -60,7 +60,7 @@ export const GRID_ITEM_TEMPLATE = `
                 <div></div>
             </a>
             <div class="u-position-absolute u-right u-bottom u-zindex-bump">
-                <button aria-pressed="false" aria-label="Ajouter aux favoris" data-testid="feed-item--favourite" type="button" class="u-background-white u-flexbox u-align-items-center new-item-box__favourite-icon mashinted-fav-btn" data-id="{ITEM_ID}">
+                <button aria-pressed="false" aria-label="Ajouter aux favoris" data-testid="feed-item--favourite" type="button" class="u-background-white u-flexbox u-align-items-center mashinted-fav-btn" data-id="{ITEM_ID}">
                     <span class="web_ui__Icon__icon web_ui__Icon__greyscale-level-2 mashinted-fav-icon" data-testid="favourite-icon">
                         <svg fill="none" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" class="fav-icon-svg">
                             <path fill="currentColor" d="M3.149 3.247c-1.03.662-1.462 1.67-1.392 2.79.073 1.146.68 2.425 1.797 3.477 1.608 1.515 3.4 2.968 4.31 3.688.081.064.19.064.271 0 .91-.72 2.702-2.173 4.31-3.688 1.117-1.052 1.725-2.331 1.798-3.476.07-1.12-.363-2.13-1.392-2.79-.576-.371-1.113-.498-1.591-.498-.673 0-1.317.366-1.843.819a6 6 0 0 0-.343.322l-.716.736a.5.5 0 0 1-.717 0l-.716-.736a5 5 0 0 0-.342-.322c-.526-.453-1.17-.819-1.843-.819-.48 0-1.015.127-1.591.497m-.811-1.262c.818-.526 1.636-.735 2.402-.735 1.2 0 2.186.634 2.822 1.182A7 7 0 0 1 8 2.845a7 7 0 0 1 .438-.413c.636-.548 1.621-1.182 2.822-1.182.765 0 1.583.21 2.402.735 1.529.983 2.18 2.535 2.078 4.147-.1 1.586-.92 3.206-2.267 4.474-1.654 1.559-3.485 3.043-4.407 3.772a1.715 1.715 0 0 1-2.132 0c-.922-.729-2.754-2.213-4.408-3.772C1.18 9.338.36 7.718.26 6.132.16 4.52.81 2.968 2.338 1.985"></path>
@@ -69,7 +69,7 @@ export const GRID_ITEM_TEMPLATE = `
                 </button>
             </div>
             <div class="u-position-absolute u-left u-bottom u-zindex-bump mashinted-trash-container">
-                <button type="button" class="u-background-white u-flexbox u-align-items-center new-item-box__favourite-icon mashinted-trash-btn" title="Bloquer cette marque" data-brand="{BRAND_ESCAPED}">
+                <button type="button" class="u-background-white u-flexbox u-align-items-center mashinted-trash-btn" title="Bloquer cette marque" data-brand="{BRAND_ESCAPED}">
                     <span class="web_ui__Icon__icon web_ui__Icon__greyscale-level-2 mashinted-trash-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="2 4 3.33 4 14 4"></polyline>

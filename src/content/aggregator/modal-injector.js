@@ -5,7 +5,7 @@
 
 import { scanSavedSearches } from './scanner.js';
 import { processScannedSearches } from './index.js';
-import { LOGO_SVG_STRING } from '../constants.js';
+import { LOGO_SVG_STRING } from '../../utils/constants.js';
 import { closeSavedSearchesModal, cleanupPreviousAggregation } from './modal-helpers.js';
 import { createAggregatorProgressBanner } from './grid-item-transfer.js';
 

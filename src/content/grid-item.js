@@ -7,7 +7,7 @@ import {
     HIDDEN_BY_BLACKLIST_CLASS,
     HIDDEN_BY_BLACKLIST_FINAL_CLASS,
     HIDE_TRANSITION_DURATION_MS,
-} from './constants.js';
+} from '../utils/constants.js';
 
 import {
     observedGridItems,
@@ -18,7 +18,7 @@ import {
     incrementBrandSessionStat,
 } from './state.js';
 
-import { isBlacklistedBrand } from './storage.js';
+import { isBlacklistedBrand } from '../utils/storage.js';
 
 function extractBrandName(gridItem) {
     const brandNames = gridItem.matches?.(BRAND_NAME_SELECTOR)

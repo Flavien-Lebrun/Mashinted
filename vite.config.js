@@ -27,7 +27,7 @@ export default defineConfig({
     eslint({
       failOnError: true,
       failOnWarning: false,
-      include: ['src/**/*.js', 'index.js', 'filter.js', 'state.js']
+      include: ['src/**/*.js'],
     }),
   ],
 });
