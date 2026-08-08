@@ -33,11 +33,10 @@ export const HOMEPAGE_BLOCKS_SELECTOR = [
 // DOM Selectors for Vinted grid elements and removable cards
 export const REMOVABLE_SELECTORS = [
     '[data-testid="grid-item"]',
-    '.feed-grid__item',
-    '.web_ui__ItemBox__container',
+    '[class$="__feed-grid__item"]',
+    '[class$="web_ui__ItemBox__container"]',
     '[data-testid="homepage-block"]',
-    'section.HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item',
-    'div.HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item'
+    '[class$="__homepage-blocks__item"]'
 ].join(', ');
 
 export const LOGO_SVG_STRING = `
@@ -49,78 +48,84 @@ export const LOGO_SVG_STRING = `
 `;
 
 export const GRID_ITEM_TEMPLATE = `
-    <div class="new-item-box__container" data-testid="feed-item">
-        <div class="u-position-relative u-min-height-none u-flex-auto new-item-box__image-container">
-            <div class="new-item-box__image">
-                <div class="web_ui__Image__image web_ui__Image__cover web_ui__Image__portrait web_ui__Image__rounded web_ui__Image__scaled web_ui__Image__ratio mashinted-image-bg" data-testid="feed-item--image">
-                    <img alt="{IMAGE_ALT}" class="web_ui__Image__content" data-testid="feed-item--image--img" src="{IMAGE_URL}">
+    <div class="mashinted__feed-grid__item-content">
+        <div class="u-flex-grow u-fill-width">
+            <div class="mashinted__new-item-box__container" data-testid="product-item-id-{ITEM_ID}">
+                <div class="u-position-relative u-min-height-none u-flex-auto mashinted__new-item-box__image-container">
+                    <div class="mashinted__new-item-box__image">
+                        <div class="web_ui__Image__image web_ui__Image__cover web_ui__Image__portrait web_ui__Image__rounded web_ui__Image__scaled web_ui__Image__ratio mashinted-image-bg" data-testid="product-item-id-{ITEM_ID}--image">
+                            <img alt="{IMAGE_ALT}" class="web_ui__Image__content" data-testid="product-item-id-{ITEM_ID}--image--img" src="{IMAGE_URL}">
+                        </div>
+                    </div>
+                    <a href="{ITEM_URL}" class="mashinted__new-item-box__overlay mashinted__new-item-box__overlay--clickable" data-testid="product-item-id-{ITEM_ID}--overlay-link" title="{TITLE_ALT}" target="_self" rel="noreferrer">
+                        <div></div>
+                    </a>
+                    <div class="u-position-absolute u-right u-bottom u-zindex-bump">
+                        <button aria-pressed="false" aria-label="Add to favourites" data-testid="product-item-id-{ITEM_ID}--favourite" type="button" class="u-background-white u-flexbox u-align-items-center ItemBoxFavouriteIcon-module-scss-module__7M3IKq__new-item-box__favourite-icon mashinted__fav-icon" data-id="{ITEM_ID}">
+                            <span class="web_ui__Icon__icon web_ui__Icon__greyscale-level-2" data-testid="favourite-icon" style="width:16px">
+                                <svg fill="none" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                                    <path fill="currentColor" d="M3.149 3.247c-1.03.662-1.462 1.67-1.392 2.79.073 1.146.68 2.425 1.797 3.477 1.608 1.515 3.4 2.968 4.31 3.688.081.064.19.064.271 0 .91-.72 2.702-2.173 4.31-3.688 1.117-1.052 1.725-2.331 1.798-3.476.07-1.12-.363-2.13-1.392-2.79-.576-.371-1.113-.498-1.591-.498-.673 0-1.317.366-1.843.819a6 6 0 0 0-.343.322l-.716.736a.5.5 0 0 1-.717 0l-.716-.736a5 5 0 0 0-.342-.322c-.526-.453-1.17-.819-1.843-.819-.48 0-1.015.127-1.591.497m-.811-1.262c.818-.526 1.636-.735 2.402-.735 1.2 0 2.186.634 2.822 1.182A7 7 0 0 1 8 2.845a7 7 0 0 1 .438-.413c.636-.548 1.621-1.182 2.822-1.182.765 0 1.583.21 2.402.735 1.529.983 2.18 2.535 2.078 4.147-.1 1.586-.92 3.206-2.267 4.474-1.654 1.559-3.485 3.043-4.407 3.772a1.715 1.715 0 0 1-2.132 0c-.922-.729-2.754-2.213-4.408-3.772C1.18 9.338.36 7.718.26 6.132.16 4.52.81 2.968 2.338 1.985"></path>
+                                </svg>
+                            </span>
+                            {FAVOURITE_COUNT_HTML}
+                        </button>
+                        <span aria-live="polite" class="u-visually-hidden"></span>
+                    </div>
+                    <div class="u-position-absolute u-left u-bottom u-zindex-bump mashinted-trash-container">
+                        <button type="button" class="u-background-white u-flexbox u-align-items-center mashinted-trash-btn" title="Bloquer cette marque" data-brand="{BRAND_ESCAPED}">
+                            <span class="web_ui__Icon__icon web_ui__Icon__greyscale-level-2" style="width: 16px; height: 16px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="2 4 3.33 4 14 4"></polyline>
+                                    <path d="M12.67 4v9.33a1.33 1.33 0 0 1-1.33 1.33H4.67a1.33 1.33 0 0 1-1.33-1.33V4m2 0V2.67a1.33 1.33 0 0 1 1.33-1.33h2.67a1.33 1.33 0 0 1 1.33 1.33V4"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <a href="{ITEM_URL}" class="new-item-box__overlay new-item-box__overlay--clickable" data-testid="feed-item--overlay-link" title="{TITLE_ALT}" target="_self" rel="noreferrer">
-                <div></div>
-            </a>
-            <div class="u-position-absolute u-right u-bottom u-zindex-bump">
-                <button aria-pressed="false" aria-label="Ajouter aux favoris" data-testid="feed-item--favourite" type="button" class="u-background-white u-flexbox u-align-items-center mashinted-fav-btn" data-id="{ITEM_ID}">
-                    <span class="web_ui__Icon__icon web_ui__Icon__greyscale-level-2 mashinted-fav-icon" data-testid="favourite-icon">
-                        <svg fill="none" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" class="fav-icon-svg">
-                            <path fill="currentColor" d="M3.149 3.247c-1.03.662-1.462 1.67-1.392 2.79.073 1.146.68 2.425 1.797 3.477 1.608 1.515 3.4 2.968 4.31 3.688.081.064.19.064.271 0 .91-.72 2.702-2.173 4.31-3.688 1.117-1.052 1.725-2.331 1.798-3.476.07-1.12-.363-2.13-1.392-2.79-.576-.371-1.113-.498-1.591-.498-.673 0-1.317.366-1.843.819a6 6 0 0 0-.343.322l-.716.736a.5.5 0 0 1-.717 0l-.716-.736a5 5 0 0 0-.342-.322c-.526-.453-1.17-.819-1.843-.819-.48 0-1.015.127-1.591.497m-.811-1.262c.818-.526 1.636-.735 2.402-.735 1.2 0 2.186.634 2.822 1.182A7 7 0 0 1 8 2.845a7 7 0 0 1 .438-.413c.636-.548 1.621-1.182 2.822-1.182.765 0 1.583.21 2.402.735 1.529.983 2.18 2.535 2.078 4.147-.1 1.586-.92 3.206-2.267 4.474-1.654 1.559-3.485 3.043-4.407 3.772a1.715 1.715 0 0 1-2.132 0c-.922-.729-2.754-2.213-4.408-3.772C1.18 9.338.36 7.718.26 6.132.16 4.52.81 2.968 2.338 1.985"></path>
-                        </svg>
-                    </span>
-                </button>
-            </div>
-            <div class="u-position-absolute u-left u-bottom u-zindex-bump mashinted-trash-container">
-                <button type="button" class="u-background-white u-flexbox u-align-items-center mashinted-trash-btn" title="Bloquer cette marque" data-brand="{BRAND_ESCAPED}">
-                    <span class="web_ui__Icon__icon web_ui__Icon__greyscale-level-2 mashinted-trash-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="2 4 3.33 4 14 4"></polyline>
-                            <path d="M12.67 4v9.33a1.33 1.33 0 0 1-1.33 1.33H4.67a1.33 1.33 0 0 1-1.33-1.33V4m2 0V2.67a1.33 1.33 0 0 1 1.33-1.33h2.67a1.33 1.33 0 0 1 1.33 1.33V4"></path>
-                        </svg>
-                    </span>
-                </button>
-            </div>
-        </div>
-        <div class="new-item-box__summary new-item-box__summary--compact-bottom" data-testid="feed-item--summary">
-            <div class="web_ui__Cell__cell web_ui__Cell__tight" role="presentation">
-                <div class="web_ui__Cell__content">
-                    <div class="web_ui__Cell__body">
-                        <div>
-                            <div class="u-flexbox u-align-items-flex-start u-ui-padding-bottom-regular" data-testid="feed-item--spacing">
-                                <div class="u-min-width-none u-flex-grow">
-                                    <div class="web_ui__Cell__cell web_ui__Cell__tight" role="presentation" data-testid="feed-item--description">
-                                        <div class="web_ui__Cell__content">
-                                            <div class="web_ui__Cell__body" data-testid="feed-item--description--content">
-                                                {BRAND_HTML}
-                                                {SUBTITLE_HTML}
+                <div class="mashinted__new-item-box__summary mashinted__new-item-box__summary--compact-bottom" data-testid="product-item-id-{ITEM_ID}--summary">
+                    <div class="web_ui__Cell__cell web_ui__Cell__tight" role="presentation">
+                        <div class="web_ui__Cell__content">
+                            <div class="web_ui__Cell__body">
+                                <div>
+                                    <div class="u-flexbox u-align-items-flex-start u-ui-padding-bottom-regular" data-testid="product-item-id-{ITEM_ID}--spacing">
+                                        <div class="u-min-width-none u-flex-grow">
+                                            <div class="web_ui__Cell__cell web_ui__Cell__tight" role="presentation" data-testid="product-item-id-{ITEM_ID}--description">
+                                                <div class="web_ui__Cell__content">
+                                                    <div class="web_ui__Cell__body" data-testid="product-item-id-{ITEM_ID}--description--content">
+                                                        {BRAND_HTML}
+                                                        {SUBTITLE_HTML}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="u-position-relative">
-                                    <div class="new-item-box__title" data-testid="feed-item--title-container">
-                                        <div class="title-content">
-                                            <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__muted" data-testid="feed-item--price-text">{BASE_PRICE}</p>
+                                    <div>
+                                        <div class="u-position-relative">
+                                            <div class="mashinted__new-item-box__title" data-testid="product-item-id-{ITEM_ID}--title-container">
+                                                <div class="mashinted__title-content">
+                                                    <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__muted" data-testid="product-item-id-{ITEM_ID}--price-text">{BASE_PRICE}</p>
+                                                </div>
+                                            </div>
+                                            <div data-testid="product-item-id-{ITEM_ID}--breakdown">
+                                                <div class="u-flexbox u-align-items-flex-start">
+                                                    <button class="u-flexbox u-align-items-center u-flex-wrap InlinePrice-module-scss-module__lczz_W__price" tabindex="0" aria-label="{TOTAL_PRICE} includes Buyer Protection" type="button">
+                                                        <span class="u-flexbox u-align-items-baseline u-flex-wrap">
+                                                            <span class="web_ui__Text__text web_ui__Text__subtitle web_ui__Text__left web_ui__Text__primary web_ui__Text__underline-none" data-testid="total-combined-price">{TOTAL_PRICE}</span>
+                                                            <span class="web_ui__Spacer__x-small web_ui__Spacer__vertical"></span>
+                                                            <span class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__primary web_ui__Text__underline-none" tabindex="-1" data-testid="service-fee-included-title">incl.</span>
+                                                        </span>
+                                                        <span class="web_ui__Spacer__x-small web_ui__Spacer__vertical"></span>
+                                                        <span class="web_ui__Icon__icon web_ui__Icon__primary-default" data-testid="service-fee-included-icon" style="width: 12px;">
+                                                            <svg fill="none" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
+                                                                <path fill="currentColor" d="m7.924 4.114.708.707-2.829 2.828-2.121-2.121.707-.707 1.414 1.414z"></path>
+                                                                <path fill="currentColor" fill-rule="evenodd" d="M11 6c0 4.2-5 6-5 6s-5-1.8-5-6V1.8L6 0l5 1.8zM2 6V2.503l4-1.44 4 1.44V6c0 1.66-.98 2.902-2.115 3.787A9.4 9.4 0 0 1 6 10.917a9.368 9.368 0 0 1-1.885-1.13C2.981 8.902 2 7.66 2 6m3.66 5.06" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                                <div class="web_ui__Spacer__small web_ui__Spacer__horizontal"></div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div data-testid="feed-item--breakdown">
-                                        <div class="u-flexbox u-align-items-flex-start">
-                                            <button class="u-flexbox u-align-items-center u-flex-wrap InlinePrice-module-scss-module__lczz_W__price" tabindex="0" aria-label="{TOTAL_PRICE} Protection acheteurs incluse" type="button">
-                                                <span class="u-flexbox u-align-items-baseline u-flex-wrap">
-                                                    <span class="web_ui__Text__text web_ui__Text__subtitle web_ui__Text__left web_ui__Text__primary web_ui__Text__underline-none" data-testid="total-combined-price">{TOTAL_PRICE}</span>
-                                                    <span class="web_ui__Spacer__x-small web_ui__Spacer__vertical"></span>
-                                                    <span class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__primary web_ui__Text__underline-none" tabindex="-1" data-testid="service-fee-included-title">incl.</span>
-                                                </span>
-                                                <span class="web_ui__Spacer__x-small web_ui__Spacer__vertical"></span>
-                                                <span class="web_ui__Icon__icon web_ui__Icon__primary-default mashinted-fee-icon" data-testid="service-fee-included-icon">
-                                                    <svg fill="none" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true">
-                                                        <path fill="currentColor" d="m7.924 4.114.708.707-2.829 2.828-2.121-2.121.707-.707 1.414 1.414z"></path>
-                                                        <path fill="currentColor" fill-rule="evenodd" d="M11 6c0 4.2-5 6-5 6s-5-1.8-5-6V1.8L6 0l5 1.8zM2 6V2.503l4-1.44 4 1.44V6c0 1.66-.98 2.902-2.115 3.787A9.4 9.4 0 0 1 6 10.917a9.368 9.368 0 0 1-1.885-1.13C2.981 8.902 2 7.66 2 6m3.66 5.06" clip-rule="evenodd"></path>
-                                                    </svg>
-                                                </span>
-                                            </button>
-                                        </div>
-                                        <div class="web_ui__Spacer__small web_ui__Spacer__horizontal"></div>
                                     </div>
                                 </div>
                             </div>

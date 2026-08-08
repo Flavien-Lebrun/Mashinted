@@ -34,7 +34,7 @@ function createAggregatorTooltipContent() {
  */
 export function injectSavedSearchButton() {
     // 1. Locate the container
-    const savedSearchesContent = document.querySelector('[class*="SavedSearchesList-module-scss-module__AJSRMG__content"]') ||
+    const savedSearchesContent = document.querySelector('[class^="SavedSearchesList"]') ||
                                  document.querySelector('[data-testid="saved-searches--content"] > div') ||
                                  document.querySelector('[data-testid="saved-searches--content"]');
 
@@ -149,7 +149,7 @@ export function injectSavedSearchButton() {
 
         cleanupPreviousAggregation();
 
-        const progressBanner = createAggregatorProgressBanner('Initialisation de l\'agrégation...');
+        const progressBanner = createAggregatorProgressBanner('Initiating aggregation...');
         feedGrid.prepend(progressBanner.element);
 
         try {
@@ -159,11 +159,11 @@ export function injectSavedSearchButton() {
                 progressBanner.updateStep(statusText);
             }, progressBanner);
 
-            progressBanner.complete(`✅ ${count} article(s) injecté(s) avec succès !`);
+            progressBanner.complete(`${count} listings injected successfully !`);
 
         } catch (err) {
             console.error('Mashinted Aggregator Error:', err);
-            progressBanner.updateStep(`❌ Erreur: ${err.message || 'Agrégation échouée'}`);
+            progressBanner.updateStep(`❌ Error: ${err.message || 'Aggregation failed'}`);
             setTimeout(() => progressBanner.remove(), 4000);
         } finally {
             link.removeAttribute('data-loading');
@@ -188,7 +188,7 @@ export function renderFetchControlsContainer(parentElement) {
     const actionBtn = document.createElement('button');
     actionBtn.id = 'mashinted-load-btn';
     actionBtn.className = 'web_ui__Button__button web_ui__Button__primary';
-    actionBtn.innerText = 'Charger les nouveautés';
+    actionBtn.innerText = 'Load New Arrivals';
 
     const infoContainer = document.createElement('div');
     infoContainer.className = 'mashinted-info-tooltip-container';
@@ -197,7 +197,7 @@ export function renderFetchControlsContainer(parentElement) {
     infoIcon.type = 'button';
     infoIcon.className = 'mashinted-info-btn';
     infoIcon.innerText = '?';
-    infoIcon.setAttribute('aria-label', 'Informations sur les limites de chargement');
+    infoIcon.setAttribute('aria-label', 'Information about loading limits');
 
     const tooltip = document.createElement('div');
     tooltip.className = 'mashinted-controls-tooltip';

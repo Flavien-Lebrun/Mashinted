@@ -39,50 +39,14 @@ function getSectionId(searchName) {
  */
 export function getActiveGridContainer() {
     // 1. Check if standard Vinted homepage block container exists
-    let grid = document.querySelector('[data-testid="homepage-blocks"]') ||
-        document.querySelector('.HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks');
+    let grid = document.querySelector('[data-testid="homepage-blocks"]') || 
+        document.querySelector('[class*="__homepage-blocks"]') ||
+        document.querySelector('[class$="__feed-grid--compact"]');
+        console.debug('Mashinted: Active grid container located:', grid);
 
     if (grid && document.body.contains(grid)) {
         return grid;
     }
-
-    // 2. Fallback: Locate home layout parent if container was destroyed
-    const homeLayout = document.querySelector('.HomeLayout-module-scss-module__XNM03a__homepage') ||
-        document.querySelector('.container') ||
-        document.querySelector('#content');
-
-    if (homeLayout) {
-        console.warn('Mashinted: Grid container missing. Reconstructing target grid node.');
-
-        grid = document.createElement('div');
-        grid.className = 'HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks';
-        grid.setAttribute('data-testid', 'homepage-blocks');
-
-        homeLayout.appendChild(grid);
-        return grid;
-    }
-
-    return null;
-}
-
-/**
- * @brief Wraps card nodes in layout-compatible grid item containers if required by current grid structure.
- * @param {HTMLElement} cardNode - Card DOM node to wrap.
- * @param {HTMLElement} targetGrid - Active parent grid node.
- * @returns {HTMLElement} Wrapped or direct card element.
- */
-function wrapCardForGrid(cardNode, targetGrid) {
-    let resultNode = cardNode;
-
-    if (targetGrid.matches('[data-testid="homepage-blocks"], .HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks')) {
-        const itemWrapper = document.createElement('div');
-        itemWrapper.className = 'HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item--one-fifth';
-        itemWrapper.appendChild(cardNode);
-        resultNode = itemWrapper;
-    }
-
-    markAsMashintedElement(resultNode);
-    return resultNode;
 }
 
 /**
@@ -154,39 +118,32 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
                 );
 
                 if (validItems.length > 0) {
-                    // Create Divider Section
                     const dividerNode = createSearchDividerNode(search.name, validItems.length, search.url);
                     const sectionId = getSectionId(search.name);
                     dividerNode.setAttribute('data-section-id', sectionId);
                     markAsMashintedElement(dividerNode);
 
-                    // Insert divider below banner
                     insertInGrid(dividerNode, targetGrid, progressBanner);
 
-                    // Build array of card items for section
-                    const createdWrappers = [];
+                    const createdCards = [];
                     for (let index = 0; index < validItems.length; index++) {
                         const itemData = validItems[index];
-                        const cardNode = createAggregatedItemCard(itemData, search.name);
+        
+                        const cardNode = createAggregatedItemCard(itemData, {
+                            isFirstInSection: (index === 0),
+                            dividerSectionId: sectionId
+                        });
+
                         if (!cardNode || !(cardNode instanceof HTMLElement)) continue;
+                        markAsMashintedElement(cardNode);
 
-                        const wrapper = wrapCardForGrid(cardNode, targetGrid);
-                        wrapper.setAttribute('data-section-id', sectionId);
-                        markAsMashintedElement(wrapper);
-
-                        // FIX: Force the first item of this category to start on a new row, 
-                        // stopping items from the previous category from filling trailing gaps.
-                        if (index === 0) {
-                            wrapper.classList.add('mashinted-section-start');
-                        }
-
-                        createdWrappers.push(wrapper);
+                        createdCards.push(cardNode);
                         injectedTotal++;
                     }
 
                     // Insert cards in reverse order so DOM sequence matches array order
-                    for (let j = createdWrappers.length - 1; j >= 0; j--) {
-                        dividerNode.insertAdjacentElement('afterend', createdWrappers[j]);
+                    for (let j = createdCards.length - 1; j >= 0; j--) {
+                        dividerNode.insertAdjacentElement('afterend', createdCards[j]);
                     }
                 }
             } catch (err) {

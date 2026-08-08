@@ -11,11 +11,6 @@ function injectGridStyles() {
     const style = document.createElement('style');
     style.id = 'mashinted-grid-fix-styles';
     style.textContent = `
-        div[class*="feed-grid"] {
-            display: grid !important;
-            grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-            gap: 16px !important;
-        }
         .mashinted-grid-divider {
             grid-column: 1 / -1 !important;
             width: 100% !important;
@@ -25,7 +20,7 @@ function injectGridStyles() {
             grid-column-start: 1 !important;
             grid-column-end: -1 !important;
         }
-        .HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item--one-fifth {
+        .mashinted__feed-grid__item--one-fifth {
             width: 100% !important;
             grid-column: auto !important;
             transition: opacity 0.6s ease, transform 0.6s ease, max-height 0.6s ease, padding 0.6s ease, margin 0.6s ease;
@@ -90,7 +85,7 @@ function organizeFavouriteGrid() {
         return false;
     }
 
-    const gridContainer = document.querySelector('div[class*="feed-grid"]'); 
+    const gridContainer = document.querySelector('div[class*="__feed-grid"], div[class*="__feed-grid--compact"]'); 
     if (!gridContainer) {
         return false; 
     }
@@ -100,10 +95,9 @@ function organizeFavouriteGrid() {
         return false;
     }
 
-    const hasUnprocessedItems = gridItems.some(item => !item.classList.contains('HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item'));
     const trackedCount = parseInt(gridContainer.getAttribute('data-mashinted-item-count') || '0', 10);
 
-    if (gridContainer.getAttribute('data-mashinted-grouped') === 'true' && !hasUnprocessedItems && trackedCount === gridItems.length) {
+    if (gridContainer.getAttribute('data-mashinted-grouped') === 'true' && trackedCount === gridItems.length) {
         return true;
     }
 
@@ -191,26 +185,18 @@ function organizeFavouriteGrid() {
         gridContainer.appendChild(divider);
         const dividerSectionId = divider.getAttribute('data-section-id');
 
-        // 2. Format wrapper and guarantee class replacement on nested wrapper layers
+        // 2. Format wrapper and attributes directly on the outer grid item
         items.forEach((item, index) => {
-            item.className = 'HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item--one-fifth';
+            // Ensure the outer root grid item retains its correct classification
+            item.className = 'mashinted__feed-grid__item mashinted-section-start';
             item.setAttribute('data-mashinted-aggregated', 'true');
             
             if (dividerSectionId) {
                 item.setAttribute('data-section-id', dividerSectionId);
             }
-            if (index === 0) {
-                item.classList.add('mashinted-section-start');
-            }
-
-            const innerContent = item.querySelector('.Grid-module-scss-module__HmDNda__feed-grid__item-content');
-            if (innerContent) {
-                innerContent.className = 'new-item-box__container';
-            } else {
-                const containerFallback = item.querySelector('[class*="feed-grid__item-content"]');
-                if (containerFallback) {
-                    containerFallback.className = 'new-item-box__container';
-                }
+            
+            if (index !== 0) {
+                item.classList.remove('mashinted-section-start');
             }
 
             gridContainer.appendChild(item);
