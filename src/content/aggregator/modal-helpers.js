@@ -92,22 +92,40 @@ export async function toggleVintedNativeFavorite(itemId, buttonElement = null) {
         return false;
     }
 
+    const currentOrigin = window.location.origin;
+    const currentUrl = window.location.href;
+
+    // Dynamically look for Vinted's CSRF token embedded in inline scripts or globals
+    let csrfToken = "";
     const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-    const csrfToken = csrfMeta ? csrfMeta.content : "75f6c9fa-dc8e-4e52-a000-e09dd4084b3e";
-    const cookieString = "..."; // Keep your long cookie string here
+    if (csrfMeta) {
+        csrfToken = csrfMeta.content;
+    } else {
+        // Try searching script tags or global window state if Vinted exposes it
+        const scripts = document.querySelectorAll('script');
+        for (const script of scripts) {
+            const match = script.textContent.match(/"csrf_token"\s*:\s*"([^"]+)"/);
+            if (match && match[1]) {
+                csrfToken = match[1];
+                break;
+            }
+        }
+    }
+
+    // Ultimate fallback if parsing fails (though finding it dynamically is best)
+    if (!csrfToken) {
+        csrfToken = "75f6c9fa-dc8e-4e52-a000-e09dd4084b3e"; 
+    }
 
     try {
-        const response = await fetch("https://www.vinted.fr/api/v2/user_favourites/toggle", {
+        const response = await fetch(`${currentOrigin}/api/v2/user_favourites/toggle`, {
             method: "POST",
             headers: {
-                "accept": "application/json,text/plain,*/*",
+                "accept": "application/json, text/plain, */*",
                 "content-type": "application/json",
-                "cookie": cookieString,
-                "locale": "fr-FR",
-                "origin": "https://www.vinted.fr",
-                "referer": "https://www.vinted.fr/",
-                "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
-                "x-anon-id": "5d866158-b39b-4f0c-8c43-e5d520eda669",
+                "locale": document.documentElement.lang || "en-US",
+                "origin": currentOrigin,
+                "referer": currentUrl,
                 "x-csrf-token": csrfToken,
                 "x-requested-with": "XMLHttpRequest"
             },
@@ -143,7 +161,7 @@ export async function toggleVintedNativeFavorite(itemId, buttonElement = null) {
 export function updateButtonVisualState(buttonElement, isFavorited, newCount = 1) {
     if (!buttonElement) return;
 
-    const iconSpan = buttonElement.querySelector('.mashinted-fav-icon') || buttonElement.querySelector('span[data-testid^="favourite"]');
+    const iconSpan = buttonElement.querySelector('.mashinted__fav-icon') || buttonElement.querySelector('span[data-testid^="favourite"]');
     const svgPath = buttonElement.querySelector('path');
     const wrapperDiv = buttonElement.closest('.u-position-absolute');
 
@@ -224,9 +242,9 @@ export function updateButtonVisualState(buttonElement, isFavorited, newCount = 1
 /**
  * @brief Creates a progress status banner matching the divider visual design.
  */
-export function createAggregatorProgressBanner(initialText = 'Agrégation en cours...') {
+export function createAggregatorProgressBanner(initialText = 'Aggregating in progress...') {
     const container = document.createElement('div');
-    container.className = 'mashinted-grid-divider mashinted-progress-banner';
+    container.className = 'mashinted-grid-divider mashinted-progress-banner web_ui__Card__card web_ui__Card__overflowAuto';
 
     container.innerHTML = `
         <div class="mashinted-divider-left">
@@ -251,7 +269,7 @@ export function createAggregatorProgressBanner(initialText = 'Agrégation en cou
         </div>
         <div class="mashinted-divider-right">
             <span class="mashinted-badge mashinted-item-count-badge">
-                En cours
+                In progress
             </span>
         </div>
     `;
@@ -262,7 +280,7 @@ export function createAggregatorProgressBanner(initialText = 'Agrégation en cou
             const statusEl = container.querySelector('.mashinted-status-text');
             if (statusEl) statusEl.textContent = text;
         },
-        complete(message = 'Agrégation terminée') {
+        complete(message = 'Aggregation complete') {
             const statusEl = container.querySelector('.mashinted-status-text');
             const spinnerWrapper = container.querySelector('.mashinted-spinner-wrapper');
             const badge = container.querySelector('.mashinted-badge');
@@ -278,7 +296,7 @@ export function createAggregatorProgressBanner(initialText = 'Agrégation en cou
             }
 
             if (badge) {
-                badge.textContent = 'Terminé';
+                badge.textContent = 'Complete';
                 badge.classList.add('mashinted-item-count-badge--complete');
             }
 

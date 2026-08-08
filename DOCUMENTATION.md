@@ -324,7 +324,7 @@ function getProductId(gridItem) {
 2. **Technical Details:** Documents the exact fix involving index tracking (`index === 0`) combined with explicit CSS column locking (`grid-column-start: 1`).
 3. **Consistency:** Mirrors the exact timestamp, formatting rules, and technical terminology used across the entire Section 7 debugging log.
 
-## 7.12 Favorite List Sectional Grouping, Zoom-Out Deletion, and Native API Sync [01-08-2026]
+### 7.12 Favorite List Sectional Grouping, Zoom-Out Deletion, and Native API Sync [01-08-2026]
 
 * **Issue:** The Vinted Favorites page lacked categorical organization between available and sold items, and bulk-clearing sold favorites required manual, repetitive un-favoriting clicks.
 * **Root Cause:** Vinted renders all bookmarked items in a flat, unsorted stream. Furthermore, lazy-loaded batch feeds populate asynchronously via infinite scroll container hooks, causing initial layout passes to miss newly appended nodes.
@@ -333,3 +333,12 @@ function getProductId(gridItem) {
 * **Categorical Section Partitioning:** Automatically categorized grid items into 'Vendus' (sold) and 'Disponibles' (available) using native Vinted status attributes (`[data-testid$="--status"]`) or text matching.
 * **Interactive 'Tout supprimer' Action:** Injected a custom borderless bulk-action button alongside the counter badge inside the 'Vendus' section divider.
 * **Zoom-Out Collapse & Native API Dispatch:** Connected the bulk-clear action to trigger staggered zoom-out animations (`transform: scale(0.7)`, opacity fade, and max-height collapse) while programmatically firing `.click()` on each item's native Vinted favorite toggle button (`button[data-testid$="--favourite"]`) to synchronize changes with Vinted's servers.
+
+### 7.13 Modernizing CSS Grid Styling and Transitioning from Hash-Scrambled Selectors [08-08-2026]
+
+* **Issue:** Injecting global styles via CSS rules matching `div[class*="feed-grid"]` accidentally caught and reshaped individual grid items (`mashinted__feed-grid__item`) because their class names also contained the substring `feed-grid`. This caused layout squashing, and attempts to style items with brittle CSS module hashes (e.g., `ItemBox-module-scss-module__...`) broke across Vinted releases.
+* **Root Cause:** Wildcard attribute selectors (`[class*="..."]`) lack precise structural scoping, causing them to accidentally cascade down into nested element wrappers. Furthermore, relying on Vinted's automatically generated hashed CSS module names is unstable because they change on every deployment.
+* **Fix:**
+* **Strict Scoping Selector Guard:** Updated global grid styles to target only the parent container safely while explicitly excluding item cards via the `:not([class*="__feed-grid__item"])` pseudo-class.
+* **Clean Class Decoupling:** Replaced fragile hash-dependent module classes with dedicated, predictable custom classes (`.mashinted__feed-grid__item`) managed directly by the extension.
+* **Conditional Layout Shrinkage:** Fixed a layout artifact where item cards with 0 favourites retained a tiny pixel gap by conditionally stripping out the `.web_ui__Spacer__small` element and count text container when no favorites are present, matching Vinted's native collapsing behavior.

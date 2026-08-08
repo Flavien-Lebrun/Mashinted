@@ -549,8 +549,13 @@ li.pile__element:not(:last-child) {
     background-color: rgb(232, 226, 213);
 }
 
-.mashinted-fav-icon {
-    width: 16px;
+.mashinted__fav-icon {
+    border: 1px solid var(--v-sys-theme-greyscale-level-3, #f2f2f2);
+    border-radius: 24px;
+    margin: 8px;
+    padding: 8px;
+    position: relative;
+    overflow: hidden;
 }
 
 .mashinted-trash-icon {
@@ -655,11 +660,6 @@ li.pile__element:not(:last-child) {
     color: rgba(var(--primary-default), 1);
 }
 
-/* Grid Dividers */
-.mashinted-grid-divider {
-    animation: mashinted-slide-down 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
 @keyframes mashinted-slide-down {
     0% {
         opacity: 0;
@@ -701,8 +701,9 @@ li.pile__element:not(:last-child) {
 .mashinted-grid-divider {
     grid-column: 1 / -1 !important;
     width: 100% !important;
-    margin: 24px 0 16px 0;
-    padding: 12px 16px;
+    margin: 24px 8px 16px 8px;
+    height: 52px;
+    padding: 15px;
     background-color: #f7f9fa;
     border: 1px solid #e0e6e8;
     border-radius: 8px;
@@ -713,6 +714,7 @@ li.pile__element:not(:last-child) {
     cursor: pointer;
     user-select: none;
     transition: background-color 0.15s ease;
+    animation: mashinted-slide-down 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .mashinted-grid-divider:hover {
@@ -781,7 +783,178 @@ li.pile__element:not(:last-child) {
     display: none !important;
 }
 
-/* Ensure the grid doesn't aggressively backfill earlier holes */
-.HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks {
+/* --- Replicating Vinted Hashed CSS classes --- */
+.mashinted__homepage-blocks {
     grid-auto-flow: row !important;
+    /*grid-auto-flow: dense; Original Vinted behavior suppressed */
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    align-items: stretch;
+    column-gap: 8px;
+    display: grid
+}
+
+@media only screen and (min-width: 721px) {
+    .mashinted__homepage-blocks {
+        column-gap:16px
+    }
+}
+
+@media only screen and (min-width: 721px) and (max-width:959px) {
+    .mashinted__homepage-blocks {
+        grid-template-columns:repeat(3,minmax(0,1fr))
+    }
+}
+
+@media only screen and (min-width: 960px) {
+    .mashinted__homepage-blocks {
+        grid-template-columns:repeat(4,minmax(0,1fr))
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+    .mashinted__homepage-blocks {
+        grid-template-columns:repeat(5,minmax(0,1fr))
+    }
+}
+
+.mashinted__homepage-blocks>:not(.mashinted__homepage-blocks__item--one-fifth):not(.mashinted__homepage-blocks__item--two-fifths) {
+    grid-column: 1/-1
+}
+
+.mashinted__homepage-blocks__item {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    position: relative
+}
+
+.mashinted__homepage-blocks__item--one-fifth {
+    grid-column: span 1;
+    width: 100%;
+    padding-bottom: 8px
+}
+
+.mashinted__homepage-blocks__item--two-fifths {
+    grid-column: span 2;
+    width: 100%;
+    padding-bottom: 8px
+}
+
+.mashinted__feed-grid {
+    margin: 0 calc(-1*var(--space-100));
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    display: flex
+}
+
+@media only screen and (min-width: 721px) {
+    .mashinted__feed-grid {
+        margin:0 calc(-1*var(--space-200))
+    }
+}
+
+.mashinted__feed-grid__item {
+    box-sizing: border-box;
+    width: 50%;
+    position: relative
+}
+
+@media only screen and (min-width: 721px) {
+    .mashinted__feed-grid__item {
+        width:33.3333%
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+    .mashinted__feed-grid__item {
+        width:25%
+    }
+}
+
+.mashinted__feed-grid__item-content {
+    padding: 0 var(--space-100) var(--space-200)
+}
+
+@media only screen and (min-width: 721px) {
+    .mashinted__feed-grid__item-content {
+        padding:0 var(--space-200) var(--space-400)
+    }
+}
+
+.mashinted__feed-grid__item--full-row {
+    width: 100%
+}
+
+.mashinted__feed-grid--compact .mashinted__feed-grid__item-content {
+    padding-bottom: var(--space-200)
+}
+
+.mashinted__feed-grid__item--one-fifth {
+    align-self: stretch
+}
+
+@media only screen and (min-width: 721px) and (max-width:959px) {
+    .mashinted__feed-grid__item--one-fifth {
+        width:33.3333%
+    }
+}
+
+@media only screen and (min-width: 960px) {
+    .mashinted__feed-grid__item--one-fifth {
+        width:25%
+    }
+}
+
+@media only screen and (min-width: 1200px) {
+    .mashinted__feed-grid__item--one-fifth {
+        width:20%
+    }
+}
+
+.mashinted__feed-grid__item--one-fifth .mashinted__feed-grid__item-content {
+    box-sizing: border-box;
+    height: 100%
+}
+
+.mashinted__feed-grid__item--one-fifth .mashinted__feed-grid__item-content>div {
+    height: 100%
+}
+
+.mashinted__new-item-box__container {
+    flex-direction: column;
+    display: flex
+}
+
+.mashinted__new-item-box__container--fixed-aspect-ratio {
+    aspect-ratio: 1/1.9
+}
+
+.mashinted__new-item-box__container--fixed-aspect-ratio .mashinted__new-item-box__image-container {
+    flex: 1
+}
+
+.mashinted__new-item-box__container:has(a.mashinted__new-item-box__overlay:focus-visible) {
+    outline: 3px solid rgb(var(--primary-default));
+    outline-offset: 2px;
+    border-radius: 8px
+}
+
+.mashinted__new-item-box__image-container {
+    border-radius: 6px;
+    overflow: hidden
+}
+
+.mashinted__new-item-box__image {
+    background-color: rgb(var(--greyscale-level-5));
+    height: 100%;
+    position: relative
+}
+
+.mashinted__new-item-box__summary {
+    padding: 8px 4px
+}
+
+.mashinted__new-item-box__summary--compact-bottom {
+    padding-bottom: 4px
 }

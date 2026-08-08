@@ -116,16 +116,23 @@ export function parseVintedCardDOM(cardElement) {
 /**
  * @brief Creates a native Vinted-styled item card.
  */
-export function createAggregatedItemCard(itemData, searchName = '') {
+export function createAggregatedItemCard(itemData, options = {}) {
+    const { isFirstInSection = false, dividerSectionId = '' } = options;
+
     const card = document.createElement('div');
     card.setAttribute('data-testid', 'grid-item');
     card.setAttribute('data-mashinted-aggregated', 'true');
 
-    if (searchName) {
-        card.setAttribute('data-section-id', getSectionId(searchName));
+    if (dividerSectionId) {
+        card.setAttribute('data-section-id', dividerSectionId);
     }
 
-    card.className = 'HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks__item--one-fifth';
+    // Combine classes cleanly on the root node
+    let classNames = 'mashinted__feed-grid__item';
+    if (isFirstInSection) {
+        classNames += ' mashinted-section-start';
+    }
+    card.className = classNames;
 
     let brand = '';
     let subtitle = '';
@@ -139,106 +146,113 @@ export function createAggregatedItemCard(itemData, searchName = '') {
         brand = itemData.brandName
             || itemData.brand_title
             || itemData.brand
-            || (itemData.element ? parseVintedCardDOM(itemData.element).brandName : '')
             || '';
 
         subtitle = itemData.subtitle
             || itemData.description
             || [itemData.size, itemData.status || itemData.condition].filter(Boolean).join(' · ')
             || itemData.title
-            || (itemData.element ? parseVintedCardDOM(itemData.element).subtitle : '')
             || '';
     }
-
-    const basePrice = itemData.price || '—';
+const basePrice = itemData.price || '—';
     const totalPrice = itemData.totalPrice || basePrice;
+    const rawFavCount = itemData.favouriteCount;
+    const hasFavourites = rawFavCount !== undefined && rawFavCount !== null && rawFavCount !== '' && parseInt(rawFavCount, 10) > 0;
+    const favouriteCount = hasFavourites ? String(rawFavCount) : '';
+
+    // Conditionally build the favourite display content, omitting the spacer completely if 0/empty
+    const favouriteHTML = hasFavourites 
+        ? `<div class="web_ui__Spacer__small web_ui__Spacer__vertical"></div><span class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left" data-testid="favourite-count-text">${escapeHtml(favouriteCount)}</span>`
+        : '';
 
     const brandHTML = brand
         ? `<div class="u-flexbox u-justify-content-between">
-            <div class="new-item-box__description">
-                <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__truncated" data-testid="feed-item--description-title">${escapeHtml(brand)}</p>
+            <div class="InformationBreakdown-module-scss-module__chuxWa__new-item-box__description">
+                <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__truncated" data-testid="product-item-id-${itemData.id}--description-title">${escapeHtml(brand)}</p>
             </div>
            </div>`
         : '';
 
     const subtitleHTML = subtitle
-        ? `<div class="new-item-box__description">
-            <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__truncated" data-testid="feed-item--description-subtitle">${escapeHtml(subtitle)}</p>
+        ? `<div class="InformationBreakdown-module-scss-module__chuxWa__new-item-box__description">
+            <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__truncated" data-testid="product-item-id-${itemData.id}--description-subtitle">${escapeHtml(subtitle)}</p>
            </div>`
         : '';
 
+    // GRID_ITEM_TEMPLATE already contains the inner layers natively
     card.innerHTML = GRID_ITEM_TEMPLATE
+        .replace(/{ITEM_ID}/g, itemData.id)
         .replace('{IMAGE_ALT}', `${escapeHtml(brand)} ${escapeHtml(subtitle)}`)
         .replace('{IMAGE_URL}', itemData.imageUrl || '')
         .replace('{ITEM_URL}', itemData.itemUrl || '#')
         .replace('{TITLE_ALT}', `${escapeHtml(brand)} ${escapeHtml(subtitle)}`)
-        .replace('{ITEM_ID}', itemData.id)
         .replace('{BRAND_ESCAPED}', escapeHtml(brand))
+        .replace('{FAVOURITE_COUNT_HTML}', favouriteHTML)
         .replace('{BRAND_HTML}', brandHTML)
         .replace('{SUBTITLE_HTML}', subtitleHTML)
         .replace('{BASE_PRICE}', escapeHtml(basePrice))
         .replace('{TOTAL_PRICE}', escapeHtml(totalPrice))
-        .replace('{TOTAL_PRICE}', escapeHtml(totalPrice)); // second instance for aria-label
-
+        .replace('{TOTAL_PRICE}', escapeHtml(totalPrice));
+    
     // Attach click listener to the favorite button
-    const favBtn = card.querySelector('.mashinted-fav-btn');
+    const favBtn = card.querySelector('.mashinted__fav-icon');
+    if (favBtn) {
+        favBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
 
-    favBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+            favBtn.disabled = true;
 
-        favBtn.disabled = true;
+            const isCurrentlyFav = favBtn.getAttribute('data-favorited') === 'true';
+            const nextFavState = !isCurrentlyFav;
 
-        const isCurrentlyFav = favBtn.getAttribute('data-favorited') === 'true';
-        const nextFavState = !isCurrentlyFav;
+            updateButtonVisualState(favBtn, nextFavState, 1);
 
-        updateButtonVisualState(favBtn, nextFavState, 1);
+            const success = await toggleVintedNativeFavorite(itemData.id);
 
-        const success = await toggleVintedNativeFavorite(itemData.id);
-
-        if (!success) {
-            updateButtonVisualState(favBtn, isCurrentlyFav, 1);
-            console.warn(`[Mashinted] Could not toggle favorite for item ${itemData.id}`);
-        } else {
-            if (nextFavState) {
-                await saveFavorite(itemData.id, itemData);
+            if (!success) {
+                updateButtonVisualState(favBtn, isCurrentlyFav, 1);
+                console.warn(`[Mashinted] Could not toggle favorite for item ${itemData.id}`);
             } else {
-                await removeFavorite(itemData.id);
+                if (nextFavState) {
+                    await saveFavorite(itemData.id, itemData);
+                } else {
+                    await removeFavorite(itemData.id);
+                }
             }
-        }
 
-        favBtn.disabled = false;
-    });
+            favBtn.disabled = false;
+        });
+    }
 
     // Attach click listener to the trash button with parent hiding/removal delay
     const trashBtn = card.querySelector('.mashinted-trash-btn');
 
     if (trashBtn) {
         trashBtn.addEventListener('click', async (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            event.stopImmediatePropagation();
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
 
-            const gridItem = card.closest('[data-testid="grid-item"]') || card.closest('.grid-item') || card;
-            const brandName = extractBrandName(gridItem) || trashBtn.getAttribute('data-brand');
+        const gridItem = card.closest('[data-testid="grid-item"]') || card;
+        const brandName = extractBrandName(gridItem) || trashBtn.getAttribute('data-brand');
 
-            if (brandName) {
-                console.log(`[Mashinted] Trash clicked. Adding brand to blacklist: "${brandName}"`);
+        if (brandName) {
+            console.log(`[Mashinted] Trash clicked. Adding brand to blacklist: "${brandName}"`);
 
-                await addBrand(brandName);
-                blockGridItem(gridItem, brandName, false);
+            await addBrand(brandName);
+            blockGridItem(gridItem, brandName, false);
 
-                const parentContainer = card.parentElement;
-                if (parentContainer) {
-                    setTimeout(() => {
-                        parentContainer.style.display = 'none';
-                    }, 350);
-                }
-            } else {
-                console.warn('[Mashinted] Could not extract brand name from this grid item layout.');
-            }
-        });
-    }
+            // Hide the card element directly since it's now the outer grid item
+            setTimeout(() => {
+                card.style.display = 'none';
+            }, 350);
+            
+        } else {
+            console.warn('[Mashinted] Could not extract brand name from this grid item layout.');
+        }
+    });
+}
 
     return card;
 }
