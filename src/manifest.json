@@ -16,17 +16,22 @@
     {
       "matches": ["https://www.vinted.fr/*", "https://www.vinted.com/*"],
       "js": ["src/fast-widget-loader.js"],
+      "css": ["assets/index.css"],
       "run_at": "document_start"
     },
     {
       "matches": ["https://www.vinted.fr/*", "https://www.vinted.com/*"],
       "js": ["src/content/index.js"],
+      "css": ["assets/index.css"],
       "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["public/checker.js"],
+      "resources": [
+        "checker.js",
+        "public/checker.js"
+      ],
       "matches": [
         "https://www.vinted.fr/*", 
         "https://www.vinted.com/*"

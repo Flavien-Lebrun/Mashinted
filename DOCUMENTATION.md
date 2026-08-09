@@ -331,7 +331,7 @@ function getProductId(gridItem) {
 * **Fix:**
 * **Batched Lazy-Loading Guard:** Implemented a dual interval/mutation observation loop in `startFavouriteListFilter` to safely catch and re-group items as Vinted loads them in lazy chunks.
 * **Categorical Section Partitioning:** Automatically categorized grid items into 'Vendus' (sold) and 'Disponibles' (available) using native Vinted status attributes (`[data-testid$="--status"]`) or text matching.
-* **Interactive 'Tout supprimer' Action:** Injected a custom borderless bulk-action button alongside the counter badge inside the 'Vendus' section divider.
+* **Interactive 'Delete all sold' Action:** Injected a custom borderless bulk-action button alongside the counter badge inside the 'Vendus' section divider.
 * **Zoom-Out Collapse & Native API Dispatch:** Connected the bulk-clear action to trigger staggered zoom-out animations (`transform: scale(0.7)`, opacity fade, and max-height collapse) while programmatically firing `.click()` on each item's native Vinted favorite toggle button (`button[data-testid$="--favourite"]`) to synchronize changes with Vinted's servers.
 
 ### 7.13 Modernizing CSS Grid Styling and Transitioning from Hash-Scrambled Selectors [08-08-2026]
@@ -342,3 +342,18 @@ function getProductId(gridItem) {
 * **Strict Scoping Selector Guard:** Updated global grid styles to target only the parent container safely while explicitly excluding item cards via the `:not([class*="__feed-grid__item"])` pseudo-class.
 * **Clean Class Decoupling:** Replaced fragile hash-dependent module classes with dedicated, predictable custom classes (`.mashinted__feed-grid__item`) managed directly by the extension.
 * **Conditional Layout Shrinkage:** Fixed a layout artifact where item cards with 0 favourites retained a tiny pixel gap by conditionally stripping out the `.web_ui__Spacer__small` element and count text container when no favorites are present, matching Vinted's native collapsing behavior.
+
+### 7.14 Production Build Asset Bundling and Mac/Linux Cross-Environment Consistency [09-08-2026]
+
+* **Issue:** Porting the extension build to macOS caused parts of the extension and all layout styles to fail completely. Investigation revealed that development builds left Vite HMR code (`/vendor/vite-client.js`) and `.css.js` dev stubs inside `dist/`, which failed in production environments without a running local Vite server. Furthermore, enforcing production builds via `npx vite build` resulted in asset hashing (`index-DoysEmGj.css`), causing mismatched paths and a missing CSS injection mechanism in standard content scripts.
+* **Root Causes:**
+1. **HMR Stubs in Production:** Running development commands packaged live-reload socket wrappers instead of production assets.
+2. **Uninjected CSS Assets:** Standard Vite builds output external `.css` files, but manifest v3 content scripts require either explicit manifest CSS declarations or automated script injection to prevent styles from dropping.
+3. **Path Instability:** Hashed filenames (`index-[hash].css`) change on every build, breaking static manifest tracking.
+4. **Strict CSP Restrictions:** External pages trying to reach dynamic helper files like `checker.js` triggered security errors due to missing `web_accessible_resources` rules.
+
+
+* **Fix:**
+* **Static Rollup Asset Naming:** Configured `rollupOptions.output` inside `vite.config.js` to enforce predictable, unhashed filenames (`assets/index.css` and `assets/[name].js`).
+* **Native Manifest Mapping:** Mapped `assets/index.css` directly into the `css` field of content scripts within `manifest.json`, letting Chrome inject styles natively at `document_start` and eliminating DOM `appendChild` null errors.
+* **Resource Accessibility Enforcement:** Added `checker.js` and its public path variations into the `web_accessible_resources` block in `manifest.json` with target Vinted match patterns to resolve browser security blocks.
