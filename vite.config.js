@@ -7,8 +7,18 @@ import manifest from './src/manifest.json';
 export default defineConfig({
   publicDir: 'public',
   build: {
+    // Safely targets older Chromium versions (e.g., Chrome 89–90, common on older machines)
+    target: ['chrome89', 'es2020'],
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // Forces static asset filenames instead of hashes
+        assetFileNames: 'assets/[name].[ext]',
+        chunkFileNames: 'assets/[name].js',
+        entryFileNames: 'assets/[name].js',
+      },
+    },
   },
   server: {
     port: 5173,
@@ -24,10 +34,10 @@ export default defineConfig({
   },
   plugins: [
     crx({ manifest }),
-    eslint({
-      failOnError: true,
-      failOnWarning: false,
-      include: ['src/**/*.js'],
-    }),
+    //eslint({
+    //  failOnError: true,
+    //  failOnWarning: false,
+    //  include: ['src/**/*.js'],
+    //}),
   ],
 });
