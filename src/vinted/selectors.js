@@ -106,6 +106,15 @@ export const LANGUAGE_SELECTOR_LABEL_SELECTOR = '[class$="Button__label"]';
 /** Dropdown rows, `data-testid="language-option-<CODE>"`. */
 export const LANGUAGE_OPTION_SELECTOR = '[data-testid^="language-option-"]';
 
+// --- Inbox ------------------------------------------------------------------
+
+/** `data-testid` prefix of a conversation row; the rest is the conversation UUID. */
+export const INBOX_ROW_TESTID_PREFIX = 'inbox-list-item-';
+/** Clickable conversation rows (the `--title`, `-container`… children have no `role="button"`). */
+export const INBOX_ROW_SELECTOR = `[data-testid^="${INBOX_ROW_TESTID_PREFIX}"][role="button"]`;
+/** Vinted highlights rows with unread messages. */
+export const INBOX_UNREAD_ROW_SELECTOR = `${INBOX_ROW_SELECTOR}.web_ui__Cell__highlighted`;
+
 // --- Page-level -------------------------------------------------------------
 
 export const CSRF_META_SELECTOR = 'meta[name="csrf-token"]';

@@ -10,6 +10,7 @@ import { startObserver, startPageTransitionObserver } from '../features/blacklis
 import { initializeTrashEngine } from '../features/blacklist/trash-engine.js';
 import { startSavedSearchesObserver } from '../features/aggregator/modal-injector.js';
 import { startFavouriteListFilter } from '../features/favourites/favourite-filter.js';
+import { startInbox } from '../features/inbox/index.js';
 
 const routes = [
     {
@@ -18,6 +19,13 @@ const routes = [
         start() {
             ensureCounterWidgetMounted();
             startFavouriteListFilter();
+        },
+    },
+    {
+        name: 'inbox',
+        match: (pathname) => pathname.startsWith('/inbox'),
+        start() {
+            startInbox();
         },
     },
     {

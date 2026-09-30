@@ -394,6 +394,16 @@ function getProductId(gridItem) {
 * **Loading chip:** `content/fast-widget-loader.js` uses the same detector (no selector yet at `document_start`, so html lang / domain / navigator). It is already loaded through crxjs's dynamic-import stub, so the import adds no meaningful delay.
 * **Tests:** `test/language.test.js` (fixture `test/fixtures/language-selector.html`), `test/i18n.test.js` (locale key parity).
 
+### 7.19 Inbox Widget: Open Unread [30-09-2026]
+
+* **Goal:** on `vinted.*/inbox/*`, a floating chip that opens every unread conversation (opening marks it read on Vinted's side).
+* **Routing:** new `inbox` route (`pathname.startsWith('/inbox')`) placed before `default`, so the blacklist/trash/aggregator features do not run there. `startInbox()` removes the "Filtering..." chip left by `fast-widget-loader.js`.
+* **Detection (from a saved DOM snippet):** a row is `[data-testid^="inbox-list-item-"][role="button"]` (the `-container`, `--title`... children carry no `role="button"`); unread rows carry Vinted's `web_ui__Cell__highlighted`. Selectors live in `vinted/selectors.js` (`INBOX_*`).
+* **Walker (`features/inbox/conversations.js`):** snapshots the unread ids, then for each one clicks the row and waits (via `observeDom`, 4 s timeout, `wait.js`) until it is no longer unread, with a 400 ms pause between two. Clicking the chip again stops the run. The label shows the unread count, or `Stop (done/total)` while running.
+* **Dropped: "Clean sold".** It was built (sold = `conversation-message--status-message` banner + no buttons in `hero-message--suffix`; delete via `details-button` → `conversation-actions-delete` → dialog `confirm-delete-conversation`) and removed on 30-09-2026: confirming a deletion reloads the full page, which kills the content script and the running walk after the first conversation. Reviving it would need the state to survive reloads (e.g. a queue in `chrome.storage`), and it may conflict with Vinted's terms of use.
+* **Known limit / next:** only rows already rendered are walked; lazy-loading of the conversation list is not handled (needs a DOM snippet of the loading behaviour).
+* **Tests:** `test/inbox.test.js` with an anonymised `test/fixtures/inbox-list.html`.
+
 ---
 
 ## 8. Progress Tracker
@@ -412,6 +422,8 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Done | Fix CSS animations, tunable duration tokens, reduced-motion | `src/styles/tokens.css` — §7.16 |
 | Done | Fix aggregator card layout on the homepage grid; reliable `make watch` | `src/styles/aggregator.css`, `scripts/watch.sh` — §7.17 |
 | Done | Language detection (Vinted selector) + i18n module (en/fr/es/nl) | `src/vinted/language.js`, `src/shared/i18n.js` — §7.18 |
+| Done | Inbox route + widget, "Open unread" walker | `src/features/inbox/` — §7.19 |
+| Todo | Inbox: lazy-load handling of the conversation list | §7.19 |
 | Todo | Run Prettier repo-wide (dedicated whitespace-only commit) | — |
 | Todo | Update §2–§6 for the new layout | — |
 | Todo | Reduce `!important` (~35) and inline `style=""` in templates | — |
