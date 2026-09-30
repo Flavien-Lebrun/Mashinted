@@ -13,6 +13,10 @@ import {
     createAggregatorProgressBanner
 } from './modal-helpers.js';
 import { createLogger } from '../../shared/logger.js';
+import { getCssDurationMs } from '../../shared/css-duration.js';
+import { COLLAPSE_TRANSITION_DURATION_MS } from '../../shared/constants.js';
+
+const collapseTimers = new WeakMap();
 import {
     CARD_PART,
     GRID_ITEM_SELECTOR,
@@ -82,12 +86,31 @@ export function createSearchDividerNode(searchName, itemCount, searchUrl = '') {
 
         const chevron = dividerContainer.querySelector('.mashinted-chevron-icon');
         if (chevron) {
-            chevron.style.transform = nextState ? 'rotate(-90deg)' : 'rotate(0deg)';
+            chevron.style.transform = nextState ? 'rotate(-180deg)' : 'rotate(0deg)';
         }
 
         const targetItems = document.querySelectorAll(`[data-section-id="${sectionId}"]:not(.mashinted-grid-divider)`);
+        const durationMs = getCssDurationMs('--mashinted-collapse-duration', COLLAPSE_TRANSITION_DURATION_MS);
+
         targetItems.forEach((item) => {
+            // Give max-height a real starting value so it can animate, then release it.
+            item.style.setProperty('--mashinted-item-max-height', `${item.scrollHeight}px`);
+            item.setAttribute('data-mashinted-animating', 'true');
+            // Force a reflow so the measured max-height is applied before the class flips.
+            void item.offsetHeight;
             item.classList.toggle('mashinted-item-collapsed', nextState);
+
+            window.clearTimeout(collapseTimers.get(item));
+            collapseTimers.set(
+                item,
+                window.setTimeout(() => {
+                    item.removeAttribute('data-mashinted-animating');
+                    if (!nextState) {
+                        item.style.removeProperty('--mashinted-item-max-height');
+                    }
+                    collapseTimers.delete(item);
+                }, durationMs + 40),
+            );
         });
     });
 

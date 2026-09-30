@@ -120,44 +120,46 @@
     0% {
         opacity: 0;
         transform: translateY(-18px) scale(0.98);
-        max-height: 0;
     }
     100% {
         opacity: 1;
         transform: translateY(0) scale(1);
-        max-height: 500px;
     }
 }
 
-/* --- High-Performance Item Collapsing --- */
+/* --- Section Item Collapsing ---
+   --mashinted-item-max-height is set by JS (measured height) while a fold/unfold runs,
+   so max-height can actually animate. Overflow is only clipped during that time. */
 [data-section-id]:not(.mashinted-grid-divider) {
-    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                margin 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    max-height: 500px; /* Upper bound for transition height */
+    transition:
+        opacity var(--mashinted-collapse-duration) var(--mashinted-ease),
+        transform var(--mashinted-collapse-duration) var(--mashinted-ease),
+        max-height var(--mashinted-collapse-duration) var(--mashinted-ease),
+        margin var(--mashinted-collapse-duration) var(--mashinted-ease),
+        padding var(--mashinted-collapse-duration) var(--mashinted-ease);
+    max-height: var(--mashinted-item-max-height, none);
+}
+
+[data-section-id][data-mashinted-animating],
+.mashinted-item-collapsed {
     overflow: hidden;
-    will-change: opacity, transform, max-height;
 }
 
 .mashinted-item-collapsed {
-    opacity: 0 !important;
-    transform: translateY(-12px) scale(0.96) !important;
-    max-height: 0px !important;
-    margin-top: 0px !important;
-    margin-bottom: 0px !important;
-    padding-top: 0px !important;
-    padding-bottom: 0px !important;
-    pointer-events: none !important;
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    pointer-events: none;
 }
 
 .mashinted-grid-divider {
     grid-column: 1 / -1 !important;
     width: 100% !important;
-    margin: 24px 8px 16px 8px;
+    margin: 24px 0px 16px 0px;
     height: 52px;
     padding: 15px;
     background-color: #f7f9fa;
@@ -170,7 +172,7 @@
     cursor: pointer;
     user-select: none;
     transition: background-color 0.15s ease;
-    animation: mashinted-slide-down 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: mashinted-slide-down 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .mashinted-grid-divider:hover {
@@ -178,8 +180,10 @@
 }
 
 /* Force the very first item card of a section to clear and start on a brand new row */
+[data-testid="homepage-blocks"] > .mashinted-section-start,
+[class*="__homepage-blocks"] > .mashinted-section-start,
 .mashinted-section-start {
-    grid-column-start: 1 !important;
+    grid-column: 1 / span 1 !important;
 }
 
 .mashinted-divider-left,
@@ -326,6 +330,31 @@
     .mashinted__feed-grid__item {
         width:25%
     }
+}
+
+/* Homepage container is a CSS grid (column count set by Vinted): let the grid size
+   our cards instead of the flex-row percentages above, which would shrink them
+   to a fraction of a single cell. */
+[data-testid="homepage-blocks"] > .mashinted__feed-grid__item,
+[class*="__homepage-blocks"] > .mashinted__feed-grid__item {
+    width: auto;
+    min-width: 0;
+}
+
+/* Vinted's `.homepage-blocks > :not(.item--one-fifth):not(.item--two-fifths)` forces
+   grid-column: 1 / -1 on every child lacking its hashed item classes, i.e. ours.
+   That selector has specificity (0,3,0), so we need !important to win. The section
+   divider keeps its own full-row rule. */
+[data-testid="homepage-blocks"] > .mashinted__feed-grid__item:not(.mashinted-section-start),
+[class*="__homepage-blocks"] > .mashinted__feed-grid__item:not(.mashinted-section-start) {
+    grid-column: auto !important;
+}
+
+/* In the homepage grid the gap comes from Vinted's column-gap, so the flex-row padding
+   below would double it. Match native cards (`--one-fifth`: padding-bottom 8px). */
+[data-testid="homepage-blocks"] > .mashinted__feed-grid__item > .mashinted__feed-grid__item-content,
+[class*="__homepage-blocks"] > .mashinted__feed-grid__item > .mashinted__feed-grid__item-content {
+    padding: 0 0 8px;
 }
 
 .mashinted__feed-grid__item-content {

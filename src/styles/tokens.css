@@ -11,5 +11,22 @@
     --mashinted-danger: #d93838;
     --mashinted-radius: 8px;
     --mashinted-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+
+    /* Animation timings: tweak here (JS timers read these values). */
+    --mashinted-hide-duration: 450ms; /* auto-blacklisted card fade + collapse */
+    --mashinted-collapse-duration: 250ms; /* aggregator section fold / unfold */
+    --mashinted-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --mashinted-hide-duration: 1ms;
+        --mashinted-collapse-duration: 1ms;
+    }
+
+    .mashinted-trash-btn,
+    .mashinted-grid-divider {
+        animation: none !important;
+    }
 }
 
