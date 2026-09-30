@@ -3,6 +3,8 @@ import { subscribeToCountChanges, getBrandSessionSnapshot } from './state.js';
 import { getAllBrands, addBrand, removeBrand } from '../../shared/storage.js';
 import { LOGO_SVG_STRING } from '../../vinted/templates.js';
 import { createConfigModal } from './modal.js';
+import { t } from '../../shared/i18n.js';
+import { escapeHtml } from '../../shared/escape-html.js';
 
 const WIDGET_ID = 'mashinted-counter-widget';
 let latestCountMemory = 0;
@@ -68,7 +70,7 @@ function mountLoadingWidget() {
                                 </circle>
                             </svg>
                             <span class="web_ui__Text__text web_ui__Text__subtitle web_ui__Text__left web_ui__Text__amplified u-ui-margin-left-small">
-                                Filtering...
+                                ${escapeHtml(t('widgetFiltering'))}
                             </span>
                         </div>
                     </button>
@@ -132,7 +134,7 @@ function ensureCounterWidgetMounted() {
                     </div>
                         <div class="web_ui__Chip__text">
                           <span class="web_ui__Text__text web_ui__Text__subtitle web_ui__Text__left web_ui__Text__amplified">
-                             Blocked:
+                             ${escapeHtml(t('widgetBlocked'))}
                           </span>
                         </div>
                         <div class="web_ui__Chip__suffix web_ui__Text__amplified">

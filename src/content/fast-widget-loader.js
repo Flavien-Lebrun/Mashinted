@@ -1,4 +1,10 @@
+import { t, setLanguage } from '../shared/i18n.js';
+import { detectVintedLanguage } from '../vinted/language.js';
+
 (function () {
+  // Selector isn't rendered yet at document_start: falls back to html lang / domain / navigator.
+  setLanguage(detectVintedLanguage());
+
   const WIDGET_ID = 'mashinted-counter-widget'; 
 
   if (document.getElementById(WIDGET_ID)) return;
@@ -27,7 +33,7 @@
                 </circle>
               </svg>
               <span class="web_ui__Text__text web_ui__Text__subtitle web_ui__Text__left web_ui__Text__amplified u-ui-margin-left-small">
-                Filtering...
+                ${t('widgetFiltering')}
               </span>
             </div>
           </button>

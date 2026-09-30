@@ -15,6 +15,8 @@ import {
 import { closeSavedSearchesModal, cleanupPreviousAggregation } from './modal-helpers.js';
 import { createAggregatorProgressBanner } from './grid-item-transfer.js';
 import { createLogger } from '../../shared/logger.js';
+import { t } from '../../shared/i18n.js';
+import { escapeHtml } from '../../shared/escape-html.js';
 
 const log = createLogger('aggregator');
 
@@ -25,15 +27,15 @@ const log = createLogger('aggregator');
 function createAggregatorTooltipContent() {
     return `
         <div class="web_ui__Text__text web_ui__Text__left web_ui__Text__primary mashinted-tooltip-title">
-            New items aggregator
+            ${escapeHtml(t('tooltipTitle'))}
         </div>
         <p class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left web_ui__Text__secondary mashinted-tooltip-desc">
-            This button has the purpose of displaying all the new items from your saved searches.<br>
-            To optimize performance and avoid rate limits, loading limits are applied:
+            ${escapeHtml(t('tooltipDesc'))}<br>
+            ${escapeHtml(t('tooltipLimits'))}
         </p>
         <ul class="mashinted-tooltip-list">
-            <li><span class="web_ui__Text__amplified">Total ≤ 99 items:</span> All new items are fetched.</li>
-            <li><span class="web_ui__Text__amplified">Total > 99 items:</span> Automatically capped at <span class="web_ui__Text__amplified">30 items max</span> per search.</li>
+            <li><span class="web_ui__Text__amplified">${escapeHtml(t('tooltipUnderCapLabel'))}</span> ${escapeHtml(t('tooltipUnderCapText'))}</li>
+            <li><span class="web_ui__Text__amplified">${escapeHtml(t('tooltipOverCapLabel'))}</span> ${escapeHtml(t('tooltipOverCapBefore'))} <span class="web_ui__Text__amplified">${escapeHtml(t('tooltipOverCapBold'))}</span> ${escapeHtml(t('tooltipOverCapAfter'))}</li>
         </ul>
     `;
 }
@@ -64,7 +66,7 @@ export function injectSavedSearchButton() {
     link.id = 'mashinted-aggregator-a';
     link.className = 'web_ui__Cell__cell web_ui__Cell__default web_ui__Cell__navigating web_ui__Cell__link u-position-relative';
     link.href = '#';
-    link.setAttribute('aria-label', `Discover what you've missed ${scanData.totalFormatted} ${scanData.breakdownText}`);
+    link.setAttribute('aria-label', t('aggregatorLabel', { total: scanData.totalFormatted, breakdown: scanData.breakdownText }));
     link.setAttribute('data-testid', 'mashinted-aggregator-button');
 
     const displayStyle = scanData.totalCount > 0 ? '' : 'mashinted-u-hidden';
@@ -79,7 +81,7 @@ export function injectSavedSearchButton() {
                                 ${LOGO_SVG_STRING}
                             </span>
                         </div>
-                        <span class="u-ellipsis u-flex-1 mashinted-title-text">Discover what you've missed</span>
+                        <span class="u-ellipsis u-flex-1 mashinted-title-text">${escapeHtml(t('aggregatorTitle'))}</span>
                     </div>
                 </div>
             </div>
@@ -90,7 +92,7 @@ export function injectSavedSearchButton() {
         <div class="web_ui__Cell__suffix" data-testid="mashinted-aggregator-suffix">
             <div class="u-position-relative u-zindex-bump">
                 <div class="u-padding-medium mashinted-suffix-wrapper">
-                    <button type="button" id="mashinted-info-btn" class="mashinted-info-btn" aria-label="Loading limitations info">?</button>
+                    <button type="button" id="mashinted-info-btn" class="mashinted-info-btn" aria-label="${escapeHtml(t('infoLoadingLabel'))}">?</button>
                 </div>
             </div>
         </div>
@@ -156,7 +158,7 @@ export function injectSavedSearchButton() {
 
         cleanupPreviousAggregation();
 
-        const progressBanner = createAggregatorProgressBanner('Initiating aggregation...');
+        const progressBanner = createAggregatorProgressBanner(t('progressInitial'));
         feedGrid.prepend(progressBanner.element);
 
         try {
@@ -166,11 +168,11 @@ export function injectSavedSearchButton() {
                 progressBanner.updateStep(statusText);
             }, progressBanner);
 
-            progressBanner.complete(`${count} listings injected successfully !`);
+            progressBanner.complete(t('progressInjected', { count }));
 
         } catch (err) {
             log.error('Aggregator error:', err);
-            progressBanner.updateStep(`❌ Error: ${err.message || 'Aggregation failed'}`);
+            progressBanner.updateStep(t('progressError', { message: err.message || t('aggregationFailed') }));
             setTimeout(() => progressBanner.remove(), 4000);
         } finally {
             link.removeAttribute('data-loading');
@@ -195,7 +197,7 @@ export function renderFetchControlsContainer(parentElement) {
     const actionBtn = document.createElement('button');
     actionBtn.id = 'mashinted-load-btn';
     actionBtn.className = 'web_ui__Button__button web_ui__Button__primary';
-    actionBtn.innerText = 'Load New Arrivals';
+    actionBtn.innerText = t('loadButton');
 
     const infoContainer = document.createElement('div');
     infoContainer.className = 'mashinted-info-tooltip-container';
@@ -204,7 +206,7 @@ export function renderFetchControlsContainer(parentElement) {
     infoIcon.type = 'button';
     infoIcon.className = 'mashinted-info-btn';
     infoIcon.innerText = '?';
-    infoIcon.setAttribute('aria-label', 'Information about loading limits');
+    infoIcon.setAttribute('aria-label', t('infoLimitsLabel'));
 
     const tooltip = document.createElement('div');
     tooltip.className = 'mashinted-controls-tooltip';

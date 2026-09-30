@@ -3,6 +3,7 @@
  * @brief Scans Vinted DOM containers for saved searches, unread counts, and bookmarked status.
  */
 
+import { t } from '../../shared/i18n.js';
 import {
     SAVED_SEARCH_BOOKMARK_SELECTOR,
     SAVED_SEARCH_COUNT_SELECTOR,
@@ -41,7 +42,7 @@ export function scanSavedSearches(containerElement) {
             items: [],
             totalCount: 0,
             totalFormatted: '',
-            breakdownText: "You're up to date"
+            breakdownText: t('upToDate')
         };
     }
 
@@ -61,7 +62,7 @@ export function scanSavedSearches(containerElement) {
 
         const titleSpan = cell.querySelector('.web_ui__Cell__title span.u-ellipsis') ||
                           cell.querySelector('.web_ui__Cell__title');
-        const searchName = titleSpan ? titleSpan.textContent.trim() : 'Search';
+        const searchName = titleSpan ? titleSpan.textContent.trim() : t('defaultSearchName');
         const searchUrl = cell.getAttribute('href') || '';
 
         bookmarkedSearches.push({
@@ -77,7 +78,7 @@ export function scanSavedSearches(containerElement) {
 
     const activeSearches = bookmarkedSearches.filter((s) => s.count > 0);
 
-    let breakdownText = "You're up to date";
+    let breakdownText = t('upToDate');
     if (activeSearches.length > 0) {
         breakdownText = activeSearches
             .map((s) => `${s.name} (+${s.count > 99 ? '99' : s.count})`)

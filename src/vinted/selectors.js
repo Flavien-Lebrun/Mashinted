@@ -98,6 +98,14 @@ export const SAVED_SEARCHES_CONTENT_SELECTORS = [
     '[data-testid="saved-searches--content"]',
 ];
 
+// --- Language selector -----------------------------------------------------
+
+/** Desktop language dropdown trigger; its label is the current language code ("FR"). */
+export const LANGUAGE_SELECTOR_BUTTON_SELECTOR = '[data-testid="language-selector-button"]';
+export const LANGUAGE_SELECTOR_LABEL_SELECTOR = '[class$="Button__label"]';
+/** Dropdown rows, `data-testid="language-option-<CODE>"`. */
+export const LANGUAGE_OPTION_SELECTOR = '[data-testid^="language-option-"]';
+
 // --- Page-level -------------------------------------------------------------
 
 export const CSRF_META_SELECTOR = 'meta[name="csrf-token"]';

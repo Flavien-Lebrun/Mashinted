@@ -385,6 +385,15 @@ function getProductId(gridItem) {
 * **Debugging note:** Vinted's stylesheets are cross-origin, so their rules cannot be listed from JS (`document.styleSheets` throws); use the DevTools Styles pane. A stale `dist/` from `npm run dev` (HMR stubs) made the fix look ineffective: always load a `make build` output.
 * **Tooling:** `make watch` now runs `scripts/watch.sh` (full `vite build` on each change via `inotifywait`, needs `inotify-tools`). `vite build --watch` fails on incremental rebuilds with `@crxjs/vite-plugin` (`[crx:manifest-post] Content script fileName is undefined`); reproduced on 2.7.1 and 3.0.0, so the dependency was left unchanged (3.0.0 also renames output assets).
 
+### 7.18 Language Detection & Translations [30-09-2026]
+
+* **Problem:** UI strings were hardcoded, mixing English and French, with no way to follow the language Vinted is displayed in.
+* **Detector:** `src/vinted/language.js` (`detectVintedLanguage`) reads the label of Vinted's language selector button (`[data-testid="language-selector-button"]`, selectors in `vinted/selectors.js`), then falls back to `<html lang>`, then to the domain (`.fr` → fr, `.com`/`.co.uk` → en), then to `navigator.language`.
+* **Translations:** `src/shared/i18n.js` (`t(key, params)`, `setLanguage`) with dictionaries in `src/shared/locales.js` (en, fr, es, nl; English is the fallback for unsupported languages and missing keys). `content/index.js` sets the language once from the coarse guess before boot and again after React hydration, when the selector exists.
+* **Wiring:** counter widget, blacklist modal, trash tooltip, aggregator (button, tooltip, progress banner, dividers, card labels), favourites sections. The sold/available detection now uses the per-language `soldKeyword` instead of a hardcoded French word.
+* **Loading chip:** `content/fast-widget-loader.js` uses the same detector (no selector yet at `document_start`, so html lang / domain / navigator). It is already loaded through crxjs's dynamic-import stub, so the import adds no meaningful delay.
+* **Tests:** `test/language.test.js` (fixture `test/fixtures/language-selector.html`), `test/i18n.test.js` (locale key parity).
+
 ---
 
 ## 8. Progress Tracker
@@ -402,6 +411,7 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Done | Vitest specs + fixtures, Prettier config, `no-console`, CI | `test/`, `.github/workflows/ci.yml` — §7.15 |
 | Done | Fix CSS animations, tunable duration tokens, reduced-motion | `src/styles/tokens.css` — §7.16 |
 | Done | Fix aggregator card layout on the homepage grid; reliable `make watch` | `src/styles/aggregator.css`, `scripts/watch.sh` — §7.17 |
+| Done | Language detection (Vinted selector) + i18n module (en/fr/es/nl) | `src/vinted/language.js`, `src/shared/i18n.js` — §7.18 |
 | Todo | Run Prettier repo-wide (dedicated whitespace-only commit) | — |
 | Todo | Update §2–§6 for the new layout | — |
 | Todo | Reduce `!important` (~35) and inline `style=""` in templates | — |
