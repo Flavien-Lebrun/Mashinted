@@ -3,6 +3,12 @@
  * @brief Scans Vinted DOM containers for saved searches, unread counts, and bookmarked status.
  */
 
+import {
+    SAVED_SEARCH_BOOKMARK_SELECTOR,
+    SAVED_SEARCH_COUNT_SELECTOR,
+    SAVED_SEARCH_LINK_SELECTOR,
+} from '../../vinted/selectors.js';
+
 /**
  * @brief Inspects a saved search link row element to verify if it is bookmarked.
  * 
@@ -12,7 +18,7 @@
 export function isSearchBookmarked(searchRowElement) {
     if (!searchRowElement || !(searchRowElement instanceof HTMLElement)) return false;
 
-    const hasBookmarkAttr = searchRowElement.querySelector('[data-testid="saved-search-bookmark"]');
+    const hasBookmarkAttr = searchRowElement.querySelector(SAVED_SEARCH_BOOKMARK_SELECTOR);
     if (hasBookmarkAttr) return true;
 
     const suffix = searchRowElement.querySelector('.web_ui__Cell__suffix');
@@ -39,7 +45,7 @@ export function scanSavedSearches(containerElement) {
         };
     }
 
-    const searchCells = containerElement.querySelectorAll('a[data-testid^="saved-search-"]');
+    const searchCells = containerElement.querySelectorAll(SAVED_SEARCH_LINK_SELECTOR);
     const bookmarkedSearches = [];
     let cumulativeCount = 0;
 
@@ -49,7 +55,7 @@ export function scanSavedSearches(containerElement) {
         if (cell.id === 'mashinted-aggregator-a') continue;
         if (!isSearchBookmarked(cell)) continue;
 
-        const countSpan = cell.querySelector('[data-testid="item-count-inline"]');
+        const countSpan = cell.querySelector(SAVED_SEARCH_COUNT_SELECTOR);
         const rawCountText = countSpan ? countSpan.textContent.trim() : '0';
         const numericCount = parseInt(rawCountText.replace(/\+/g, ''), 10) || 0;
 

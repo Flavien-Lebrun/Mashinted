@@ -1,0 +1,68 @@
+/* ==========================================================================
+   2. Blacklist Item Filtering & Animations
+   ========================================================================== */
+.mashinted-hidden-by-blacklist {
+    overflow: hidden !important;
+    max-height: var(--mashinted-item-max-height, 420px) !important;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transform-origin: center top;
+    transition: max-height 220ms ease, opacity 220ms ease, transform 220ms ease, margin 220ms ease, padding 220ms ease;
+}
+
+.mashinted-hidden-by-blacklist.mashinted-hidden-by-blacklist-active {
+    opacity: 0 !important;
+    transform: scale(0.9) !important;
+    transition: opacity 0.4s ease, transform 0.4s ease !important;
+}
+
+.mashinted-hidden-by-blacklist.mashinted-hidden-by-blacklist-final {
+    display: none !important;
+}
+
+/* --- Trash Icon Entry & Spring Animations --- */
+.mashinted-trash-btn {
+    outline: none !important;
+    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    will-change: transform, opacity;
+    animation: mashintedSpringIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+    border: 1px solid var(--v-sys-theme-greyscale-level-3, #f2f2f2);
+    border-radius: 24px;
+    margin: 8px;
+    padding: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.mashinted-trash-btn:after {
+    transform: scale(1.06) !important;
+}
+
+.mashinted-trash-btn:active {
+    transform: scale(0.92) !important;
+}
+
+.mashinted-trash-btn svg {
+    transition: stroke 0.15s ease, color 0.15s ease !important;
+    fill: none;
+}
+
+.mashinted-trash-btn:hover .web_ui__Icon__greyscale-level-2 {
+    color: rgba(var(--primary-default), 1) !important;
+}
+
+@keyframes mashintedSpringIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.4) translateY(4px);
+    }
+    70% {
+        opacity: 1;
+        transform: scale(1.08) translateY(-1px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+

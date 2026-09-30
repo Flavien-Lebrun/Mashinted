@@ -1,0 +1,31 @@
+/* ==========================================================================
+   3. Loading Spinner & Progress Banner
+   ========================================================================== */
+.mashinted-spinner-icon {
+    animation: mashinted-spin 0.85s linear infinite;
+    transform-origin: center center;
+    color: rgba(var(--primary-default), 1) !important;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.mashinted-spinner-circle {
+    stroke: currentColor;
+}
+
+.mashinted-spinner-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #007782;
+}
+
+.mashinted-progress-banner {
+    transition: all 0.2s ease;
+}
+
+@keyframes mashinted-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+

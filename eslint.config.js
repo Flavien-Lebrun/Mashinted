@@ -5,7 +5,7 @@ import globals from 'globals';
 export default [
   {
     // Completely ignore build files and configuration files from checks
-    ignores: ['dist/**', 'node_modules/**', 'vite.config.js', 'eslint.config.js'],
+    ignores: ['dist/**', 'node_modules/**', 'scratch/**', 'vite.config.js', 'eslint.config.js'],
   },
   js.configs.recommended,
   {
@@ -26,6 +26,7 @@ export default [
       'import/named': 'error',
       'import/no-unresolved': 'error',
       'no-unused-vars': 'warn',
+      'no-console': 'error', // use createLogger() from src/shared/logger.js
     },
     settings: {
       // Use standard node resolution but tell it which file extensions to care about
@@ -35,5 +36,9 @@ export default [
         },
       },
     },
+  },
+  {
+    files: ['src/shared/logger.js'],
+    rules: { 'no-console': 'off' },
   },
 ];

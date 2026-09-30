@@ -5,7 +5,7 @@
  *          and custom node tagging to prevent extension card removal.
  */
 
-import { REMOVABLE_SELECTORS } from '../../utils/constants.js';
+import { REMOVABLE_SELECTORS, FEED_LOAD_MORE_SELECTOR } from '../../vinted/selectors.js';
 
 /**
  * @brief Explicitly tags an element and all its children so guard observers do not purge them.
@@ -155,8 +155,8 @@ export async function clearGridProgressively(targetGrid, batchSize = 12) {
  * @param {HTMLElement} gridContainer - Container element or document context.
  */
 export function hideLoadMoreButton(gridContainer) {
-    const loadMoreBtn = document.querySelector('[data-testid="feed-load-more-button"]') ||
-                        gridContainer?.querySelector('[data-testid="feed-load-more-button"]');
+    const loadMoreBtn = document.querySelector(FEED_LOAD_MORE_SELECTOR) ||
+                        gridContainer?.querySelector(FEED_LOAD_MORE_SELECTOR);
 
     if (!loadMoreBtn) return;
 

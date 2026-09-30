@@ -1,0 +1,15 @@
+/* ==========================================================================
+   1. Core Variables & Global Resets
+   ========================================================================== */
+:root {
+    --mashinted-bg: #ffffff;
+    --mashinted-primary: #007784; /* Vinted Brand Teal */
+    --mashinted-primary-hover: #005f6a;
+    --mashinted-text: #111111;
+    --mashinted-muted: #7c7c7c;
+    --mashinted-border: #e6e6e6;
+    --mashinted-danger: #d93838;
+    --mashinted-radius: 8px;
+    --mashinted-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+

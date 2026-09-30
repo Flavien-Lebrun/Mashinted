@@ -1,0 +1,75 @@
+/* ==========================================================================
+   8. Main Interface Chip & Custom Checkbox Framework
+   ========================================================================== */
+.mashinted-widget-chevron-container .web_ui__Icon__icon {
+    transform: rotate(0deg);
+    transform-origin: center center;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--mashinted-muted);
+}
+
+.web_ui__Chip__activated .mashinted-widget-chevron-container .web_ui__Icon__icon {
+    transform: rotate(180deg);
+    color: var(--mashinted-primary);
+}
+
+.mashinted-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding-left: 8px;
+}
+
+.mashinted-custom-checkbox {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.mashinted-custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    margin: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.mashinted-checkbox-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--mashinted-muted);
+    border-radius: 4px;
+    background-color: transparent;
+    box-sizing: border-box;
+    z-index: 1;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.mashinted-custom-checkbox input:checked~.mashinted-checkbox-box {
+    background-color: var(--mashinted-primary) !important;
+    border-color: var(--mashinted-primary) !important;
+}
+
+.mashinted-custom-checkbox input:checked~.mashinted-checkbox-box::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+

@@ -5,9 +5,18 @@
 
 import { scanSavedSearches } from './scanner.js';
 import { processScannedSearches } from './index.js';
-import { LOGO_SVG_STRING } from '../../utils/constants.js';
+import { LOGO_SVG_STRING } from '../../vinted/templates.js';
+import { queryFirst } from '../../vinted/dom.js';
+import {
+    GRID_ITEM_SELECTOR,
+    SAVED_SEARCHES_CONTENT_SELECTORS,
+    SAVED_SEARCH_LINK_SELECTOR,
+} from '../../vinted/selectors.js';
 import { closeSavedSearchesModal, cleanupPreviousAggregation } from './modal-helpers.js';
 import { createAggregatorProgressBanner } from './grid-item-transfer.js';
+import { createLogger } from '../../shared/logger.js';
+
+const log = createLogger('aggregator');
 
 /**
  * @brief Helper to generate consistent aggregator tooltip markup.
@@ -34,16 +43,14 @@ function createAggregatorTooltipContent() {
  */
 export function injectSavedSearchButton() {
     // 1. Locate the container
-    const savedSearchesContent = document.querySelector('[class^="SavedSearchesList"]') ||
-                                 document.querySelector('[data-testid="saved-searches--content"] > div') ||
-                                 document.querySelector('[data-testid="saved-searches--content"]');
+    const savedSearchesContent = queryFirst(document, SAVED_SEARCHES_CONTENT_SELECTORS, 'saved-searches content');
 
     if (!savedSearchesContent || document.querySelector('#mashinted-aggregator-a')) {
         return;
     }
 
     // 2. Ensure Vinted has loaded saved search links inside
-    const hasItems = savedSearchesContent.querySelector('a[data-testid^="saved-search-"]');
+    const hasItems = savedSearchesContent.querySelector(SAVED_SEARCH_LINK_SELECTOR);
     if (!hasItems) {
         return;
     }
@@ -138,11 +145,11 @@ export function injectSavedSearchButton() {
         closeSavedSearchesModal();
 
         const feedGrid = document.querySelector('.feed-grid') ||
-                         document.querySelector('[data-testid="grid-item"]')?.parentElement ||
+                         document.querySelector(GRID_ITEM_SELECTOR)?.parentElement ||
                          document.querySelector('#content');
 
         if (!feedGrid) {
-            console.error('Mashinted: Feed grid target container not found.');
+            log.error('Feed grid target container not found.');
             link.removeAttribute('data-loading');
             return;
         }
@@ -162,7 +169,7 @@ export function injectSavedSearchButton() {
             progressBanner.complete(`${count} listings injected successfully !`);
 
         } catch (err) {
-            console.error('Mashinted Aggregator Error:', err);
+            log.error('Aggregator error:', err);
             progressBanner.updateStep(`❌ Error: ${err.message || 'Aggregation failed'}`);
             setTimeout(() => progressBanner.remove(), 4000);
         } finally {
@@ -242,7 +249,7 @@ export function startSavedSearchesObserver() {
     let animationFrameId = null;
 
     const checkAndInject = () => {
-        const hasSavedItems = document.querySelector('a[data-testid^="saved-search-"]');
+        const hasSavedItems = document.querySelector(SAVED_SEARCH_LINK_SELECTOR);
         const alreadyInjected = document.querySelector('#mashinted-aggregator-a');
 
         if (hasSavedItems && !alreadyInjected) {

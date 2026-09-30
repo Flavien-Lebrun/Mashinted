@@ -1,43 +1,7 @@
 /**
- * @file constants.js
- * @brief HTML templates and static selectors used across modules.
+ * @file templates.js
+ * @brief HTML templates for injected UI (logo, trash button, aggregated card).
  */
-
-// Chrome Storage Keys
-export const BLACKLIST_STORAGE_KEY = 'bannedBrands';
-export const FAVORITES_STORAGE_KEY = 'mashinted_favorites';
-
-// Default Fallbacks
-export const DEFAULT_BANNED_BRANDS = ['h&m', 'shein', 'zara'];
-export const BRAND_NAME_SELECTOR = 'p[data-testid*="description-title"]';
-export const HIDDEN_BY_BLACKLIST_ATTRIBUTE = 'data-mashinted-hidden-by-blacklist';
-export const HIDDEN_BY_BLACKLIST_CLASS = 'mashinted-hidden-by-blacklist';
-export const HIDDEN_BY_BLACKLIST_ACTIVE_CLASS = 'mashinted-hidden-by-blacklist-active';
-export const HIDDEN_BY_BLACKLIST_FINAL_CLASS = 'mashinted-hidden-by-blacklist-final';
-export const ROOT_OBSERVER_DISCONNECT_DELAY_MS = 5000;
-export const GRID_ITEM_RETRY_INTERVAL_MS = 100;
-export const GRID_ITEM_RETRY_LIMIT = 30;
-export const HIDE_TRANSITION_DURATION_MS = 220;
-
-export const HOMEPAGE_BLOCKS_SELECTOR = [
-    '.feed-grid',
-    '.catalog-grid',
-    '[data-testid="homepage-blocks"]',
-    '[data-testid="catalog-grid"]',
-    '[data-testid="grid-container"]',
-    '.homepage-blocks',
-    '.items-grid',
-    'main' // Ultimate fallback: target main content area if custom containers fail
-].join(', ');
-
-// DOM Selectors for Vinted grid elements and removable cards
-export const REMOVABLE_SELECTORS = [
-    '[data-testid="grid-item"]',
-    '[class$="__feed-grid__item"]',
-    '[class$="web_ui__ItemBox__container"]',
-    '[data-testid="homepage-block"]',
-    '[class$="__homepage-blocks__item"]'
-].join(', ');
 
 export const LOGO_SVG_STRING = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 392.75 351.31" width="16" height="16" style="flex-shrink: 0; color: rgba(var(--primary-default), 1);">
@@ -47,13 +11,15 @@ export const LOGO_SVG_STRING = `
     </svg>
 `;
 
+const TRASH_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="2 4 3.33 4 14 4"></polyline>
+                <path d="M12.67 4v9.33a1.33 1.33 0 0 1-1.33 1.33H4.67a1.33 1.33 0 0 1-1.33-1.33V4m2 0V2.67a1.33 1.33 0 0 1 1.33-1.33h2.67a1.33 1.33 0 0 1 1.33 1.33V4"></path>
+            </svg>`;
+
 export const TRASH_BUTTON_TEMPLATE = `
     <button type="button" class="u-background-white u-flexbox u-align-items-center new-item-box__favourite-icon mashinted-trash-btn" title="Blocking this brand">
         <span class="web_ui__Icon__icon" style="width: 16px; height: 16px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="2 4 3.33 4 14 4"></polyline>
-                <path d="M12.67 4v9.33a1.33 1.33 0 0 1-1.33 1.33H4.67a1.33 1.33 0 0 1-1.33-1.33V4m2 0V2.67a1.33 1.33 0 0 1 1.33-1.33h2.67a1.33 1.33 0 0 1 1.33 1.33V4"></path>
-            </svg>
+            ${TRASH_ICON_SVG}
         </span>
     </button>
 `;
@@ -85,10 +51,7 @@ export const GRID_ITEM_TEMPLATE = `
                     <div class="u-position-absolute u-left u-bottom u-zindex-bump mashinted-trash-container">
                         <button type="button" class="u-background-white u-flexbox u-align-items-center mashinted-trash-btn" title="Bloquer cette marque" data-brand="{BRAND_ESCAPED}">
                             <span class="web_ui__Icon__icon" style="width: 16px; height: 16px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="2 4 3.33 4 14 4"></polyline>
-                                    <path d="M12.67 4v9.33a1.33 1.33 0 0 1-1.33 1.33H4.67a1.33 1.33 0 0 1-1.33-1.33V4m2 0V2.67a1.33 1.33 0 0 1 1.33-1.33h2.67a1.33 1.33 0 0 1 1.33 1.33V4"></path>
-                                </svg>
+                                ${TRASH_ICON_SVG}
                             </span>
                         </button>
                     </div>

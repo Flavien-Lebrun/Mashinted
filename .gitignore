@@ -19,3 +19,12 @@ Thumbs.db
 
 # Developer snippets of code examples
 junk/
+
+# Scratch files
+diff.txt
+tmp.html
+image0.webp
+Screenshot_*.webp
+
+# Scratch area for local debugging files
+scratch/

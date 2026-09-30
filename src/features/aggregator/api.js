@@ -3,6 +3,14 @@
  * @brief Handles external catalog fetch operations and DOM HTML parsing for catalog item extraction.
  */
 
+import { createLogger } from '../../shared/logger.js';
+import {
+    CATALOG_PART,
+    CSRF_META_SELECTOR,
+} from '../../vinted/selectors.js';
+
+const log = createLogger('api');
+
 /**
  * @brief Safely fetches external catalog HTML using absolute URL resolution and CSRF headers.
  * 
@@ -12,12 +20,12 @@
 export async function fetchExternalCatalogHtml(urlPath) {
     try {
         const fullUrl = new URL(urlPath, window.location.origin).toString();
-        console.log(`[Mashinted Debug] Executing fetch to URL: ${fullUrl}`);
+        log.debug(`Executing fetch to URL: ${fullUrl}`);
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const csrfToken = document.querySelector(CSRF_META_SELECTOR)?.getAttribute('content');
 
         const headers = {
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -36,23 +44,23 @@ export async function fetchExternalCatalogHtml(urlPath) {
 
         clearTimeout(timeoutId);
 
-        console.log(`[Mashinted Debug] Fetch HTTP status: ${response.status} (${response.statusText})`);
+        log.debug(`Fetch HTTP status: ${response.status} (${response.statusText})`);
 
         if (!response.ok) {
-            console.error(`[Mashinted Debug] HTTP error ${response.status} for URL: ${fullUrl}`);
+            log.error(`HTTP error ${response.status} for URL: ${fullUrl}`);
             return null;
         }
 
         const htmlText = await response.text();
-        console.log(`[Mashinted Debug] Received response body (${htmlText.length} characters)`);
+        log.debug(`Received response body (${htmlText.length} characters)`);
 
         return htmlText;
 
     } catch (err) {
         if (err.name === 'AbortError') {
-            console.error(`[Mashinted Debug] Fetch timed out (8s limit reached) for: ${urlPath}`);
+            log.error(`Fetch timed out (8s limit reached) for: ${urlPath}`);
         } else {
-            console.error(`[Mashinted Debug] Network/fetch error for ${urlPath}:`, err);
+            log.error(`Network/fetch error for ${urlPath}:`, err);
         }
         return null;
     }
@@ -70,7 +78,7 @@ export function parseCatalogItems(htmlString, maxLimit = 15) {
     const doc = parser.parseFromString(htmlString, 'text/html');
     
     // Select grid item wrappers
-    const itemContainers = doc.querySelectorAll('[data-testid="grid-item"], .feed-grid__item, .web_ui__ItemBox__container');
+    const itemContainers = doc.querySelectorAll(CATALOG_PART.container);
 
     const items = [];
     const limit = Math.min(itemContainers.length, maxLimit);
@@ -79,27 +87,17 @@ export function parseCatalogItems(htmlString, maxLimit = 15) {
         const itemContainer = itemContainers[i];
 
         // 1. Universal Ends-With ($=) and Contains (*=) Selectors for dynamic data-testid attributes
-        const brandEl = itemContainer.querySelector(
-            '[data-testid$="--description-title"], [data-testid*="description-title"], .new-item-box__description p'
-        );
+        const brandEl = itemContainer.querySelector(CATALOG_PART.brand);
 
-        const subtitleEl = itemContainer.querySelector(
-            '[data-testid$="--description-subtitle"], [data-testid*="description-subtitle"]'
-        );
+        const subtitleEl = itemContainer.querySelector(CATALOG_PART.subtitle);
 
-        const priceEl = itemContainer.querySelector(
-            '[data-testid$="--price-text"], [data-testid*="price-text"], .title-content p, .web_ui__ItemBox__title--price'
-        );
+        const priceEl = itemContainer.querySelector(CATALOG_PART.price);
 
-        const totalPriceEl = itemContainer.querySelector(
-            '[data-testid="total-combined-price"], [data-testid*="total-combined-price"]'
-        );
+        const totalPriceEl = itemContainer.querySelector(CATALOG_PART.totalPrice);
 
-        const imgEl = itemContainer.querySelector(
-            '[data-testid$="--image--img"], [data-testid*="image--img"], img'
-        );
+        const imgEl = itemContainer.querySelector(CATALOG_PART.image);
 
-        const linkEl = itemContainer.querySelector('a[href*="/items/"]');
+        const linkEl = itemContainer.querySelector(CATALOG_PART.link);
 
         // Extract Product URL and ID
         const productUrl = linkEl ? linkEl.getAttribute('href') : '';
