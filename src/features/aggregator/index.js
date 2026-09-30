@@ -5,6 +5,7 @@
  *          DOM node injection, and mutation guard lifecycles.
  */
 
+import { t } from '../../shared/i18n.js';
 import {
     clearGridProgressively,
     startGridInterceptorGuard,
@@ -85,11 +86,11 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
     const activeSearches = calculateFetchDistribution(scannedItems, 99, 30);
 
     if (activeSearches.length === 0) {
-        if (onProgress) onProgress("You're up to date");
+        if (onProgress) onProgress(t('upToDate'));
         return 0;
     }
 
-    if (onProgress) onProgress('Clearing current feed...');
+    if (onProgress) onProgress(t('progressClearing'));
 
     // 2. Safely clear child nodes of targetGrid while preserving container shell
     await clearGridProgressively(targetGrid, 12);
@@ -105,7 +106,7 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
     try {
         for (let i = 0; i < activeSearches.length; i++) {
             const search = activeSearches[i];
-            const statusMsg = `Loading (${i + 1}/${activeSearches.length}): ${search.targetToFetch} item(s) from "${search.name}"...`;
+            const statusMsg = t('progressLoading', { index: i + 1, total: activeSearches.length, count: search.targetToFetch, name: search.name });
 
             if (onProgress) onProgress(statusMsg);
 

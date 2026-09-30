@@ -1,6 +1,8 @@
 import { createSearchDividerNode } from '../aggregator/grid-item-transfer.js';
 import { observeDom } from '../../shared/dom-observer.js';
 import { createLogger } from '../../shared/logger.js';
+import { t } from '../../shared/i18n.js';
+import { escapeHtml } from '../../shared/escape-html.js';
 import {
     FAVOURITES_GRID_SELECTOR,
     FAVOURITE_BUTTON_SELECTOR,
@@ -84,11 +86,11 @@ function isItemSold(gridItem) {
     }
     
     const textContent = gridItem.textContent?.toLowerCase() || '';
-    return textContent.includes('vendu');
+    return textContent.includes(t('soldKeyword'));
 }
 
 /**
- * Reorganizes the favorite page grid into sections safely, with 'Vendus' first followed by 'Disponibles'
+ * Reorganizes the favorite page grid into sections safely, with the sold section first followed by the available one
  */
 function organizeFavouriteGrid() {
     if (isProcessing) {
@@ -134,14 +136,14 @@ function organizeFavouriteGrid() {
     /**
      * Helper function to append a divider followed by its wrapped items cleanly
      */
-    function appendSectionBlock(title, items) {
+    function appendSectionBlock(title, items, isSoldSection = false) {
         if (items.length === 0) return;
 
         // 1. Create Divider Node
         const divider = createSearchDividerNode(title, items.length);
 
-        // If it's the 'Vendus' section, place our borderless button *before* the item count badge/info
-        if (title === 'Vendus') {
+        // On the sold section, place our borderless button *before* the item count badge/info
+        if (isSoldSection) {
             const countBadge = divider.querySelector('.mashinted-item-count-badge');
             if (countBadge) {
                 const clearBtn = document.createElement('button');
@@ -151,7 +153,7 @@ function organizeFavouriteGrid() {
                         <polyline points="3 6 5 6 21 6"></polyline>
                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
-                    Delete all sold
+                    ${escapeHtml(t('deleteAllSold'))}
                 `;
                 
                 clearBtn.addEventListener('click', (e) => {
@@ -176,7 +178,7 @@ function organizeFavouriteGrid() {
                                 
                                 // Update remaining count dynamically in the badge
                                 const remainingItems = currentSoldItems.filter(card => card.style.display !== 'none').length;
-                                countBadge.textContent = `${remainingItems} item${remainingItems > 1 ? 's' : ''}`;
+                                countBadge.textContent = t('itemCount', { count: remainingItems });
 
                                 // Hide divider and clear button if all sold items are gone
                                 if (remainingItems === 0) {
@@ -213,9 +215,9 @@ function organizeFavouriteGrid() {
         });
     }
 
-    // Switch section insertion order: 'Vendus' first, then 'Disponibles'
-    appendSectionBlock('Vendus', soldItems);
-    appendSectionBlock('Disponibles', availableItems);
+    // Switch section insertion order: sold first, then available
+    appendSectionBlock(t('sectionSold'), soldItems, true);
+    appendSectionBlock(t('sectionAvailable'), availableItems);
 
     gridContainer.setAttribute('data-mashinted-grouped', 'true');
     gridContainer.setAttribute('data-mashinted-item-count', gridItems.length.toString());

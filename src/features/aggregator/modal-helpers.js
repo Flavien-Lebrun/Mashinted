@@ -3,6 +3,7 @@
  * @brief DOM cleanup and interaction helpers for Vinted overlay modals and previous aggregation runs containing utilities for favorites, API synchronization, and progress status banners
  */
 
+import { t } from '../../shared/i18n.js';
 import { escapeHtml } from '../../shared/escape-html.js';
 import { CSRF_META_SELECTOR, FAVOURITE_COUNT_SELECTOR } from '../../vinted/selectors.js';
 import { createLogger } from '../../shared/logger.js';
@@ -161,7 +162,7 @@ export function updateButtonVisualState(buttonElement, isFavorited, newCount = 1
 
     if (isFavorited) {
         buttonElement.setAttribute("aria-pressed", "true");
-        buttonElement.setAttribute("aria-label", `Supprimer des favoris, ajouté aux favoris par ${newCount} utilisateur${newCount > 1 ? 's' : ''}`);
+        buttonElement.setAttribute("aria-label", t('removeFromFavourites', { count: newCount }));
         buttonElement.setAttribute("data-favorited", "true");
 
         if (iconSpan) {
@@ -200,14 +201,14 @@ export function updateButtonVisualState(buttonElement, isFavorited, newCount = 1
             const srSpan = document.createElement('span');
             srSpan.setAttribute("aria-live", "polite");
             srSpan.className = "u-visually-hidden";
-            srSpan.textContent = "Ajouté ! ";
+            srSpan.textContent = t('favouriteAdded');
             wrapperDiv.appendChild(srSpan);
         } else if (wrapperDiv) {
-            wrapperDiv.querySelector('span[aria-live="polite"]').textContent = "Ajouté ! ";
+            wrapperDiv.querySelector('span[aria-live="polite"]').textContent = t('favouriteAdded');
         }
     } else {
         buttonElement.setAttribute("aria-pressed", "false");
-        buttonElement.setAttribute("aria-label", "Favoris");
+        buttonElement.setAttribute("aria-label", t('favourite'));
         buttonElement.setAttribute("data-favorited", "false");
 
         if (iconSpan) {
@@ -233,9 +234,9 @@ export function updateButtonVisualState(buttonElement, isFavorited, newCount = 1
 /**
  * @brief Creates a progress status banner matching the divider visual design.
  */
-export function createAggregatorProgressBanner(initialText = 'Aggregating in progress...') {
+export function createAggregatorProgressBanner(initialText = t('progressDefault')) {
     const container = document.createElement('div');
-    container.className = 'mashinted-grid-divider mashinted-progress-banner web_ui__Card__card web_ui__Card__overflowAuto';
+    container.className = 'mashinted-grid-divider mashinted-progress-banner web_ui__Card__card';
 
     container.innerHTML = `
         <div class="mashinted-divider-left">
@@ -260,7 +261,7 @@ export function createAggregatorProgressBanner(initialText = 'Aggregating in pro
         </div>
         <div class="mashinted-divider-right">
             <span class="mashinted-badge mashinted-item-count-badge">
-                In progress
+                ${escapeHtml(t('progressBadge'))}
             </span>
         </div>
     `;
@@ -271,7 +272,7 @@ export function createAggregatorProgressBanner(initialText = 'Aggregating in pro
             const statusEl = container.querySelector('.mashinted-status-text');
             if (statusEl) statusEl.textContent = text;
         },
-        complete(message = 'Aggregation complete') {
+        complete(message = t('progressComplete')) {
             const statusEl = container.querySelector('.mashinted-status-text');
             const spinnerWrapper = container.querySelector('.mashinted-spinner-wrapper');
             const badge = container.querySelector('.mashinted-badge');
@@ -287,7 +288,7 @@ export function createAggregatorProgressBanner(initialText = 'Aggregating in pro
             }
 
             if (badge) {
-                badge.textContent = 'Complete';
+                badge.textContent = t('progressBadgeComplete');
                 badge.classList.add('mashinted-item-count-badge--complete');
             }
 

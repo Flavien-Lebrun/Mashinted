@@ -4,6 +4,7 @@
  */
 
 import { GRID_ITEM_TEMPLATE } from '../../vinted/templates.js';
+import { t } from '../../shared/i18n.js';
 import { escapeHtml } from '../../shared/escape-html.js';
 import { saveFavorite, removeFavorite, addBrand } from '../../shared/storage.js';
 import { extractBrandName, blockGridItem } from '../blacklist/grid-item.js';
@@ -51,7 +52,7 @@ export function createSearchDividerNode(searchName, itemCount, searchUrl = '') {
               target="_blank" 
               rel="noopener noreferrer" 
               class="mashinted-external-link-btn" 
-              title="Voir cette recherche sur Vinted"
+              title="${escapeHtml(t('viewSearch'))}"
               onclick="event.stopPropagation();">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -63,7 +64,7 @@ export function createSearchDividerNode(searchName, itemCount, searchUrl = '') {
 
     dividerContainer.innerHTML = `
         <div class="mashinted-divider-left">
-            <button type="button" class="mashinted-chevron-btn" aria-label="Toggle section">
+            <button type="button" class="mashinted-chevron-btn" aria-label="${escapeHtml(t('toggleSection'))}">
                 <svg class="mashinted-chevron-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
@@ -73,7 +74,7 @@ export function createSearchDividerNode(searchName, itemCount, searchUrl = '') {
         <div class="mashinted-divider-right">
             ${externalLinkHTML}
             <span class="mashinted-item-count-badge">
-                ${itemCount} item${itemCount > 1 ? 's' : ''}
+                ${escapeHtml(t('itemCount', { count: itemCount }))}
             </span>
         </div>
     `;
@@ -222,7 +223,11 @@ const basePrice = itemData.price || '—';
         .replace('{SUBTITLE_HTML}', subtitleHTML)
         .replace('{BASE_PRICE}', escapeHtml(basePrice))
         .replace('{TOTAL_PRICE}', escapeHtml(totalPrice))
-        .replace('{TOTAL_PRICE}', escapeHtml(totalPrice));
+        .replace('{TOTAL_PRICE}', escapeHtml(totalPrice))
+        .replace(/{TRASH_TITLE}/g, escapeHtml(t('trashTitle')))
+        .replace('{FAVOURITE_LABEL}', escapeHtml(t('addToFavourites')))
+        .replace('{PROTECTION_LABEL}', escapeHtml(t('priceIncludesProtection', { price: totalPrice })))
+        .replace('{INCL_LABEL}', escapeHtml(t('priceIncl')));
     
     // Attach click listener to the favorite button
     const favBtn = card.querySelector('.mashinted__fav-icon');

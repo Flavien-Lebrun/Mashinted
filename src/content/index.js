@@ -3,6 +3,8 @@ import '../styles/index.css';
 import { ensureBrandBlacklistStorageReady } from '../shared/storage.js';
 import { setupCounterWidgetSubscription } from '../features/blacklist/counter-widget.js';
 import { createLogger } from '../shared/logger.js';
+import { setLanguage } from '../shared/i18n.js';
+import { detectVintedLanguage } from '../vinted/language.js';
 import { waitForReactHydration } from './hydration.js';
 import { startRoute } from './router.js';
 
@@ -15,10 +17,14 @@ async function boot() {
         log.error('Failed to initialize blacklist storage.', error);
     }
 
+    // Coarse guess first (html lang / domain); refined once React has rendered the language selector.
+    setLanguage(detectVintedLanguage());
+
     setupCounterWidgetSubscription();
 
     // Touching the DOM before React hydrates can cause hydration mismatches.
     await waitForReactHydration();
+    setLanguage(detectVintedLanguage());
 
     log.debug(`Starting route: ${startRoute()}`);
 }

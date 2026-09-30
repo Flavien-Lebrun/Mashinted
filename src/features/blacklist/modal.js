@@ -1,3 +1,6 @@
+import { t } from '../../shared/i18n.js';
+import { escapeHtml } from '../../shared/escape-html.js';
+
 export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onClose, statsSnapshot = new Map() }) {
     if (document.getElementById('vinted-filter-modal-root')) return null;
 
@@ -23,13 +26,13 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
                         </svg>
                     </span>
                 </div>
-                <input type="text" class="web_ui__InputBar__value mashinted-filter-search-input" placeholder="Search or block a brand..." autocomplete="off" />
+                <input type="text" class="web_ui__InputBar__value mashinted-filter-search-input" placeholder="${escapeHtml(t('modalSearchPlaceholder'))}" autocomplete="off" />
             </div>
         </div>
-        <button class="mashinted-close-btn" aria-label="Close UI">Close</button>
+        <button class="mashinted-close-btn" aria-label="${escapeHtml(t('modalCloseLabel'))}">${escapeHtml(t('modalClose'))}</button>
       </div>
       <div class="mashinted-modal-body">
-        <div class="mashinted-list-title">Brands Blocked</div>
+        <div class="mashinted-list-title">${escapeHtml(t('modalBrandsBlocked'))}</div>
         <ul class="mashinted-brands-list pile"></ul>
       </div>
     </div>
@@ -65,7 +68,7 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
         );
 
         if (filteredBrands.length === 0 && !query) {
-            listContainer.innerHTML = '<div class="mashinted-empty-state">No blacklisted brands yet.</div>';
+            listContainer.innerHTML = `<div class="mashinted-empty-state">${escapeHtml(t('modalEmpty'))}</div>`;
         } else {
             filteredBrands.forEach((brand) => {
                 const normalizedName = brand.trim().toLowerCase();
@@ -117,10 +120,10 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
                 <div class="mashinted-row-container mashinted-quick-add-row">
                   <div class="mashinted-row-left-content">
                     <div class="mashinted-quick-add-meta">
-                      <span class="mashinted-brand-plain-name">Block "${currentSearchQuery.trim()}"</span>
+                      <span class="mashinted-brand-plain-name">${escapeHtml(t('modalBlockBrand', { name: currentSearchQuery.trim() }))}</span>
                     </div>
                   </div>
-                  <button class="mashinted-inline-add-btn" aria-label="Add to blacklist">+</button>
+                  <button class="mashinted-inline-add-btn" aria-label="${escapeHtml(t('modalAddLabel'))}">+</button>
                 </div>
             `;
 

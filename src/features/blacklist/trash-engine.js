@@ -1,5 +1,7 @@
 import { getProductId, blockGridItem, extractBrandName } from './grid-item.js';
 import { TRASH_BUTTON_TEMPLATE } from '../../vinted/templates.js';
+import { t } from '../../shared/i18n.js';
+import { escapeHtml } from '../../shared/escape-html.js';
 import { isGridItemBlocked } from './state.js';
 import { observeDom } from '../../shared/dom-observer.js';
 import { addBrand } from '../../shared/storage.js';
@@ -36,7 +38,7 @@ function verifyAndInjectTrashButtons() {
         const container = document.createElement('div');
         container.className = 'u-position-absolute u-left u-bottom u-zindex-bump mashinted-trash-container';
 
-        container.innerHTML = TRASH_BUTTON_TEMPLATE;
+        container.innerHTML = TRASH_BUTTON_TEMPLATE.replace('{TRASH_TITLE}', escapeHtml(t('trashTitle')));
 
         container.querySelector('button').addEventListener('click', async (event) => {
             event.preventDefault();
