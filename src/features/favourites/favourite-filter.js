@@ -1,4 +1,14 @@
 import { createSearchDividerNode } from '../aggregator/grid-item-transfer.js';
+import { observeDom } from '../../shared/dom-observer.js';
+import { createLogger } from '../../shared/logger.js';
+import {
+    FAVOURITES_GRID_SELECTOR,
+    FAVOURITE_BUTTON_SELECTOR,
+    GRID_ITEM_SELECTOR,
+    ITEM_STATUS_SELECTOR,
+} from '../../vinted/selectors.js';
+
+const log = createLogger('favourites');
 
 let isProcessing = false;
 
@@ -68,7 +78,7 @@ function injectGridStyles() {
  * Checks if a grid item is marked as sold
  */
 function isItemSold(gridItem) {
-    const statusElement = gridItem.querySelector('[data-testid$="--status"]');
+    const statusElement = gridItem.querySelector(ITEM_STATUS_SELECTOR);
     if (statusElement) {
         return true;
     }
@@ -85,12 +95,12 @@ function organizeFavouriteGrid() {
         return false;
     }
 
-    const gridContainer = document.querySelector('div[class*="__feed-grid"], div[class*="__feed-grid--compact"]'); 
+    const gridContainer = document.querySelector(FAVOURITES_GRID_SELECTOR); 
     if (!gridContainer) {
         return false; 
     }
 
-    const gridItems = Array.from(gridContainer.querySelectorAll(':scope > [data-testid="grid-item"]'));
+    const gridItems = Array.from(gridContainer.querySelectorAll(`:scope > ${GRID_ITEM_SELECTOR}`));
     if (gridItems.length === 0) {
         return false;
     }
@@ -103,7 +113,7 @@ function organizeFavouriteGrid() {
 
     isProcessing = true;
     injectGridStyles();
-    console.log(`[Mashinted:Filter] Organizing/Updating batch of ${gridItems.length} favorite items into sections...`);
+    log.debug(`Organizing/Updating batch of ${gridItems.length} favorite items into sections...`);
 
     const oldDividers = gridContainer.querySelectorAll('.mashinted-grid-divider');
     oldDividers.forEach(div => div.remove());
@@ -148,12 +158,12 @@ function organizeFavouriteGrid() {
                     e.stopPropagation();
                     
                     const sectionId = divider.getAttribute('data-section-id');
-                    const currentSoldItems = Array.from(gridContainer.querySelectorAll(`[data-section-id="${sectionId}"][data-testid="grid-item"]`));
+                    const currentSoldItems = Array.from(gridContainer.querySelectorAll(`[data-section-id="${sectionId}"]${GRID_ITEM_SELECTOR}`));
                     
                     currentSoldItems.forEach((soldCard, index) => {
                         window.setTimeout(() => {
                             // 1. Trigger the native Vinted favorite toggle button click to un-favorite the item
-                            const favBtn = soldCard.querySelector('button[data-testid$="--favourite"]');
+                            const favBtn = soldCard.querySelector(`button${FAVOURITE_BUTTON_SELECTOR}`);
                             if (favBtn) {
                                 favBtn.click();
                             }
@@ -210,29 +220,16 @@ function organizeFavouriteGrid() {
     gridContainer.setAttribute('data-mashinted-grouped', 'true');
     gridContainer.setAttribute('data-mashinted-item-count', gridItems.length.toString());
     isProcessing = false;
-    console.log('[Mashinted:Filter] Grid batch layout successfully reorganized.');
+    log.debug('Grid batch layout successfully reorganized.');
     return true;
 }
 
 /**
- * Starts the continuous monitoring loop and mutation observer to handle batched lazy-loading gracefully
+ * Starts the mutation observer that regroups the grid as lazy-loaded batches arrive
  */
 export function startFavouriteListFilter() {
-    console.log('[Mashinted] Initializing Favourite List Grouping Module...');
+    log.debug('Initializing Favourite List Grouping Module...');
 
-    window.setInterval(() => {
-        organizeFavouriteGrid();
-    }, 400);
-
-    const observer = new MutationObserver(() => {
-        const gridContainer = document.querySelector('div[class*="feed-grid"]');
-        if (gridContainer) {
-            organizeFavouriteGrid();
-        }
-    });
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-    });
+    // organizeFavouriteGrid() is idempotent and bails out when the grid is missing.
+    observeDom(organizeFavouriteGrid);
 }

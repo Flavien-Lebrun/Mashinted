@@ -2,47 +2,38 @@
   "manifest_version": 3,
   "name": "Mashinted",
   "version": "1.0",
-  "permissions": ["storage", "activeTab", "cookies", "scripting"],
+  "permissions": ["storage"],
   "background": {
     "service_worker": "src/background/index.js",
     "type": "module"
   },
   "host_permissions": [
     "https://www.vinted.fr/*",
-    "https://*.vinted.fr/*", 
     "https://www.vinted.com/*"
   ],
-    "content_scripts": [
+  "content_scripts": [
     {
       "matches": ["https://www.vinted.fr/*", "https://www.vinted.com/*"],
-      "js": ["src/fast-widget-loader.js"],
-      "css": ["assets/index.css"],
+      "js": ["src/content/fast-widget-loader.js"],
       "run_at": "document_start"
     },
     {
       "matches": ["https://www.vinted.fr/*", "https://www.vinted.com/*"],
       "js": ["src/content/index.js"],
-      "css": ["assets/index.css"],
       "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": [
-        "checker.js",
-        "public/checker.js"
-      ],
-      "matches": [
-        "https://www.vinted.fr/*", 
-        "https://www.vinted.com/*"
-      ]
+      "resources": ["checker.js"],
+      "matches": ["https://www.vinted.fr/*", "https://www.vinted.com/*"]
     }
   ],
   "action": {
     "default_icon": {
       "16": "icon-16.png",
       "48": "icon-48.png"
-    }  
+    }
   },
   "icons": {
     "16": "icon-16.png",

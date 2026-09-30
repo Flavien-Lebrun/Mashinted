@@ -1,93 +1,26 @@
-import './styles.css';
+import '../styles/index.css';
 
-import { initializeTrashEngine } from './trash-engine.js';
-import { startSavedSearchesObserver } from './aggregator/modal-injector.js';
-import { ensureBrandBlacklistStorageReady } from '../utils/storage.js';
-import { startPageTransitionObserver, startObserver } from './observers.js';
-import { startFavouriteListFilter } from './favourites/favourite-filter.js';
+import { ensureBrandBlacklistStorageReady } from '../shared/storage.js';
+import { setupCounterWidgetSubscription } from '../features/blacklist/counter-widget.js';
+import { createLogger } from '../shared/logger.js';
+import { waitForReactHydration } from './hydration.js';
+import { startRoute } from './router.js';
 
-import {
-    setupCounterWidgetSubscription,
-    ensureCounterWidgetMounted
-} from './counter-widget.js';
+const log = createLogger('content');
 
-console.log('[Mashinted] Content script loaded.');
-
-let isReactHydrated = false;
-let isStorageReady = false;
-
-// Helper to check if current URL is the specific target page
-function isFavouriteListPage() {
-    return window.location.pathname.includes('/member/items/favourite_list');
-}
-
-function tryInitializeApp() {
-    if (isReactHydrated && isStorageReady) {
-        
-        // --- ROUTING LOGIC: Check URL before running standard mashup ---
-        if (isFavouriteListPage()) {
-            console.log('[Mashinted] On favourite list page: Suspending standard actions and running alternative module.');
-            ensureCounterWidgetMounted();
-            startFavouriteListFilter();
-            return; // Exit so standard observers don't fire
-        }
-
-        console.log('[Mashinted] Hydration + Storage ready! Upgrading widget & starting observers.');
-
-        // Upgrades the loading chip created by fast-widget-loader.js to the real interactive widget
-        ensureCounterWidgetMounted();
-
-        startObserver();
-        startPageTransitionObserver();
-        initializeTrashEngine();
+async function boot() {
+    try {
+        await ensureBrandBlacklistStorageReady();
+    } catch (error) {
+        log.error('Failed to initialize blacklist storage.', error);
     }
+
+    setupCounterWidgetSubscription();
+
+    // Touching the DOM before React hydrates can cause hydration mismatches.
+    await waitForReactHydration();
+
+    log.debug(`Starting route: ${startRoute()}`);
 }
 
-function checkHydrationInMainWorld() {
-    const script = document.createElement('script');
-    script.src = chrome.runtime.getURL('checker.js');
-    (document.head || document.documentElement).appendChild(script);
-    script.onload = () => script.remove();
-}
-
-// Listen for signal from public/checker.js
-window.addEventListener('message', (event) => {
-    if (event.source !== window) return;
-
-    if (event.data?.type === 'MASHINTED_REACT_HYDRATED') {
-        if (isReactHydrated) return;
-        console.log('[Mashinted] React hydration confirmed!');
-        isReactHydrated = true;
-        tryInitializeApp();
-    }
-});
-
-// Kick off initialization
-ensureBrandBlacklistStorageReady()
-    .catch((error) => {
-        console.error('[Mashinted] Failed to initialize blacklist storage.', error);
-    })
-    .finally(() => {
-        setupCounterWidgetSubscription();
-        isStorageReady = true;
-        checkHydrationInMainWorld();
-        tryInitializeApp();
-    });
-
-async function init() {
-  await ensureBrandBlacklistStorageReady();
-
-  // Guard `init()` as well to match the same logic if called separately
-  if (isFavouriteListPage()) {
-      return;
-  }
-
-  // Main grid item observers
-  startObserver();
-  startPageTransitionObserver();
-
-  // Search popover listener
-  startSavedSearchesObserver();
-}
-
-init();
+boot();

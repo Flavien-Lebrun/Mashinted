@@ -1,0 +1,260 @@
+/* ==========================================================================
+   5. Modal Structural Components
+   ========================================================================== */
+.mashinted-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+}
+
+.mashinted-modal-overlay.active {
+    opacity: 1;
+}
+
+.mashinted-modal-window {
+    background: var(--mashinted-bg);
+    width: 35%;
+    max-height: 80vh;
+    border-radius: var(--mashinted-radius);
+    box-shadow: var(--mashinted-shadow);
+    display: flex;
+    flex-direction: column;
+    transform: translateY(15px);
+    transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.25, 1);
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.mashinted-modal-overlay.active .mashinted-modal-window {
+    transform: translateY(0);
+}
+
+.mashinted-modal-header {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mashinted-modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--mashinted-text);
+}
+
+.mashinted-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--mashinted-text);
+    line-height: 1;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease;
+}
+
+.mashinted-close-btn:hover {
+    color: var(--mashinted-text);
+}
+
+.mashinted-modal-body {
+    padding: 0 15px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.mashinted-list-title {
+    border-bottom: 2px solid rgba(var(--background-action-primary-prominent-idle), 1);
+    display: flex;
+    align-items: center;
+    padding-bottom: 10px;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   6. Unified Search Bar Input
+   ========================================================================== */
+.mashinted-search-bar-container {
+    width: 100%;
+}
+
+.mashinted-search-bar-container .web_ui__InputBar__input-bar {
+    border-radius: 6px;
+    min-height: 36px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.mashinted-search-bar-container .web_ui__InputBar__input-bar:focus-within {
+    background-color: #ffffff;
+    border-color: var(--mashinted-primary);
+}
+
+.mashinted-search-bar-container .web_ui__InputBar__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--mashinted-muted);
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.mashinted-search-bar-container .web_ui__InputBar__value {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    height: 100%;
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--mashinted-text);
+    padding: 8px 0;
+}
+
+/* ==========================================================================
+   7. Custom Row & Quick Add Layouts
+   ========================================================================== */
+ul.pile {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    overflow-y: auto;
+}
+
+li.pile__element {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+}
+
+li.pile__element:not(:last-child) {
+    border-bottom: 1px solid var(--mashinted-border);
+    margin-top: 1px !important;
+}
+
+.mashinted-row-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.mashinted-row-left-content {
+    display: flex;
+    align-items: center;
+    font-size: 1.5rem;
+    gap: 5px;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.mashinted-brand-minimal-counter {
+    color: var(--mashinted-primary);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.mashinted-brand-plain-name {
+    color: var(--mashinted-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mashinted-delete-btn {
+    background: none;
+    border: none;
+    color: var(--mashinted-muted);
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.mashinted-delete-btn:hover {
+    background-color: rgba(217, 56, 56, 0.08);
+    color: var(--mashinted-danger);
+}
+
+.mashinted-empty-state {
+    text-align: center;
+    color: var(--mashinted-muted);
+    padding: 24px 0;
+    font-size: 0.95rem;
+    font-style: italic;
+}
+
+.mashinted-quick-add-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.mashinted-quick-add-row-wrapper {
+    background-color: rgba(0, 119, 130, 0.03);
+}
+
+.mashinted-quick-add-row {
+    border-radius: 4px;
+    margin: 4px 0 !important;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.mashinted-quick-add-row-wrapper:hover {
+    background-color: rgba(0, 119, 130, 0.07);
+}
+
+.mashinted-quick-add-label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--mashinted-muted);
+    margin-bottom: 2px;
+}
+
+.mashinted-inline-add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    background-color: transparent;
+    color: var(--mashinted-primary, currentColor);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.mashinted-inline-add-btn:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+}
+

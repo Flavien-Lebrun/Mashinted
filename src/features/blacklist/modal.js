@@ -9,11 +9,11 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
 
     const overlay = document.createElement('div');
     overlay.id = 'vinted-filter-modal-root';
-    overlay.className = 'vinted-ext-modal-overlay';
+    overlay.className = 'mashinted-modal-overlay';
 
     overlay.innerHTML = `
-    <div class="vinted-ext-modal-window">
-      <div class="vinted-ext-modal-header">
+    <div class="mashinted-modal-window">
+      <div class="mashinted-modal-header">
         <div class="mashinted-search-bar-container">
             <div class="web_ui__InputBar__input-bar">
                 <div class="web_ui__InputBar__icon">
@@ -26,18 +26,18 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
                 <input type="text" class="web_ui__InputBar__value mashinted-filter-search-input" placeholder="Search or block a brand..." autocomplete="off" />
             </div>
         </div>
-        <button class="vinted-ext-close-btn" aria-label="Close UI">Close</button>
+        <button class="mashinted-close-btn" aria-label="Close UI">Close</button>
       </div>
-      <div class="vinted-ext-modal-body">
-        <div class="vinted-ext-list-title">Brands Blocked</div>
-        <ul class="vinted-ext-brands-list pile"></ul>
+      <div class="mashinted-modal-body">
+        <div class="mashinted-list-title">Brands Blocked</div>
+        <ul class="mashinted-brands-list pile"></ul>
       </div>
     </div>
   `;
 
-    const closeBtn = overlay.querySelector('.vinted-ext-close-btn');
+    const closeBtn = overlay.querySelector('.mashinted-close-btn');
     const searchInput = overlay.querySelector('.mashinted-filter-search-input');
-    const listContainer = overlay.querySelector('.vinted-ext-brands-list');
+    const listContainer = overlay.querySelector('.mashinted-brands-list');
 
     let currentSearchQuery = '';
 
@@ -65,7 +65,7 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
         );
 
         if (filteredBrands.length === 0 && !query) {
-            listContainer.innerHTML = '<div class="vinted-ext-empty-state">No blacklisted brands yet.</div>';
+            listContainer.innerHTML = '<div class="mashinted-empty-state">No blacklisted brands yet.</div>';
         } else {
             filteredBrands.forEach((brand) => {
                 const normalizedName = brand.trim().toLowerCase();

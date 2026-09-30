@@ -1,26 +1,26 @@
+import { createLogger } from '../../shared/logger.js';
+
+const log = createLogger('state');
+
 // Tracks which DOM elements are currently being watched
 const observedGridItems = new WeakSet();
 
-// Tracks items that have an active trash icon injected
-const activeTrashElements = new WeakSet();
+// Product ids blocked by the user or the blacklist (survive React re-renders)
+const blockedProductIds = new Set();
 
-// Tracks items that are scheduled for a deferred injection lock
-const scheduledInjections = new WeakSet();
+// Blocked cards that have no extractable product id (weak: never leaks detached nodes)
+const blockedGridElements = new WeakSet();
 
-// Tracks items explicitly blocked/hidden by the user or blacklist
-const blockedGridItems = new Set();
+/**
+ * @brief True when the card was blocked, by product id or by element identity.
+ */
+function isGridItemBlocked(gridItem, productId) {
+    return Boolean(productId && blockedProductIds.has(productId)) || blockedGridElements.has(gridItem);
+}
 
 // Tracks active retry timers to prevent memory leaks
 const gridItemRetryTimers = new WeakMap();
 const hideFinalizationTimers = new WeakMap();
-
-// Sync stored manual item blocks into memory on boot
-function initBlockedItemsFromStorage(storedIds) {
-    blockedGridItems.clear();
-    if (Array.isArray(storedIds)) {
-        storedIds.forEach(id => blockedGridItems.add(id));
-    }
-}
 
 let currentPageBlockedCount = 0;
 let onCountChangeCallback = null;
@@ -89,19 +89,18 @@ function notifyBrandStatsListeners() {
         try {
             listener(currentSnapshot);
         } catch (err) {
-            console.error('[Mashinted] Error updating brand stat listener:', err);
+            log.error('Error updating brand stat listener:', err);
         }
     }
 }
 
 export {
     observedGridItems,
-    activeTrashElements,
-    scheduledInjections,
-    blockedGridItems,
+    blockedProductIds,
+    blockedGridElements,
+    isGridItemBlocked,
     gridItemRetryTimers,
     hideFinalizationTimers,
-    initBlockedItemsFromStorage,
     incrementPageBlockedCount,
     resetPageBlockedCount,
     subscribeToCountChanges,

@@ -1,7 +1,5 @@
-import {
-    HOMEPAGE_BLOCKS_SELECTOR,
-    ROOT_OBSERVER_DISCONNECT_DELAY_MS,
-} from '../utils/constants.js';
+import { ROOT_OBSERVER_DISCONNECT_DELAY_MS } from '../../shared/constants.js';
+import { HOMEPAGE_BLOCKS_SELECTOR } from '../../vinted/selectors.js';
 
 import {
     watchGridItemsWithin,
@@ -11,6 +9,9 @@ import {
 
 import { resetPageBlockedCount } from './state.js';
 import { ensureCounterWidgetMounted } from './counter-widget.js';
+import { createLogger } from '../../shared/logger.js';
+
+const log = createLogger('observers');
 
 let lastObservedUrl = window.location.href;
 
@@ -21,7 +22,7 @@ function startPageTransitionObserver() {
     const routeObserver = new MutationObserver(() => {
         if (window.location.href !== lastObservedUrl) {
             lastObservedUrl = window.location.href;
-            console.log('[Mashinted] Page transition detected, resetting counter.');
+            log.debug('Page transition detected, resetting counter.');
             resetPageBlockedCount();
             ensureCounterWidgetMounted();
             return;
@@ -72,7 +73,7 @@ function startObserver() {
     let homepageBlocksObserverAttached = false;
     let rootObserver = null;
 
-    console.log('[Mashinted] Starting root observer.');
+    log.debug('Starting root observer.');
 
     const attachObserver = () => {
         const homepageBlocks = document.querySelector(HOMEPAGE_BLOCKS_SELECTOR);
@@ -82,12 +83,12 @@ function startObserver() {
         }
 
         if (!homepageBlocks) {
-            console.log('[Mashinted] Homepage blocks not found yet.');
+            log.debug('Homepage blocks not found yet.');
             homepageBlocksObserverAttached = false; // Reset if it was destroyed
             return false;
         }
 
-        console.log('[Mashinted] Homepage blocks detected. Attaching observer.');
+        log.debug('Homepage blocks detected. Attaching observer.');
 
         observeHomepageBlocks(homepageBlocks);
         homepageBlocksObserverAttached = true;
@@ -96,11 +97,11 @@ function startObserver() {
             clearTimeout(rootObserverDisconnectTimer);
         }
 
-        console.log('[Mashinted] Scheduling root observer disconnection.');
+        log.debug('Scheduling root observer disconnection.');
 
         rootObserverDisconnectTimer = window.setTimeout(() => {
             if (rootObserver) {
-                console.log('[Mashinted] Disconnecting root observer.');
+                log.debug('Disconnecting root observer.');
                 rootObserver.disconnect();
                 rootObserver = null;
             }

@@ -1,5 +1,4 @@
 import {
-    BRAND_NAME_SELECTOR,
     GRID_ITEM_RETRY_INTERVAL_MS,
     GRID_ITEM_RETRY_LIMIT,
     HIDDEN_BY_BLACKLIST_ACTIVE_CLASS,
@@ -7,18 +6,30 @@ import {
     HIDDEN_BY_BLACKLIST_CLASS,
     HIDDEN_BY_BLACKLIST_FINAL_CLASS,
     HIDE_TRANSITION_DURATION_MS,
-} from '../utils/constants.js';
+} from '../../shared/constants.js';
+import {
+    BRAND_NAME_SELECTOR,
+    CARD_INNER_CONTAINER_SELECTOR,
+    FAVOURITE_BUTTON_OR_SIMILAR_SELECTOR,
+    GRID_ITEM_SELECTOR,
+    ITEM_LINK_SELECTOR,
+} from '../../vinted/selectors.js';
+import { createLogger } from '../../shared/logger.js';
+
+const log = createLogger('grid-item');
 
 import {
     observedGridItems,
-    blockedGridItems,
+    blockedProductIds,
+    blockedGridElements,
+    isGridItemBlocked,
     gridItemRetryTimers,
     hideFinalizationTimers,
     incrementPageBlockedCount,
     incrementBrandSessionStat,
 } from './state.js';
 
-import { isBlacklistedBrand } from '../utils/storage.js';
+import { isBlacklistedBrand } from '../../shared/storage.js';
 
 function extractBrandName(gridItem) {
     const brandNames = gridItem.matches?.(BRAND_NAME_SELECTOR)
@@ -36,24 +47,26 @@ function extractBrandName(gridItem) {
 
 function getProductId(gridItem) {
     // Strategy 1: Find the product anchor link and extract the ID from the href
-    const itemLink = gridItem.querySelector('a[href^="/items/"]');
+    const itemLink = gridItem.querySelector(ITEM_LINK_SELECTOR);
     if (itemLink) {
         const href = itemLink.getAttribute('href'); // e.g., "/items/9373017791-vintage-jacket"
         const match = href.match(/\/items\/(\d+)/);
         if (match) return match[1];
     }
 
-    // Strategy 2: Check testid on the product container layout
-    const innerContainer = gridItem.querySelector('[data-testid^="product-item-id-"]');
+    // Strategy 2: Check testid on the container layout for product items, other user items, or similar items
+    const innerContainer = gridItem.querySelector(CARD_INNER_CONTAINER_SELECTOR);
     if (innerContainer) {
-        const match = innerContainer.getAttribute('data-testid')?.match(/product-item-id-(\d+)/);
+        const testId = innerContainer.getAttribute('data-testid');
+        const match = testId?.match(/(?:product-item-id-|other_user_items-|similar_items-)(\d+)/);
         if (match) return match[1];
     }
 
-    // Strategy 3: Check favorite button test ID fallback
-    const favBtn = gridItem.querySelector('[data-testid$="--favourite"]');
+    // Strategy 3: Check button/suffix test ID fallback
+    const favBtn = gridItem.querySelector(FAVOURITE_BUTTON_OR_SIMILAR_SELECTOR);
     if (favBtn) {
-        const match = favBtn.getAttribute('data-testid')?.match(/product-item-id-(\d+)/);
+        const testId = favBtn.getAttribute('data-testid');
+        const match = testId?.match(/(?:product-item-id-|other_user_items-|similar_items-)(\d+)/);
         if (match) return match[1];
     }
 
@@ -131,16 +144,16 @@ function blockGridItem(gridItem, brandName, isManual = false) {
     let isNewBlock = false;
 
     if (productId) {
-        const wasAlreadyBlocked = blockedGridItems.has(productId);
+        const wasAlreadyBlocked = blockedProductIds.has(productId);
         if (!wasAlreadyBlocked) {
-            blockedGridItems.add(productId);
+            blockedProductIds.add(productId);
             isNewBlock = true;
             stopRetryingGridItem(gridItem);
-            console.log('[Mashinted] Grid item blocked (ID:', productId, ') due to:', brandName);
+            log.debug('Grid item blocked (ID:', productId, ') due to:', brandName);
         }
     } else {
-        if (!blockedGridItems.has(gridItem)) {
-            blockedGridItems.add(gridItem);
+        if (!blockedGridElements.has(gridItem)) {
+            blockedGridElements.add(gridItem);
             isNewBlock = true;
         }
     }
@@ -191,7 +204,7 @@ function logBrandNameWithin(gridItem) {
 }
 
 function retryLogBrandNameWithin(gridItem, attempt = 0) {
-    if (!gridItem.isConnected || blockedGridItems.has(gridItem)) {
+    if (!gridItem.isConnected || blockedGridElements.has(gridItem)) {
         stopRetryingGridItem(gridItem);
         return;
     }
@@ -235,8 +248,7 @@ function watchGridItemForBrandName(gridItem) {
 
         // Keep listing hidden if its product ID or DOM object is in our blacklist
         if (
-            (productId && blockedGridItems.has(productId)) ||
-            blockedGridItems.has(gridItem) ||
+            isGridItemBlocked(gridItem, productId) ||
             gridItem.getAttribute(HIDDEN_BY_BLACKLIST_ATTRIBUTE) === 'true'
         ) {
             if (!gridItem.classList.contains(HIDDEN_BY_BLACKLIST_ACTIVE_CLASS)
@@ -257,9 +269,9 @@ function watchGridItemForBrandName(gridItem) {
 }
 
 function watchGridItemsWithin(root) {
-    const gridItems = root.matches?.('[data-testid="grid-item"]')
+    const gridItems = root.matches?.(GRID_ITEM_SELECTOR)
         ? [root]
-        : root.querySelectorAll?.('[data-testid="grid-item"]') ?? [];
+        : root.querySelectorAll?.(GRID_ITEM_SELECTOR) ?? [];
 
     for (const gridItem of gridItems) {
         watchGridItemForBrandName(gridItem);

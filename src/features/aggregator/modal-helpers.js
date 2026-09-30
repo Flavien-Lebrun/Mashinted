@@ -3,6 +3,12 @@
  * @brief DOM cleanup and interaction helpers for Vinted overlay modals and previous aggregation runs containing utilities for favorites, API synchronization, and progress status banners
  */
 
+import { escapeHtml } from '../../shared/escape-html.js';
+import { CSRF_META_SELECTOR, FAVOURITE_COUNT_SELECTOR } from '../../vinted/selectors.js';
+import { createLogger } from '../../shared/logger.js';
+
+const log = createLogger('aggregator');
+
 /**
  * @brief Programmatically closes the active Vinted search overlay dropdown modal and clears input focus.
  */
@@ -64,21 +70,6 @@ export function cleanupPreviousAggregation() {
 }
 
 /**
- * @brief Escapes HTML characters for safety in DOM templates.
- * @param {string} str - String to escape.
- * @returns {string} Sanitized web-safe string.
- */
-export function escapeHtml(str) {
-    if (!str) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-/**
  * @brief Toggles a Vinted item's favorite state using the dynamic CSRF token and full cookie session.
  * 
  * @param {string|number} itemId - Vinted Item ID
@@ -88,7 +79,7 @@ export function escapeHtml(str) {
 export async function toggleVintedNativeFavorite(itemId, buttonElement = null) {
     const numericId = parseInt(itemId, 10);
     if (isNaN(numericId)) {
-        console.error('[Mashinted] Invalid Item ID:', itemId);
+        log.error('Invalid Item ID:', itemId);
         return false;
     }
 
@@ -97,7 +88,7 @@ export async function toggleVintedNativeFavorite(itemId, buttonElement = null) {
 
     // Dynamically look for Vinted's CSRF token embedded in inline scripts or globals
     let csrfToken = "";
-    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfMeta = document.querySelector(CSRF_META_SELECTOR);
     if (csrfMeta) {
         csrfToken = csrfMeta.content;
     } else {
@@ -112,9 +103,9 @@ export async function toggleVintedNativeFavorite(itemId, buttonElement = null) {
         }
     }
 
-    // Ultimate fallback if parsing fails (though finding it dynamically is best)
     if (!csrfToken) {
-        csrfToken = "75f6c9fa-dc8e-4e52-a000-e09dd4084b3e"; 
+        log.error('CSRF token not found; cannot toggle favourite.');
+        return false;
     }
 
     try {
@@ -142,7 +133,7 @@ export async function toggleVintedNativeFavorite(itemId, buttonElement = null) {
         }
 
         const data = await response.json();
-        console.log('[Mashinted] Favorite toggled successfully:', data);
+        log.debug('Favorite toggled successfully:', data);
 
         if (buttonElement) {
             updateButtonVisualState(buttonElement, true, 1);
@@ -150,7 +141,7 @@ export async function toggleVintedNativeFavorite(itemId, buttonElement = null) {
 
         return true;
     } catch (err) {
-        console.error('[Mashinted] Favorite request failed:', err);
+        log.error('Favorite request failed:', err);
         return false;
     }
 }
@@ -184,7 +175,7 @@ export function updateButtonVisualState(buttonElement, isFavorited, newCount = 1
             svgPath.setAttribute("fill", "currentColor");
         }
 
-        if (!buttonElement.querySelector('[data-testid="favourite-count-text"]')) {
+        if (!buttonElement.querySelector(FAVOURITE_COUNT_SELECTOR)) {
             const spacer = document.createElement('div');
             spacer.className = "web_ui__Spacer__small web_ui__Spacer__vertical";
             if (buttonElement.hasAttribute('data-mashinted-aggregated')) {
@@ -202,7 +193,7 @@ export function updateButtonVisualState(buttonElement, isFavorited, newCount = 1
             buttonElement.appendChild(spacer);
             buttonElement.appendChild(countText);
         } else {
-            buttonElement.querySelector('[data-testid="favourite-count-text"]').textContent = newCount;
+            buttonElement.querySelector(FAVOURITE_COUNT_SELECTOR).textContent = newCount;
         }
 
         if (wrapperDiv && !wrapperDiv.querySelector('span[aria-live="polite"]')) {
@@ -230,7 +221,7 @@ export function updateButtonVisualState(buttonElement, isFavorited, newCount = 1
         }
 
         const spacer = buttonElement.querySelector('.web_ui__Spacer__small');
-        const countText = buttonElement.querySelector('[data-testid="favourite-count-text"]');
+        const countText = buttonElement.querySelector(FAVOURITE_COUNT_SELECTOR);
         if (spacer) spacer.remove();
         if (countText) countText.remove();
 

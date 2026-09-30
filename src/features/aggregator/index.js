@@ -12,10 +12,15 @@ import {
     hideLoadMoreButton,
     markAsMashintedElement
 } from './clean-guard.js';
-import { isBlacklistedBrand } from '../../utils/storage.js';
+import { isBlacklistedBrand } from '../../shared/storage.js';
 import { calculateFetchDistribution } from './distribution.js';
 import { fetchExternalCatalogHtml, parseCatalogItems } from './api.js';
 import { createAggregatedItemCard, createSearchDividerNode } from './grid-item-transfer.js';
+import { createLogger } from '../../shared/logger.js';
+import { queryFirst } from '../../vinted/dom.js';
+import { HOMEPAGE_FEED_SELECTORS } from '../../vinted/selectors.js';
+
+const log = createLogger('aggregator');
 
 /**
  * @brief Delays execution for a specified duration.
@@ -39,10 +44,8 @@ function getSectionId(searchName) {
  */
 export function getActiveGridContainer() {
     // 1. Check if standard Vinted homepage block container exists
-    let grid = document.querySelector('[data-testid="homepage-blocks"]') || 
-        document.querySelector('[class*="__homepage-blocks"]') ||
-        document.querySelector('[class$="__feed-grid--compact"]');
-        console.debug('Mashinted: Active grid container located:', grid);
+    let grid = queryFirst(document, HOMEPAGE_FEED_SELECTORS, 'homepage feed');
+        log.debug('Active grid container located:', grid);
 
     if (grid && document.body.contains(grid)) {
         return grid;
@@ -114,7 +117,7 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
                 if (!Array.isArray(items) || items.length === 0) continue;
 
                 const validItems = items.filter((itemData) =>
-                    itemData && (typeof isBlacklistedBrand !== 'function' || !isBlacklistedBrand(itemData.brandName))
+                    itemData && !isBlacklistedBrand(itemData.brandName)
                 );
 
                 if (validItems.length > 0) {
@@ -147,7 +150,7 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
                     }
                 }
             } catch (err) {
-                console.error(`[Mashinted Debug] Error processing search "${search.name}":`, err);
+                log.error(`Error processing search "${search.name}":`, err);
             }
 
             purgeUnwantedGridItems(targetGrid);

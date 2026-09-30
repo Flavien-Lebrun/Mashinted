@@ -3,15 +3,22 @@
  * @brief Factory functions for rendering aggregated cards and section dividers.
  */
 
-import { GRID_ITEM_TEMPLATE } from '../../utils/constants.js';
-import { saveFavorite, removeFavorite, addBrand } from '../../utils/storage.js';
-import { extractBrandName, blockGridItem } from '../grid-item.js';
+import { GRID_ITEM_TEMPLATE } from '../../vinted/templates.js';
+import { escapeHtml } from '../../shared/escape-html.js';
+import { saveFavorite, removeFavorite, addBrand } from '../../shared/storage.js';
+import { extractBrandName, blockGridItem } from '../blacklist/grid-item.js';
 import {
-    escapeHtml,
     toggleVintedNativeFavorite,
     updateButtonVisualState,
     createAggregatorProgressBanner
 } from './modal-helpers.js';
+import { createLogger } from '../../shared/logger.js';
+import {
+    CARD_PART,
+    GRID_ITEM_SELECTOR,
+} from '../../vinted/selectors.js';
+
+const log = createLogger('transfer');
 
 // Re-export progress banner so external modules importing from grid-item-transfer don't break
 export { createAggregatorProgressBanner };
@@ -91,12 +98,12 @@ export function createSearchDividerNode(searchName, itemCount, searchUrl = '') {
  * @brief Parses raw DOM card from Vinted, correctly handling dynamic product-item IDs.
  */
 export function parseVintedCardDOM(cardElement) {
-    const brandEl = cardElement.querySelector('[data-testid$="--description-title"]');
-    const subtitleEl = cardElement.querySelector('[data-testid$="--description-subtitle"]');
-    const priceTextEl = cardElement.querySelector('[data-testid$="--price-text"]');
-    const totalPriceEl = cardElement.querySelector('[data-testid="total-combined-price"]');
-    const imgEl = cardElement.querySelector('img[data-testid$="--image--img"]');
-    const linkEl = cardElement.querySelector('a[data-testid$="--overlay-link"]');
+    const brandEl = cardElement.querySelector(CARD_PART.brand);
+    const subtitleEl = cardElement.querySelector(CARD_PART.subtitle);
+    const priceTextEl = cardElement.querySelector(CARD_PART.priceText);
+    const totalPriceEl = cardElement.querySelector(CARD_PART.totalPrice);
+    const imgEl = cardElement.querySelector(CARD_PART.image);
+    const linkEl = cardElement.querySelector(CARD_PART.link);
 
     const itemUrl = linkEl?.href || '#';
     const itemIdMatch = itemUrl.match(/items\/(\d+)/) || cardElement.innerHTML.match(/product-item-id-(\d+)/);
@@ -212,7 +219,7 @@ const basePrice = itemData.price || '—';
 
             if (!success) {
                 updateButtonVisualState(favBtn, isCurrentlyFav, 1);
-                console.warn(`[Mashinted] Could not toggle favorite for item ${itemData.id}`);
+                log.warn(`Could not toggle favorite for item ${itemData.id}`);
             } else {
                 if (nextFavState) {
                     await saveFavorite(itemData.id, itemData);
@@ -234,11 +241,11 @@ const basePrice = itemData.price || '—';
         event.stopPropagation();
         event.stopImmediatePropagation();
 
-        const gridItem = card.closest('[data-testid="grid-item"]') || card;
+        const gridItem = card.closest(GRID_ITEM_SELECTOR) || card;
         const brandName = extractBrandName(gridItem) || trashBtn.getAttribute('data-brand');
 
         if (brandName) {
-            console.log(`[Mashinted] Trash clicked. Adding brand to blacklist: "${brandName}"`);
+            log.debug(`Trash clicked. Adding brand to blacklist: "${brandName}"`);
 
             await addBrand(brandName);
             blockGridItem(gridItem, brandName, false);
@@ -249,7 +256,7 @@ const basePrice = itemData.price || '—';
             }, 350);
             
         } else {
-            console.warn('[Mashinted] Could not extract brand name from this grid item layout.');
+            log.warn('Could not extract brand name from this grid item layout.');
         }
     });
 }
