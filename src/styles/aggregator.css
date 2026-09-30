@@ -179,6 +179,11 @@
     background-color: #edf2f4;
 }
 
+/* Sparse row flow: a full-width divider must end the previous row, never get backfilled. */
+.mashinted-sectioned-grid {
+    grid-auto-flow: row !important;
+}
+
 /* Force the very first item card of a section to clear and start on a brand new row */
 [data-testid="homepage-blocks"] > .mashinted-section-start,
 [class*="__homepage-blocks"] > .mashinted-section-start,
