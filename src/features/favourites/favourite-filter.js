@@ -115,6 +115,8 @@ function organizeFavouriteGrid() {
 
     isProcessing = true;
     injectGridStyles();
+    // Sparse row flow so the section dividers aren't backfilled by later cards.
+    gridContainer.classList.add('mashinted-sectioned-grid');
     log.debug(`Organizing/Updating batch of ${gridItems.length} favorite items into sections...`);
 
     const oldDividers = gridContainer.querySelectorAll('.mashinted-grid-divider');

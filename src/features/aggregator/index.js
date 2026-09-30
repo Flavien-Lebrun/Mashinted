@@ -83,6 +83,10 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
         throw new Error('Catalog grid not found on page.');
     }
 
+    // Vinted's grid may use `grid-auto-flow: dense`, which backfills holes before a divider
+    // with cards from later sections. Force sparse row flow so dividers act as barriers.
+    targetGrid.classList.add('mashinted-sectioned-grid');
+
     const activeSearches = calculateFetchDistribution(scannedItems, 99, 30);
 
     if (activeSearches.length === 0) {
