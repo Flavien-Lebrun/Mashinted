@@ -21,4 +21,10 @@ export const COLLAPSE_TRANSITION_DURATION_MS = 250;
 export const GRID_ITEM_RETRY_INTERVAL_MS = 100;
 export const GRID_ITEM_RETRY_LIMIT = 30;
 
+// Inbox walker: how long to wait for a conversation to open, and the pause between two of them.
+export const COUNTER_WIDGET_ID = 'mashinted-counter-widget';
+export const INBOX_WIDGET_ID = 'mashinted-inbox-widget';
+export const INBOX_OPEN_TIMEOUT_MS = 4000;
+export const INBOX_STEP_DELAY_MS = 400;
+
 export const DEFAULT_BANNED_BRANDS = ['h&m', 'shein', 'zara'];

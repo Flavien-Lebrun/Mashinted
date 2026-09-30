@@ -1,0 +1,12 @@
+/* ==========================================================================
+   Inbox widget (reuses the fixed positioning of .mashinted-counter-widget-wrapper)
+   ========================================================================== */
+.mashinted-inbox-widget {
+    display: flex;
+    gap: 8px;
+}
+
+.mashinted-inbox-widget button:disabled {
+    cursor: default !important;
+    opacity: 0.6;
+}

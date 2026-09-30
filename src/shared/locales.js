@@ -70,6 +70,10 @@ const en = {
     deleteAllSold: 'Delete all sold',
     /** Lowercase word Vinted prints on a sold card (fallback when no status element). */
     soldKeyword: 'sold',
+
+    // Inbox
+    inboxOpenUnread: ({ count }) => `Open unread (${count})`,
+    inboxStop: ({ done, total }) => `Stop (${done}/${total})`,
 };
 
 const fr = {
@@ -128,6 +132,9 @@ const fr = {
     sectionAvailable: 'Disponibles',
     deleteAllSold: 'Supprimer tous les vendus',
     soldKeyword: 'vendu',
+
+    inboxOpenUnread: ({ count }) => `Ouvrir les non lues (${count})`,
+    inboxStop: ({ done, total }) => `Arrêter (${done}/${total})`,
 };
 
 const es = {
@@ -186,6 +193,9 @@ const es = {
     sectionAvailable: 'Disponibles',
     deleteAllSold: 'Eliminar todos los vendidos',
     soldKeyword: 'vendido',
+
+    inboxOpenUnread: ({ count }) => `Abrir no leídas (${count})`,
+    inboxStop: ({ done, total }) => `Detener (${done}/${total})`,
 };
 
 const nl = {
@@ -244,6 +254,9 @@ const nl = {
     sectionAvailable: 'Beschikbaar',
     deleteAllSold: 'Alle verkochte verwijderen',
     soldKeyword: 'verkocht',
+
+    inboxOpenUnread: ({ count }) => `Ongelezen openen (${count})`,
+    inboxStop: ({ done, total }) => `Stoppen (${done}/${total})`,
 };
 
 export const LOCALES = { en, fr, es, nl };
