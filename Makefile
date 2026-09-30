@@ -7,7 +7,7 @@ PROFILE ?= Default
 URL ?= https://www.vinted.fr/catalog
 
 .DEFAULT_GOAL := build
-.PHONY: help install build rebuild lint test watch dev clean zip run
+.PHONY: help install build rebuild lint test watch dev clean zip run firefox release
 
 help: ## Show available targets
 	@grep -E '^[a-z]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-9s %s\n", $$1, $$2}'
@@ -20,6 +20,9 @@ install: node_modules ## Install dependencies
 
 build: node_modules ## Production build into dist/ (default)
 	$(NPM) run build
+
+firefox: node_modules ## Firefox build into dist-firefox/
+	$(NPM) run build:firefox
 
 rebuild: clean build ## Clean then build
 
@@ -36,11 +39,16 @@ dev: node_modules ## Vite dev server (dist/ then needs the server running)
 	$(NPM) run dev
 
 clean: ## Remove dist/
-	rm -rf dist
+	rm -rf dist dist-firefox
 
 zip: build ## Package dist/ into mashinted.zip
 	cd dist && zip -qr ../mashinted.zip .
 	@echo "Created mashinted.zip"
+
+release: ## Tag the package.json version and push it (CI publishes the GitHub Release)
+	@v=$$(node -p "require('./package.json').version"); \
+	test -z "$$(git status --porcelain)" || { echo "Working tree not clean"; exit 1; }; \
+	git tag "v$$v" && git push origin "v$$v" && echo "Pushed v$$v"
 
 run: build ## Build, then open Chrome (your real profile) on Vinted
 	$(CHROME) --profile-directory="$(PROFILE)" $(URL) >/dev/null 2>&1 &

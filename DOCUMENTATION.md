@@ -404,6 +404,24 @@ function getProductId(gridItem) {
 * **Known limit / next:** only rows already rendered are walked; lazy-loading of the conversation list is not handled (needs a DOM snippet of the loading behaviour).
 * **Tests:** `test/inbox.test.js` with an anonymised `test/fixtures/inbox-list.html`.
 
+### 7.20 Cross-Browser Compatibility Audit [30-09-2026]
+
+* **Audit result:** no newer-than-ES2020 runtime APIs in `src/`. Real Chrome floor is **91** (module service worker), not 89; `minimum_chrome_version: "91"` added to `manifest.json`.
+* **CSS:** `-webkit-backdrop-filter` (Safari < 18) and a `100dvh` override (iOS toolbar) in `modal.css`. `:has()` in `aggregator.css` (Chrome 105 / Safari 15.4) is a focus-ring nicety and degrades harmlessly.
+* **Build:** target is now `chrome89`, `safari14`, `firefox115`, `es2020`.
+* **Firefox:** `src/manifest.firefox.json` (`background.scripts`, `browser_specific_settings.gecko`, min 121). Build with `npm run build:firefox` / `make firefox` into `dist-firefox/` (gitignored). Builds fine but is **not yet tested in Firefox**.
+* **Safari:** not testable from Linux. Needs a Mac: `xcrun safari-web-extension-converter dist/`, then grant per-site access in Safari. Points to verify: module service worker (fallback: non-module background), `checker.js` injection via `getURL`, per-site permission prompt.
+* **macOS vs Windows:** code is OS-independent; expect only font/scrollbar rendering differences.
+
+---
+
+### 7.21 GitHub Release Pipeline [30-09-2026]
+
+* **Trigger:** pushing a `v*` tag runs `.github/workflows/release.yml`: checks the tag equals `package.json` version, runs lint + tests, builds Chrome (`dist/`) and Firefox (`dist-firefox/`), zips both as `mashinted-vX.Y.Z-{chrome,firefox}.zip` and publishes a GitHub Release with auto-generated notes.
+* **Versioning:** `package.json` is the single source of truth; `vite.config.js` injects it as the manifest `version` (the `version` field in `src/manifest*.json` is overridden).
+* **Cutting a release:** bump `version` in `package.json`, merge to `main` via PR, then on a clean `main` run `make release` (tags `vX.Y.Z` and pushes it).
+* **Not covered:** Chrome Web Store / Firefox AMO / Safari submission; the zips are for manual "Load unpacked" / temporary add-on installs.
+
 ---
 
 ## 8. Progress Tracker
@@ -423,6 +441,9 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Done | Fix aggregator card layout on the homepage grid; reliable `make watch` | `src/styles/aggregator.css`, `scripts/watch.sh` — §7.17 |
 | Done | Language detection (Vinted selector) + i18n module (en/fr/es/nl) | `src/vinted/language.js`, `src/shared/i18n.js` — §7.18 |
 | Done | Inbox route + widget, "Open unread" walker | `src/features/inbox/` — §7.19 |
+| Done | Compat audit: Chrome 91 floor, Safari CSS prefixes, Firefox manifest/build | `src/manifest*.json`, `vite.config.js` — §7.20 |
+| Done | Tag-triggered GitHub Release workflow, version from `package.json`, `make release` | `.github/workflows/release.yml` — §7.21 |
+| Todo | Test the build in Firefox and Safari (macOS) | §7.20 |
 | Todo | Inbox: lazy-load handling of the conversation list | §7.19 |
 | Todo | Run Prettier repo-wide (dedicated whitespace-only commit) | — |
 | Todo | Update §2–§6 for the new layout | — |
