@@ -33,9 +33,9 @@ When a listing is determined to be from a blacklisted brand—either during init
 
 ### 2.2 Hydration Shell & Counter Widget
 
-To eliminate UI flashing and resist React tree reconciliation wipes, the widget uses a **two-phase mounting lifecycle** (`fast-widget.js` -> `counter-widget.js`).
+To eliminate UI flashing and resist React tree reconciliation wipes, the widget uses a **two-phase mounting lifecycle** (`fast-widget-loader.js` -> `counter-widget.js`).
 
-#### Phase 1: Fast Loading Shell (`fast-widget.js`)
+#### Phase 1: Fast Loading Shell (`fast-widget-loader.js`)
 
 * Executes immediately at `document_start` / early DOM load.
 * Mounts a non-interactive loading chip to ensure zero layout shift.
@@ -67,7 +67,7 @@ The modal acts as the main control center for managing the local blocklist.
 #### Top Section (Header)
 
 * **Search Bar:** Filter box with SVG search icon (`.mashinted-filter-search-input`).
-* **Close Action:** Close button (`.vinted-ext-close-btn`) that clears overlay state with a 220ms fade-out transition.
+* **Close Action:** Close button (`.mashinted-close-btn`) that clears overlay state with a 220ms fade-out transition.
 
 #### Main Body (Brand List)
 
@@ -75,7 +75,7 @@ The modal acts as the main control center for managing the local blocklist.
 * **Interactive Checkboxes:** Unchecking a brand removes it from `unselectedBrands`, calls `onDeleteBrand(brand)`, and dims the row (`.mashinted-row-muted`). Re-checking invokes `onAddBrand(brand)`.
 * **Inline Quick-Add Row:** Typing a search query with no exact match dynamically injects a `"Block <Query>"` row at the bottom with a `+` action button for 1-click addition.
 
-### 2.4 Saved Search Aggregator & Injection UI (`src/content/aggregator/`)
+### 2.4 Saved Search Aggregator & Injection UI (`src/features/aggregator/`)
 
 The aggregator scans bookmarked saved searches and fetches pending updates into a unified view.
 
@@ -227,6 +227,8 @@ function getProductId(gridItem) {
 
 ## 7. Complete Issue & Debugging Log
 
+> Entries record file paths as they were at the time. The layout changed in §7.15: `src/content/aggregator|favourites/` → `src/features/…`, `src/content/{grid-item,trash-engine,state,modal,counter-widget,observers}.js` → `src/features/blacklist/`, `src/utils/constants.js` → `src/shared/constants.js` (selectors → `src/vinted/selectors.js`, templates → `src/vinted/templates.js`), `src/utils/storage.js` → `src/shared/storage.js`.
+
 ### 7.1 Skeleton Hydration & Selector Specificity [12-07-2026]
 
 * **Issue:** `MutationObserver` attached to raw skeleton placeholders before hydrated `grid-item` nodes were rendered.
@@ -263,9 +265,9 @@ function getProductId(gridItem) {
 
 * **Issue:** Aggregator components, storage utilities, and state managers contained inline circular dependencies (`isSearchBookmarked`, missing `REMOVABLE_SELECTORS`, relative path errors).
 * **Fix:**
-  * Centralized DOM selectors and storage key constants into `src/content/constants.js`.
+  * Centralized DOM selectors and storage key constants into `src/utils/constants.js`.
   * Moved DOM tracking primitives (`WeakSet`, `WeakMap`, `blockedGridItems`) and pub/sub brand session stat listeners into `src/content/state.js`.
-  * Isolated storage operations (`getFavorites`, `saveFavorite`, `removeFavorite`, `addBrand`) in `src/content/storage.js`.
+  * Isolated storage operations (`getFavorites`, `saveFavorite`, `removeFavorite`, `addBrand`) in `src/utils/storage.js`.
   * Decoupled grid purging logic (`clean-guard.js`) and UI controls (`modal-injector.js`) into dedicated single-responsibility aggregator files.
 
 ### 7.6 Saved Searches Modal Injection Failure [30-07-2026]
@@ -357,3 +359,35 @@ function getProductId(gridItem) {
 * **Static Rollup Asset Naming:** Configured `rollupOptions.output` inside `vite.config.js` to enforce predictable, unhashed filenames (`assets/index.css` and `assets/[name].js`).
 * **Native Manifest Mapping:** Mapped `assets/index.css` directly into the `css` field of content scripts within `manifest.json`, letting Chrome inject styles natively at `document_start` and eliminating DOM `appendChild` null errors.
 * **Resource Accessibility Enforcement:** Added `checker.js` and its public path variations into the `web_accessible_resources` block in `manifest.json` with target Vinted match patterns to resolve browser security blocks.
+
+### 7.15 Project Structure Refactor & Tooling [30-09-2026]
+
+* **Layout:** Code moved to `src/features/{blacklist,aggregator,favourites}`, `src/vinted` (selectors, `queryFirst`, templates) and `src/shared` (storage, constants, logger, `escapeHtml`, `observeDom`). Old paths in sections above (`src/content/...`, `src/utils/...`) map to these.
+* **Lifecycle:** `content/index.js` now boots once (storage → hydration → `router.js`); the duplicated `init()`/`tryInitializeApp()` observer start-up is gone. Observers now always start after hydration (previously `init()` also started them before).
+* **Polling removed:** trash-engine (150 ms) and favourite-filter (400 ms) intervals replaced by `observeDom`; `checker.js` gives up after 10 s.
+* **State:** `blockedGridItems` split into `blockedProductIds` (Set) and `blockedGridElements` (WeakSet) to stop leaking DOM nodes.
+* **CSS:** split per feature in `src/styles/`; `vinted-ext-*` renamed to `mashinted-*`.
+* **Removed:** unused `FETCH_EXTERNAL_PAGE` background handler and the hard-coded CSRF fallback token (favourite toggle now fails cleanly if no token is found).
+* **Tooling:** Vitest specs + HTML fixtures, Prettier/EditorConfig, `no-console` lint rule, GitHub Actions CI.
+
+---
+
+## 8. Progress Tracker
+
+Living checklist of the maintainability roadmap. Update it (and add a §7 entry) whenever an item moves.
+
+| Status | Item | Where / Entry |
+| --- | --- | --- |
+| Done | Centralize Vinted selectors, `queryFirst` helper | `src/vinted/selectors.js`, `dom.js` — §7.15 |
+| Done | Logger, shared `escapeHtml` | `src/shared/` — §7.15 |
+| Done | CSS split per feature, single `mashinted-` prefix | `src/styles/` — §7.15 |
+| Done | Feature-folder layout, single boot lifecycle + router | `src/features/`, `src/content/router.js` — §7.15 |
+| Done | Replace polling with `observeDom`; `checker.js` timeout | §7.15 |
+| Done | Split `blockedGridItems` (Set + WeakSet) | §7.15 |
+| Done | Vitest specs + fixtures, Prettier config, `no-console`, CI | `test/`, `.github/workflows/ci.yml` — §7.15 |
+| Todo | Run Prettier repo-wide (dedicated whitespace-only commit) | — |
+| Todo | Update §2–§6 for the new layout | — |
+| Todo | Reduce `!important` (~35) and inline `style=""` in templates | — |
+| Todo | Router: handle SPA navigation (feature `mount`/`unmount`) | — |
+| Todo | Split `features/blacklist/observers.js` (page-transition vs grid) | — |
+| Todo | Dev-only selector health check | — |

@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import eslint from 'vite-plugin-eslint';
 import { crx } from '@crxjs/vite-plugin';
 import { resolve } from 'path';
 import manifest from './src/manifest.json';
@@ -34,10 +33,5 @@ export default defineConfig({
   },
   plugins: [
     crx({ manifest }),
-    //eslint({
-    //  failOnError: true,
-    //  failOnWarning: false,
-    //  include: ['src/**/*.js'],
-    //}),
   ],
 });

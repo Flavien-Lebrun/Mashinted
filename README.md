@@ -16,7 +16,7 @@ Vinted Mashup is a web browser extension that seamlessly wraps around the offici
 
 If you want to follow the step-by-step progression of this extension, every minor milestone, roadblock, and breakthrough is documented in detail.
 
-👉 **Check out the full development journal in [HISTORY.md](https://www.google.com/search?q=./HISTORY.md).**
+👉 **Check out the full development journal in [DOCUMENTATION.md](./DOCUMENTATION.md) (section 7).**
 
 ---
 
@@ -24,12 +24,6 @@ If you want to follow the step-by-step progression of this extension, every mino
 
 * **Context:** Chrome/Web Extension (Manifest V3)
 * **Core Mechanics:** Network interception (`fetch` monkeypatching), Script Injection (`MAIN` world execution), and custom DOM rebuilding.
-
-For a Vite-based web extension, the `README.md` should be incredibly clear about two things: how to get the project running locally, and **how to load the extension into the browser** (since web extensions don't just run in a standard tab).
-
-Here is a clean, copy-pasteable Markdown template you can drop right into your `README.md`.
-
----
 
 ## 🚀 Getting Started
 
@@ -53,7 +47,7 @@ Start the local development build:
 npm run dev
 ```
 
-*Note: Vite will compile the extension assets into a temporary or development build folder (usually `dist/`).*
+*Note: the dev build writes HMR stubs into `dist/` that only work while the dev server is running. For a standalone build (other machines, Firefox, sharing), run `npm run build` instead.*
 
 ### 3. Load the Extension in Your Browser
 
