@@ -29,8 +29,8 @@ lint: node_modules ## Run ESLint on src/
 test: node_modules ## Run unit tests (Vitest)
 	$(NPM) test
 
-watch: node_modules ## Rebuild dist/ on file changes
-	$(NPM) run watch
+watch: node_modules ## Rebuild dist/ on file changes (full rebuild; vite --watch breaks with crxjs)
+	NPM="$(NPM)" ./scripts/watch.sh
 
 dev: node_modules ## Vite dev server (dist/ then needs the server running)
 	$(NPM) run dev

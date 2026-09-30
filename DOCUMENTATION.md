@@ -370,6 +370,21 @@ function getProductId(gridItem) {
 * **Removed:** unused `FETCH_EXTERNAL_PAGE` background handler and the hard-coded CSRF fallback token (favourite toggle now fails cleanly if no token is found).
 * **Tooling:** Vitest specs + HTML fixtures, Prettier/EditorConfig, `no-console` lint rule, GitHub Actions CI.
 
+### 7.16 CSS Animation Fixes [30-09-2026]
+
+* **Blacklist fade:** fade lasted 0.4s but the card was `display:none` after ~260 ms (visible pop). The `!important` on `max-height` also prevented the collapse, so neighbours jumped. Now fade + height collapse share one duration and no longer rely on `!important`.
+* **Aggregator sections:** `overflow:hidden`, `max-height:500px`, `transform` and `will-change` were applied permanently to every card (clipping, stacking contexts). They now apply only during a fold/unfold; JS measures the card height so `max-height` truly animates.
+* **Tunable timings:** `--mashinted-hide-duration`, `--mashinted-collapse-duration`, `--mashinted-ease` in `src/styles/tokens.css`. JS timers read them via `shared/css-duration.js` (constants are fallbacks only). Hide duration set to 450 ms so the fade is clearly visible.
+* **Cleanup:** removed no-op `.mashinted-trash-btn:after` rule, `forwards` fill modes, `max-height` keyframes on the fixed-height divider, `transition: all` on the progress banner; added `prefers-reduced-motion` support.
+
+### 7.17 Aggregator Grid Layout on the Homepage & Watch Workflow [30-09-2026]
+
+* **Symptom:** aggregated cards were one per row, too wide-spaced, and sized wrongly on the homepage feed.
+* **Causes:** the homepage container (`homepage-blocks`) is a CSS grid (2/4/5 columns set by Vinted), but our card rules assumed a flex row. (1) `width: 25%` resolved against a single grid cell; (2) Vinted's `.homepage-blocks > :not(.item--one-fifth):not(.item--two-fifths) { grid-column: 1 / -1 }` gave every child without its hashed item classes a full row; (3) our item padding stacked on top of Vinted's `column-gap`.
+* **Fix (`src/styles/aggregator.css`):** for direct children of `[data-testid="homepage-blocks"]` / `[class*="__homepage-blocks"]`: `width: auto`, `grid-column: auto !important` (needed: Vinted's selector has specificity 0,3,0), section-start cards pinned to column 1, and content padding reduced to `0 0 8px` like native cards. The flex-row rules stay for other layouts.
+* **Debugging note:** Vinted's stylesheets are cross-origin, so their rules cannot be listed from JS (`document.styleSheets` throws); use the DevTools Styles pane. A stale `dist/` from `npm run dev` (HMR stubs) made the fix look ineffective: always load a `make build` output.
+* **Tooling:** `make watch` now runs `scripts/watch.sh` (full `vite build` on each change via `inotifywait`, needs `inotify-tools`). `vite build --watch` fails on incremental rebuilds with `@crxjs/vite-plugin` (`[crx:manifest-post] Content script fileName is undefined`); reproduced on 2.7.1 and 3.0.0, so the dependency was left unchanged (3.0.0 also renames output assets).
+
 ---
 
 ## 8. Progress Tracker
@@ -385,6 +400,8 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Done | Replace polling with `observeDom`; `checker.js` timeout | §7.15 |
 | Done | Split `blockedGridItems` (Set + WeakSet) | §7.15 |
 | Done | Vitest specs + fixtures, Prettier config, `no-console`, CI | `test/`, `.github/workflows/ci.yml` — §7.15 |
+| Done | Fix CSS animations, tunable duration tokens, reduced-motion | `src/styles/tokens.css` — §7.16 |
+| Done | Fix aggregator card layout on the homepage grid; reliable `make watch` | `src/styles/aggregator.css`, `scripts/watch.sh` — §7.17 |
 | Todo | Run Prettier repo-wide (dedicated whitespace-only commit) | — |
 | Todo | Update §2–§6 for the new layout | — |
 | Todo | Reduce `!important` (~35) and inline `style=""` in templates | — |

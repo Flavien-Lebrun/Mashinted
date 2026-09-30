@@ -15,6 +15,7 @@ import {
     ITEM_LINK_SELECTOR,
 } from '../../vinted/selectors.js';
 import { createLogger } from '../../shared/logger.js';
+import { getCssDurationMs } from '../../shared/css-duration.js';
 
 const log = createLogger('grid-item');
 
@@ -103,7 +104,7 @@ function scheduleHideFinalization(gridItem) {
     const timerId = window.setTimeout(() => {
         finalizeHiddenGridItem(gridItem);
         hideFinalizationTimers.delete(gridItem);
-    }, HIDE_TRANSITION_DURATION_MS + 40);
+    }, getCssDurationMs('--mashinted-hide-duration', HIDE_TRANSITION_DURATION_MS) + 40);
 
     hideFinalizationTimers.set(gridItem, timerId);
 }
@@ -167,6 +168,11 @@ function blockGridItem(gridItem, brandName, isManual = false) {
     }
 
     if (isManual) {
+        // Already hidden or mid-animation: don't cut the transition short.
+        if (gridItem.hasAttribute(HIDDEN_BY_BLACKLIST_ATTRIBUTE)) {
+            return;
+        }
+
         // 1. Remove focus from the active trash button so focus isn't trapped in a hidden element
         if (gridItem.contains(document.activeElement)) {
             document.activeElement.blur();
