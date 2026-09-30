@@ -156,6 +156,12 @@
     pointer-events: none;
 }
 
+/* Once the fold animation is done, drop collapsed cards from the layout entirely so they
+   don't leave empty grid rows / row gaps behind the divider. */
+.mashinted-item-collapsed:not([data-mashinted-animating]) {
+    display: none !important;
+}
+
 .mashinted-grid-divider {
     grid-column: 1 / -1 !important;
     width: 100% !important;

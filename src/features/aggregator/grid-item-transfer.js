@@ -94,9 +94,11 @@ export function createSearchDividerNode(searchName, itemCount, searchUrl = '') {
         const durationMs = getCssDurationMs('--mashinted-collapse-duration', COLLAPSE_TRANSITION_DURATION_MS);
 
         targetItems.forEach((item) => {
+            // Mark as animating first: it lifts the display:none of settled collapsed items,
+            // otherwise scrollHeight would measure 0.
+            item.setAttribute('data-mashinted-animating', 'true');
             // Give max-height a real starting value so it can animate, then release it.
             item.style.setProperty('--mashinted-item-max-height', `${item.scrollHeight}px`);
-            item.setAttribute('data-mashinted-animating', 'true');
             // Force a reflow so the measured max-height is applied before the class flips.
             void item.offsetHeight;
             item.classList.toggle('mashinted-item-collapsed', nextState);
