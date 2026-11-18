@@ -16,6 +16,7 @@ The primary objective of **Mashup Vinted** is to filter product listings from th
 * **Real-Time Analytics:** The extension tracks both total listings blocked and per-brand session statistics (`statsSnapshot`).
 * **Cross-Search Feed Aggregation:** Extracts pending items from bookmarked saved searches via a specialized background fetcher/parser, clearing default page grids progressively and injecting multi-search results into unified catalog grids.
 * **Favorites Storage Management:** Persists cross-page aggregated favorite items locally using `chrome.storage.local` with `FAVORITES_STORAGE_KEY`.
+* **RGPD compliance:** The extension operates entirely through local scripts. No data from Vinted or its users is collected, stored, or transmitted externally. All processing remains local and is intended solely for the user's personal use.
 
 ---
 
@@ -23,7 +24,7 @@ The primary objective of **Mashup Vinted** is to filter product listings from th
 
 ### 2.1 Product Listings (Behavior)
 
-When a listing is determined to be from a blacklisted brand—either during initial page load, dynamically via user click on the trash icon, or through real-time updates—the following behavior applies:
+When a listing is determined to be from a blacklisted brand, either during initial page load, dynamically via user click on the trash icon, or through real-time updates, the following behavior applies:
 
 * **Automated Scanner Hide:** Uses a smooth CSS `max-height` transition and opacity fade-out to prevent abrupt visual jumps while the user scrolls.
 * **Manual Trash Click Collapse:** Bypasses animation timers entirely, applying an instant `display: none !important` hard collapse to prevent layout ghost gaps when React unmounts inner children mid-click.
@@ -295,7 +296,6 @@ function getProductId(gridItem) {
 * **Root Cause:** The feed cleanup routine (`clearGridProgressively`) previously wiped out the parent grid wrapper `<div class="homepage-blocks" data-testid="homepage-blocks">` itself. During subsequent aggregation runs, `getActiveGridContainer()` failed to locate the grid container and fell back to higher-level elements like `<main>`.
 * **Fix:**
   * Modified `clearGridProgressively` to target only child nodes via `targetGrid.querySelectorAll(REMOVABLE_SELECTORS)` and empty remaining children via `targetGrid.replaceChildren()`, preserving the parent grid wrapper shell.
-  * Updated `getActiveGridContainer()` with a self-healing fallback that detects if `homepage-blocks` was destroyed by React hydration and dynamically reconstructs the `<div class="HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks" data-testid="homepage-blocks">` element inside `.HomeLayout-module-scss-module__XNM03a__homepage`.
 
 ### 7.9 DOM Ordering vs CSS Grid Placement in Reverse Injection Loops [31-07-2026]
 
@@ -451,3 +451,8 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Todo | Router: handle SPA navigation (feature `mount`/`unmount`) | — |
 | Todo | Split `features/blacklist/observers.js` (page-transition vs grid) | — |
 | Todo | Dev-only selector health check | — |
+| Todo | Empty blacklist: show a visual prompt instead of re-seeding defaults | `src/shared/storage.js` |
+| Todo | Rescan visible cards after a trash click (`addBrand`) | `src/features/blacklist/trash-engine.js` |
+| Todo | Remove dead `hasInitialScanCompleted` / hide branch (chip always visible) | `src/features/blacklist/counter-widget.js` |
+| Todo | Verify in browser: scan of new grids after SPA navigation (root observer disconnects after 5 s) | `src/features/blacklist/observers.js` |
+| Todo | Browser test pipeline | — |
