@@ -125,11 +125,10 @@ function ensureCounterWidgetMounted() {
                     nativeButton.setAttribute('aria-pressed', 'true');
 
                     const currentBannedList = await getAllBrands();
-                    const currentStats = getBrandSessionSnapshot();
 
                     activeModalRef = createConfigModal({
                         bannedBrands: currentBannedList,
-                        statsSnapshot: currentStats,
+                        getStats: getBrandSessionSnapshot,
                         onAddBrand: async (newBrand) => {
                             const updatedList = await addBrand(newBrand);
                             if (activeModalRef) activeModalRef.updateList(updatedList);

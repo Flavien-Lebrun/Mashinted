@@ -1,7 +1,12 @@
 import { t } from '../../shared/i18n.js';
 import { escapeHtml } from '../../shared/escape-html.js';
 
-export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onClose, statsSnapshot = new Map() }) {
+/**
+ * @param {Object} options
+ * @param {() => Map<string, number>} [options.getStats] Returns the current per-brand blocked counts;
+ *        read on every render so brands added while the modal is open show their count.
+ */
+export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onClose, getStats = () => new Map() }) {
     if (document.getElementById('vinted-filter-modal-root')) return null;
 
     // Maintain a local mutable copy of the brand array within the modal's runtime context
@@ -47,6 +52,7 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
     function renderListItems() {
         listContainer.innerHTML = '';
         const query = currentSearchQuery.trim().toLowerCase();
+        const statsSnapshot = getStats();
 
         // Merge list state and alphabetically sort so elements never jump position on toggle
         const allVisibleBrands = [...new Set([...activeBannedBrands, ...unselectedBrands])];
