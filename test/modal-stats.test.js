@@ -24,3 +24,21 @@ describe('config modal counters', () => {
         expect(counters).toEqual(['+3']);
     });
 });
+
+describe('config modal lifecycle', () => {
+    it('exposes destroyModal, which closes the modal and calls onClose', async () => {
+        let closed = false;
+        const modal = createConfigModal({
+            bannedBrands: [],
+            onAddBrand: () => {},
+            onDeleteBrand: () => {},
+            onClose: () => (closed = true),
+        });
+        expect(typeof modal.destroyModal).toBe('function');
+
+        modal.destroyModal();
+        await new Promise((resolve) => setTimeout(resolve, 260)); // 220 ms fade-out
+        expect(document.getElementById('vinted-filter-modal-root')).toBeNull();
+        expect(closed).toBe(true);
+    });
+});

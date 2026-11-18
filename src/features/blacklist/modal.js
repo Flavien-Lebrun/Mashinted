@@ -187,6 +187,8 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
     renderListItems();
 
     return {
+        // Closes with the same fade as the close button; counter-widget calls it to toggle the modal.
+        destroyModal: handleClose,
         updateList: (updatedList) => {
             if (Array.isArray(updatedList)) {
                 activeBannedBrands = [...updatedList];
