@@ -213,4 +213,9 @@ export function startSavedSearchesObserver() {
     });
 
     checkAndInject();
+
+    return () => {
+        observer.disconnect();
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
 }

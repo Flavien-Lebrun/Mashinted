@@ -67,5 +67,5 @@ function verifyAndInjectTrashButtons() {
 
 export function initializeTrashEngine() {
     // `aria-pressed` appears once React has hydrated the favourite button.
-    observeDom(verifyAndInjectTrashButtons, { attributeFilter: ['aria-pressed'] });
+    return observeDom(verifyAndInjectTrashButtons, { attributeFilter: ['aria-pressed'] });
 }

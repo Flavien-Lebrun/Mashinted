@@ -67,7 +67,7 @@ function wireOpenUnread(button) {
     });
 
     // Keeps the count in sync while the list loads / changes; the run drives the label itself.
-    observeDom(
+    return observeDom(
         () => {
             if (!running) renderIdle();
         },
@@ -80,5 +80,12 @@ export function startInbox() {
     document.getElementById(COUNTER_WIDGET_ID)?.remove();
 
     const wrapper = mountWidget();
-    if (wrapper) wireOpenUnread(wrapper.querySelector('[data-mashinted-action="open-unread"]'));
+    const stopWatching = wrapper
+        ? wireOpenUnread(wrapper.querySelector('[data-mashinted-action="open-unread"]'))
+        : () => {};
+
+    return () => {
+        stopWatching();
+        document.getElementById(INBOX_WIDGET_ID)?.remove();
+    };
 }

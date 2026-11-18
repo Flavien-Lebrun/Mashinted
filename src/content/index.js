@@ -6,7 +6,8 @@ import { createLogger } from '../shared/logger.js';
 import { setLanguage } from '../shared/i18n.js';
 import { detectVintedLanguage } from '../vinted/language.js';
 import { waitForReactHydration } from './hydration.js';
-import { startRoute } from './router.js';
+import { createRouter } from './router.js';
+import { observeDom } from '../shared/dom-observer.js';
 
 const log = createLogger('content');
 
@@ -26,7 +27,16 @@ async function boot() {
     await waitForReactHydration();
     setLanguage(detectVintedLanguage());
 
-    log.debug(`Starting route: ${startRoute()}`);
+    // Vinted navigates without reloads: re-check the route on every DOM change (frame-batched).
+    const router = createRouter();
+    let lastRoute = null;
+    observeDom(() => {
+        const routeName = router.sync();
+        if (routeName !== lastRoute) {
+            lastRoute = routeName;
+            log.debug(`Route: ${routeName}`);
+        }
+    });
 
     // Dev-only selector health check; the whole branch is removed from normal builds.
     if (__MASHINTED_DEV__) {

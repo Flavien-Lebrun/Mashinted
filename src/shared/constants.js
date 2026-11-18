@@ -12,7 +12,6 @@ export const HIDDEN_BY_BLACKLIST_ATTRIBUTE = 'data-mashinted-hidden-by-blacklist
 export const HIDDEN_BY_BLACKLIST_CLASS = 'mashinted-hidden-by-blacklist';
 export const HIDDEN_BY_BLACKLIST_ACTIVE_CLASS = 'mashinted-hidden-by-blacklist-active';
 export const HIDDEN_BY_BLACKLIST_FINAL_CLASS = 'mashinted-hidden-by-blacklist-final';
-export const ROOT_OBSERVER_DISCONNECT_DELAY_MS = 5000;
 
 // Fallback only: the real value is --mashinted-hide-duration in styles/tokens.css.
 export const HIDE_TRANSITION_DURATION_MS = 450;

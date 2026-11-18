@@ -249,5 +249,5 @@ export function startFavouriteListFilter() {
     log.debug('Initializing Favourite List Grouping Module...');
 
     // organizeFavouriteGrid() is idempotent and bails out when the grid is missing.
-    observeDom(organizeFavouriteGrid);
+    return observeDom(organizeFavouriteGrid);
 }
