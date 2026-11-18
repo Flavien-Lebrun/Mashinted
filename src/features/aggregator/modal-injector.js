@@ -64,9 +64,13 @@ export function injectSavedSearchButton() {
 
     const link = document.createElement('a');
     link.id = 'mashinted-aggregator-a';
-    link.className = 'web_ui__Cell__cell web_ui__Cell__default web_ui__Cell__navigating web_ui__Cell__link u-position-relative';
+    link.className =
+        'web_ui__Cell__cell web_ui__Cell__default web_ui__Cell__navigating web_ui__Cell__link u-position-relative';
     link.href = '#';
-    link.setAttribute('aria-label', t('aggregatorLabel', { total: scanData.totalFormatted, breakdown: scanData.breakdownText }));
+    link.setAttribute(
+        'aria-label',
+        t('aggregatorLabel', { total: scanData.totalFormatted, breakdown: scanData.breakdownText }),
+    );
     link.setAttribute('data-testid', 'mashinted-aggregator-button');
 
     const displayStyle = scanData.totalCount > 0 ? '' : 'mashinted-u-hidden';
@@ -146,9 +150,10 @@ export function injectSavedSearchButton() {
 
         closeSavedSearchesModal();
 
-        const feedGrid = document.querySelector('.feed-grid') ||
-                         document.querySelector(GRID_ITEM_SELECTOR)?.parentElement ||
-                         document.querySelector('#content');
+        const feedGrid =
+            document.querySelector('.feed-grid') ||
+            document.querySelector(GRID_ITEM_SELECTOR)?.parentElement ||
+            document.querySelector('#content');
 
         if (!feedGrid) {
             log.error('Feed grid target container not found.');
@@ -164,12 +169,15 @@ export function injectSavedSearchButton() {
         try {
             const itemsToProcess = currentScan.items.slice().reverse();
 
-            const count = await processScannedSearches(itemsToProcess, (statusText) => {
-                progressBanner.updateStep(statusText);
-            }, progressBanner);
+            const count = await processScannedSearches(
+                itemsToProcess,
+                (statusText) => {
+                    progressBanner.updateStep(statusText);
+                },
+                progressBanner,
+            );
 
             progressBanner.complete(t('progressInjected', { count }));
-
         } catch (err) {
             log.error('Aggregator error:', err);
             progressBanner.updateStep(t('progressError', { message: err.message || t('aggregationFailed') }));
@@ -209,7 +217,7 @@ export function startSavedSearchesObserver() {
 
     observer.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
     });
 
     checkAndInject();

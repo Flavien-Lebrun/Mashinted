@@ -48,7 +48,9 @@
 }
 
 .mashinted-trash-btn svg {
-    transition: stroke 0.15s ease, color 0.15s ease !important;
+    transition:
+        stroke 0.15s ease,
+        color 0.15s ease !important;
     fill: none;
 }
 
@@ -70,4 +72,3 @@
         transform: scale(1) translateY(0);
     }
 }
-

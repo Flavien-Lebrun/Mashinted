@@ -4,16 +4,13 @@
  */
 
 import { createLogger } from '../../shared/logger.js';
-import {
-    CATALOG_PART,
-    CSRF_META_SELECTOR,
-} from '../../vinted/selectors.js';
+import { CATALOG_PART, CSRF_META_SELECTOR } from '../../vinted/selectors.js';
 
 const log = createLogger('api');
 
 /**
  * @brief Safely fetches external catalog HTML using absolute URL resolution and CSRF headers.
- * 
+ *
  * @param {string} urlPath - Relative or absolute search path string.
  * @returns {Promise<string|null>} HTML string on success, or null on failure/timeout.
  */
@@ -28,8 +25,8 @@ export async function fetchExternalCatalogHtml(urlPath) {
         const csrfToken = document.querySelector(CSRF_META_SELECTOR)?.getAttribute('content');
 
         const headers = {
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'X-Requested-With': 'XMLHttpRequest'
+            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'X-Requested-With': 'XMLHttpRequest',
         };
         if (csrfToken) {
             headers['X-CSRF-Token'] = csrfToken;
@@ -39,7 +36,7 @@ export async function fetchExternalCatalogHtml(urlPath) {
             method: 'GET',
             headers: headers,
             signal: controller.signal,
-            credentials: 'same-origin'
+            credentials: 'same-origin',
         });
 
         clearTimeout(timeoutId);
@@ -55,7 +52,6 @@ export async function fetchExternalCatalogHtml(urlPath) {
         log.debug(`Received response body (${htmlText.length} characters)`);
 
         return htmlText;
-
     } catch (err) {
         if (err.name === 'AbortError') {
             log.error(`Fetch timed out (8s limit reached) for: ${urlPath}`);
@@ -68,7 +64,7 @@ export async function fetchExternalCatalogHtml(urlPath) {
 
 /**
  * @brief Parses catalog HTML string into an array of structured item data objects.
- * 
+ *
  * @param {string} htmlString - Raw catalog HTML response.
  * @param {number} [maxLimit=15] - Maximum item count to parse.
  * @returns {Array<Object>} Extracted item metadata records.
@@ -76,7 +72,7 @@ export async function fetchExternalCatalogHtml(urlPath) {
 export function parseCatalogItems(htmlString, maxLimit = 15) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
-    
+
     // Select grid item wrappers
     const itemContainers = doc.querySelectorAll(CATALOG_PART.container);
 
@@ -102,8 +98,8 @@ export function parseCatalogItems(htmlString, maxLimit = 15) {
         // Extract Product URL and ID
         const productUrl = linkEl ? linkEl.getAttribute('href') : '';
         const productIdMatch = productUrl.match(/\/items\/(\d+)/);
-        const productId = productIdMatch 
-            ? productIdMatch[1] 
+        const productId = productIdMatch
+            ? productIdMatch[1]
             : `agg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
 
         // Text extraction
@@ -116,7 +112,9 @@ export function parseCatalogItems(htmlString, maxLimit = 15) {
         if (!totalPrice && itemPrice) totalPrice = itemPrice;
 
         const resolvedItemUrl = productUrl
-            ? (productUrl.startsWith('http') ? productUrl : `${window.location.origin}${productUrl}`)
+            ? productUrl.startsWith('http')
+                ? productUrl
+                : `${window.location.origin}${productUrl}`
             : window.location.origin;
 
         items.push({
@@ -126,7 +124,7 @@ export function parseCatalogItems(htmlString, maxLimit = 15) {
             price: itemPrice || '—',
             totalPrice: totalPrice || itemPrice || '—',
             imageUrl: imgEl?.getAttribute('src') || imgEl?.getAttribute('data-src') || '',
-            itemUrl: resolvedItemUrl
+            itemUrl: resolvedItemUrl,
         });
     }
 

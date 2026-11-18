@@ -98,7 +98,7 @@ function isItemSold(gridItem) {
     if (statusElement) {
         return true;
     }
-    
+
     const textContent = gridItem.textContent?.toLowerCase() || '';
     return textContent.includes(t('soldKeyword'));
 }
@@ -113,7 +113,7 @@ function organizeFavouriteGrid() {
 
     const gridContainer = findFavouritesGrid();
     if (!gridContainer) {
-        return false; 
+        return false;
     }
 
     const gridItems = Array.from(gridContainer.querySelectorAll(`:scope > ${GRID_ITEM_SELECTOR}`));
@@ -134,7 +134,7 @@ function organizeFavouriteGrid() {
     log.debug(`Organizing/Updating batch of ${gridItems.length} favorite items into sections...`);
 
     const oldDividers = gridContainer.querySelectorAll('.mashinted-grid-divider');
-    oldDividers.forEach(div => div.remove());
+    oldDividers.forEach((div) => div.remove());
 
     const availableItems = [];
     const soldItems = [];
@@ -143,11 +143,11 @@ function organizeFavouriteGrid() {
         if (isItemSold(item)) {
             soldItems.push(item);
         } else {
-            availableItems.push(item); 
+            availableItems.push(item);
         }
     });
 
-    gridItems.forEach(item => item.remove());
+    gridItems.forEach((item) => item.remove());
 
     /**
      * Helper function to append a divider followed by its wrapped items cleanly
@@ -171,13 +171,15 @@ function organizeFavouriteGrid() {
                     </svg>
                     ${escapeHtml(t('deleteAllSold'))}
                 `;
-                
+
                 clearBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    
+
                     const sectionId = divider.getAttribute('data-section-id');
-                    const currentSoldItems = Array.from(gridContainer.querySelectorAll(`[data-section-id="${sectionId}"]${GRID_ITEM_SELECTOR}`));
-                    
+                    const currentSoldItems = Array.from(
+                        gridContainer.querySelectorAll(`[data-section-id="${sectionId}"]${GRID_ITEM_SELECTOR}`),
+                    );
+
                     currentSoldItems.forEach((soldCard, index) => {
                         window.setTimeout(() => {
                             // 1. Trigger the native Vinted favorite toggle button click to un-favorite the item
@@ -188,12 +190,14 @@ function organizeFavouriteGrid() {
 
                             // 2. Start visual zoom-out and hide transition
                             soldCard.classList.add('mashinted-item-hiding');
-                            
+
                             window.setTimeout(() => {
                                 soldCard.style.display = 'none';
-                                
+
                                 // Update remaining count dynamically in the badge
-                                const remainingItems = currentSoldItems.filter(card => card.style.display !== 'none').length;
+                                const remainingItems = currentSoldItems.filter(
+                                    (card) => card.style.display !== 'none',
+                                ).length;
                                 countBadge.textContent = t('itemCount', { count: remainingItems });
 
                                 // Hide divider and clear button if all sold items are gone
@@ -218,11 +222,11 @@ function organizeFavouriteGrid() {
             // Ensure the outer root grid item retains its correct classification
             item.className = 'mashinted__feed-grid__item mashinted-section-start';
             item.setAttribute('data-mashinted-aggregated', 'true');
-            
+
             if (dividerSectionId) {
                 item.setAttribute('data-section-id', dividerSectionId);
             }
-            
+
             if (index !== 0) {
                 item.classList.remove('mashinted-section-start');
             }

@@ -11,17 +11,14 @@ import { extractBrandName, blockGridItem } from '../blacklist/grid-item.js';
 import {
     toggleVintedNativeFavorite,
     updateButtonVisualState,
-    createAggregatorProgressBanner
+    createAggregatorProgressBanner,
 } from './modal-helpers.js';
 import { createLogger } from '../../shared/logger.js';
 import { getCssDurationMs } from '../../shared/css-duration.js';
 import { COLLAPSE_TRANSITION_DURATION_MS } from '../../shared/constants.js';
 
 const collapseTimers = new WeakMap();
-import {
-    CARD_PART,
-    GRID_ITEM_SELECTOR,
-} from '../../vinted/selectors.js';
+import { CARD_PART, GRID_ITEM_SELECTOR } from '../../vinted/selectors.js';
 
 const log = createLogger('transfer');
 
@@ -34,7 +31,12 @@ export { createAggregatorProgressBanner };
  * @returns {string} Web-safe CSS selector ID suffix.
  */
 function getSectionId(searchName) {
-    return 'mashinted-sec-' + String(searchName).toLowerCase().replace(/[^a-z0-9]/g, '-');
+    return (
+        'mashinted-sec-' +
+        String(searchName)
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '-')
+    );
 }
 
 /**
@@ -142,7 +144,7 @@ export function parseVintedCardDOM(cardElement) {
         price: priceTextEl?.textContent?.trim() || '',
         totalPrice: totalPriceEl?.textContent?.trim() || '',
         imageUrl: imgEl?.src || '',
-        itemUrl: itemUrl
+        itemUrl: itemUrl,
     };
 }
 
@@ -176,25 +178,24 @@ export function createAggregatedItemCard(itemData, options = {}) {
         subtitle = parsed.subtitle;
         itemData = parsed;
     } else {
-        brand = itemData.brandName
-            || itemData.brand_title
-            || itemData.brand
-            || '';
+        brand = itemData.brandName || itemData.brand_title || itemData.brand || '';
 
-        subtitle = itemData.subtitle
-            || itemData.description
-            || [itemData.size, itemData.status || itemData.condition].filter(Boolean).join(' · ')
-            || itemData.title
-            || '';
+        subtitle =
+            itemData.subtitle ||
+            itemData.description ||
+            [itemData.size, itemData.status || itemData.condition].filter(Boolean).join(' · ') ||
+            itemData.title ||
+            '';
     }
-const basePrice = itemData.price || '—';
+    const basePrice = itemData.price || '—';
     const totalPrice = itemData.totalPrice || basePrice;
     const rawFavCount = itemData.favouriteCount;
-    const hasFavourites = rawFavCount !== undefined && rawFavCount !== null && rawFavCount !== '' && parseInt(rawFavCount, 10) > 0;
+    const hasFavourites =
+        rawFavCount !== undefined && rawFavCount !== null && rawFavCount !== '' && parseInt(rawFavCount, 10) > 0;
     const favouriteCount = hasFavourites ? String(rawFavCount) : '';
 
     // Conditionally build the favourite display content, omitting the spacer completely if 0/empty
-    const favouriteHTML = hasFavourites 
+    const favouriteHTML = hasFavourites
         ? `<div class="web_ui__Spacer__small web_ui__Spacer__vertical"></div><span class="web_ui__Text__text web_ui__Text__caption web_ui__Text__left" data-testid="favourite-count-text">${escapeHtml(favouriteCount)}</span>`
         : '';
 
@@ -213,8 +214,7 @@ const basePrice = itemData.price || '—';
         : '';
 
     // GRID_ITEM_TEMPLATE already contains the inner layers natively
-    card.innerHTML = GRID_ITEM_TEMPLATE
-        .replace(/{ITEM_ID}/g, itemData.id)
+    card.innerHTML = GRID_ITEM_TEMPLATE.replace(/{ITEM_ID}/g, itemData.id)
         .replace('{IMAGE_ALT}', `${escapeHtml(brand)} ${escapeHtml(subtitle)}`)
         .replace('{IMAGE_URL}', itemData.imageUrl || '')
         .replace('{ITEM_URL}', itemData.itemUrl || '#')
@@ -230,7 +230,7 @@ const basePrice = itemData.price || '—';
         .replace('{FAVOURITE_LABEL}', escapeHtml(t('addToFavourites')))
         .replace('{PROTECTION_LABEL}', escapeHtml(t('priceIncludesProtection', { price: totalPrice })))
         .replace('{INCL_LABEL}', escapeHtml(t('priceIncl')));
-    
+
     // Attach click listener to the favorite button
     const favBtn = card.querySelector('.mashinted__fav-icon');
     if (favBtn) {
@@ -267,29 +267,28 @@ const basePrice = itemData.price || '—';
 
     if (trashBtn) {
         trashBtn.addEventListener('click', async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
 
-        const gridItem = card.closest(GRID_ITEM_SELECTOR) || card;
-        const brandName = extractBrandName(gridItem) || trashBtn.getAttribute('data-brand');
+            const gridItem = card.closest(GRID_ITEM_SELECTOR) || card;
+            const brandName = extractBrandName(gridItem) || trashBtn.getAttribute('data-brand');
 
-        if (brandName) {
-            log.debug(`Trash clicked. Adding brand to blacklist: "${brandName}"`);
+            if (brandName) {
+                log.debug(`Trash clicked. Adding brand to blacklist: "${brandName}"`);
 
-            await addBrand(brandName);
-            blockGridItem(gridItem, brandName, false);
+                await addBrand(brandName);
+                blockGridItem(gridItem, brandName, false);
 
-            // Hide the card element directly since it's now the outer grid item
-            setTimeout(() => {
-                card.style.display = 'none';
-            }, 350);
-            
-        } else {
-            log.warn('Could not extract brand name from this grid item layout.');
-        }
-    });
-}
+                // Hide the card element directly since it's now the outer grid item
+                setTimeout(() => {
+                    card.style.display = 'none';
+                }, 350);
+            } else {
+                log.warn('Could not extract brand name from this grid item layout.');
+            }
+        });
+    }
 
     return card;
 }

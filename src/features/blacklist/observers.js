@@ -1,12 +1,7 @@
 import { HOMEPAGE_BLOCKS_SELECTOR } from '../../vinted/selectors.js';
 import { observeDom } from '../../shared/dom-observer.js';
 
-import {
-    watchGridItemsWithin,
-    stopRetryingGridItem,
-    stopHideFinalization,
-    rescanGridItems,
-} from './grid-item.js';
+import { watchGridItemsWithin, stopRetryingGridItem, stopHideFinalization, rescanGridItems } from './grid-item.js';
 import { subscribeToBrandListChanges } from '../../shared/storage.js';
 
 import { resetPageBlockedCount } from './state.js';
@@ -42,7 +37,7 @@ function startPageTransitionObserver() {
 
     routeObserver.observe(document.documentElement, {
         childList: true,
-        subtree: true
+        subtree: true,
     });
 
     return () => routeObserver.disconnect();
@@ -122,8 +117,4 @@ function startBlacklistRescan() {
     return subscribeToBrandListChanges(() => rescanGridItems());
 }
 
-export {
-    startPageTransitionObserver,
-    startObserver,
-    startBlacklistRescan
-};
+export { startPageTransitionObserver, startObserver, startBlacklistRescan };

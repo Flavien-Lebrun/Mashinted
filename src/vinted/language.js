@@ -48,5 +48,7 @@ export function detectFromNavigator(nav = window.navigator) {
  * @returns {string|null} Lowercase language code (e.g. "fr"), or null if undetectable.
  */
 export function detectVintedLanguage(root = document, hostname = window.location.hostname) {
-    return detectFromSelector(root) || detectFromHtmlLang(root) || detectFromHostname(hostname) || detectFromNavigator();
+    return (
+        detectFromSelector(root) || detectFromHtmlLang(root) || detectFromHostname(hostname) || detectFromNavigator()
+    );
 }

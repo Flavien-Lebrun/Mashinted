@@ -1,7 +1,7 @@
 /**
  * @file clean-guard.js
  * @brief DOM Interceptor and Feed Cleaning Utilities for Mashinted Aggregator.
- * @details Handles progressive clearing of native Vinted feed elements, mutation guard observation, 
+ * @details Handles progressive clearing of native Vinted feed elements, mutation guard observation,
  *          and custom node tagging to prevent extension card removal.
  */
 
@@ -29,8 +29,10 @@ export function markAsMashintedElement(element) {
  */
 export function isMashintedElement(node) {
     if (!node || !node.hasAttribute) return false;
-    return node.hasAttribute('data-mashinted-aggregated') || 
-           Boolean(node.closest && node.closest('[data-mashinted-aggregated]'));
+    return (
+        node.hasAttribute('data-mashinted-aggregated') ||
+        Boolean(node.closest && node.closest('[data-mashinted-aggregated]'))
+    );
 }
 
 /**
@@ -51,9 +53,7 @@ export function isUnwantedGridElement(element) {
  */
 export function getRemovableGridElements(container) {
     if (!container) return [];
-    return Array.from(container.querySelectorAll(REMOVABLE_SELECTORS)).filter(
-        (node) => !isMashintedElement(node)
-    );
+    return Array.from(container.querySelectorAll(REMOVABLE_SELECTORS)).filter((node) => !isMashintedElement(node));
 }
 
 /**
@@ -155,15 +155,15 @@ export async function clearGridProgressively(targetGrid, batchSize = 12) {
  * @param {HTMLElement} gridContainer - Container element or document context.
  */
 export function hideLoadMoreButton(gridContainer) {
-    const loadMoreBtn = document.querySelector(FEED_LOAD_MORE_SELECTOR) ||
-                        gridContainer?.querySelector(FEED_LOAD_MORE_SELECTOR);
+    const loadMoreBtn =
+        document.querySelector(FEED_LOAD_MORE_SELECTOR) || gridContainer?.querySelector(FEED_LOAD_MORE_SELECTOR);
 
     if (!loadMoreBtn) return;
 
     loadMoreBtn.classList.add('mashinted-u-hidden');
 
-    const wrapper = loadMoreBtn.closest('.u-flexbox.u-align-items-center.u-flex-direction-column') ||
-                    loadMoreBtn.parentElement;
+    const wrapper =
+        loadMoreBtn.closest('.u-flexbox.u-align-items-center.u-flex-direction-column') || loadMoreBtn.parentElement;
 
     if (wrapper) {
         wrapper.classList.add('mashinted-u-hidden');

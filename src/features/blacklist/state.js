@@ -58,10 +58,10 @@ const brandStatsListeners = new Set();
 export function incrementBrandSessionStat(rawBrandName) {
     if (!rawBrandName) return;
     const normalized = rawBrandName.trim().toLowerCase();
-    
+
     const currentCount = brandSessionStats.get(normalized) || 0;
     brandSessionStats.set(normalized, currentCount + 1);
-    
+
     // Notify all active listeners (e.g., the config modal window)
     notifyBrandStatsListeners();
 }

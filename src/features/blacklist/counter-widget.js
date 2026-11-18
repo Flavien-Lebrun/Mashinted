@@ -36,7 +36,7 @@ function setupCounterWidgetSubscription() {
     });
 }
 
-const MIN_LOADING_TIME_MS = 600; 
+const MIN_LOADING_TIME_MS = 600;
 const startTime = Date.now();
 /**
  * Called once hydration/storage is complete.
@@ -141,7 +141,7 @@ function ensureCounterWidgetMounted() {
                             nativeButton.classList.remove('web_ui__Chip__activated');
                             nativeButton.setAttribute('aria-pressed', 'false');
                             activeModalRef = null;
-                        }
+                        },
                     });
                 });
             }
@@ -149,7 +149,4 @@ function ensureCounterWidgetMounted() {
     }, remainingTime);
 }
 
-export {
-    setupCounterWidgetSubscription,
-    ensureCounterWidgetMounted,
-};
+export { setupCounterWidgetSubscription, ensureCounterWidgetMounted };

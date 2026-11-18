@@ -191,8 +191,8 @@
 }
 
 /* Force the very first item card of a section to clear and start on a brand new row */
-[data-testid="homepage-blocks"] > .mashinted-section-start,
-[class*="__homepage-blocks"] > .mashinted-section-start,
+[data-testid='homepage-blocks'] > .mashinted-section-start,
+[class*='__homepage-blocks'] > .mashinted-section-start,
 .mashinted-section-start {
     grid-column: 1 / span 1 !important;
 }
@@ -250,7 +250,7 @@
 
 /* Utility Guards */
 .mashinted-u-hidden,
-[data-mashinted-hidden="true"] {
+[data-mashinted-hidden='true'] {
     display: none !important;
 }
 
@@ -258,96 +258,97 @@
 .mashinted__homepage-blocks {
     grid-auto-flow: row !important;
     /*grid-auto-flow: dense; Original Vinted behavior suppressed */
-    grid-template-columns: repeat(2,minmax(0,1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: stretch;
     column-gap: 8px;
-    display: grid
+    display: grid;
 }
 
 @media only screen and (min-width: 721px) {
     .mashinted__homepage-blocks {
-        column-gap:16px
+        column-gap: 16px;
     }
 }
 
-@media only screen and (min-width: 721px) and (max-width:959px) {
+@media only screen and (min-width: 721px) and (max-width: 959px) {
     .mashinted__homepage-blocks {
-        grid-template-columns:repeat(3,minmax(0,1fr))
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
 @media only screen and (min-width: 960px) {
     .mashinted__homepage-blocks {
-        grid-template-columns:repeat(4,minmax(0,1fr))
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
 @media only screen and (min-width: 1200px) {
     .mashinted__homepage-blocks {
-        grid-template-columns:repeat(5,minmax(0,1fr))
+        grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 }
 
-.mashinted__homepage-blocks>:not(.mashinted__homepage-blocks__item--one-fifth):not(.mashinted__homepage-blocks__item--two-fifths) {
-    grid-column: 1/-1
+.mashinted__homepage-blocks
+    > :not(.mashinted__homepage-blocks__item--one-fifth):not(.mashinted__homepage-blocks__item--two-fifths) {
+    grid-column: 1/-1;
 }
 
 .mashinted__homepage-blocks__item {
     box-sizing: border-box;
     width: 100%;
     min-width: 0;
-    position: relative
+    position: relative;
 }
 
 .mashinted__homepage-blocks__item--one-fifth {
     grid-column: span 1;
     width: 100%;
-    padding-bottom: 8px
+    padding-bottom: 8px;
 }
 
 .mashinted__homepage-blocks__item--two-fifths {
     grid-column: span 2;
     width: 100%;
-    padding-bottom: 8px
+    padding-bottom: 8px;
 }
 
 .mashinted__feed-grid {
-    margin: 0 calc(-1*var(--space-100));
+    margin: 0 calc(-1 * var(--space-100));
     flex-wrap: wrap;
     justify-content: flex-start;
     align-items: flex-start;
-    display: flex
+    display: flex;
 }
 
 @media only screen and (min-width: 721px) {
     .mashinted__feed-grid {
-        margin:0 calc(-1*var(--space-200))
+        margin: 0 calc(-1 * var(--space-200));
     }
 }
 
 .mashinted__feed-grid__item {
     box-sizing: border-box;
     width: 50%;
-    position: relative
+    position: relative;
 }
 
 @media only screen and (min-width: 721px) {
     .mashinted__feed-grid__item {
-        width:33.3333%
+        width: 33.3333%;
     }
 }
 
 @media only screen and (min-width: 1200px) {
     .mashinted__feed-grid__item {
-        width:25%
+        width: 25%;
     }
 }
 
 /* Homepage container is a CSS grid (column count set by Vinted): let the grid size
    our cards instead of the flex-row percentages above, which would shrink them
    to a fraction of a single cell. */
-[data-testid="homepage-blocks"] > .mashinted__feed-grid__item,
-[class*="__homepage-blocks"] > .mashinted__feed-grid__item {
+[data-testid='homepage-blocks'] > .mashinted__feed-grid__item,
+[class*='__homepage-blocks'] > .mashinted__feed-grid__item {
     width: auto;
     min-width: 0;
 }
@@ -356,84 +357,84 @@
    grid-column: 1 / -1 on every child lacking its hashed item classes, i.e. ours.
    That selector has specificity (0,3,0), so we need !important to win. The section
    divider keeps its own full-row rule. */
-[data-testid="homepage-blocks"] > .mashinted__feed-grid__item:not(.mashinted-section-start),
-[class*="__homepage-blocks"] > .mashinted__feed-grid__item:not(.mashinted-section-start) {
+[data-testid='homepage-blocks'] > .mashinted__feed-grid__item:not(.mashinted-section-start),
+[class*='__homepage-blocks'] > .mashinted__feed-grid__item:not(.mashinted-section-start) {
     grid-column: auto !important;
 }
 
 /* In the homepage grid the gap comes from Vinted's column-gap, so the flex-row padding
    below would double it. Match native cards (`--one-fifth`: padding-bottom 8px). */
-[data-testid="homepage-blocks"] > .mashinted__feed-grid__item > .mashinted__feed-grid__item-content,
-[class*="__homepage-blocks"] > .mashinted__feed-grid__item > .mashinted__feed-grid__item-content {
+[data-testid='homepage-blocks'] > .mashinted__feed-grid__item > .mashinted__feed-grid__item-content,
+[class*='__homepage-blocks'] > .mashinted__feed-grid__item > .mashinted__feed-grid__item-content {
     padding: 0 0 8px;
 }
 
 .mashinted__feed-grid__item-content {
-    padding: 0 var(--space-100) var(--space-200)
+    padding: 0 var(--space-100) var(--space-200);
 }
 
 @media only screen and (min-width: 721px) {
     .mashinted__feed-grid__item-content {
-        padding:0 var(--space-200) var(--space-400)
+        padding: 0 var(--space-200) var(--space-400);
     }
 }
 
 .mashinted__feed-grid__item--full-row {
-    width: 100%
+    width: 100%;
 }
 
 .mashinted__feed-grid--compact .mashinted__feed-grid__item-content {
-    padding-bottom: var(--space-200)
+    padding-bottom: var(--space-200);
 }
 
 .mashinted__feed-grid__item--one-fifth {
-    align-self: stretch
+    align-self: stretch;
 }
 
-@media only screen and (min-width: 721px) and (max-width:959px) {
+@media only screen and (min-width: 721px) and (max-width: 959px) {
     .mashinted__feed-grid__item--one-fifth {
-        width:33.3333%
+        width: 33.3333%;
     }
 }
 
 @media only screen and (min-width: 960px) {
     .mashinted__feed-grid__item--one-fifth {
-        width:25%
+        width: 25%;
     }
 }
 
 @media only screen and (min-width: 1200px) {
     .mashinted__feed-grid__item--one-fifth {
-        width:20%
+        width: 20%;
     }
 }
 
 .mashinted__feed-grid__item--one-fifth .mashinted__feed-grid__item-content {
     box-sizing: border-box;
-    height: 100%
+    height: 100%;
 }
 
-.mashinted__feed-grid__item--one-fifth .mashinted__feed-grid__item-content>div {
-    height: 100%
+.mashinted__feed-grid__item--one-fifth .mashinted__feed-grid__item-content > div {
+    height: 100%;
 }
 
 .mashinted__new-item-box__container {
     flex-direction: column;
-    display: flex
+    display: flex;
 }
 
 .mashinted__new-item-box__container--fixed-aspect-ratio {
-    aspect-ratio: 1/1.9
+    aspect-ratio: 1/1.9;
 }
 
 .mashinted__new-item-box__container--fixed-aspect-ratio .mashinted__new-item-box__image-container {
-    flex: 1
+    flex: 1;
 }
 
 .mashinted__new-item-box__container:has(a.mashinted__new-item-box__overlay:focus-visible) {
     outline: 3px solid rgb(var(--primary-default));
     outline-offset: 2px;
-    border-radius: 8px
+    border-radius: 8px;
 }
 
 .mashinted__new-item-box__overlay {
@@ -445,28 +446,28 @@
     top: 0;
     bottom: 0;
     left: 0;
-    right: 0
+    right: 0;
 }
 
 .mashinted__new-item-box__image-container {
     border-radius: 6px;
-    overflow: hidden
+    overflow: hidden;
 }
 
 .mashinted__new-item-box__image {
     background-color: rgb(var(--greyscale-level-5));
     height: 100%;
-    position: relative
+    position: relative;
 }
 
 .mashinted__new-item-box__summary {
-    padding: 8px 4px
+    padding: 8px 4px;
 }
 
 .mashinted__new-item-box__summary--compact-bottom {
-    padding-bottom: 4px
+    padding-bottom: 4px;
 }
 
 .mashinted__new-item-box__overlay--clickable {
-    cursor: pointer
+    cursor: pointer;
 }

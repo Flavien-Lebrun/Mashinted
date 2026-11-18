@@ -6,10 +6,7 @@ import { isGridItemBlocked } from './state.js';
 import { observeDom } from '../../shared/dom-observer.js';
 import { addBrand } from '../../shared/storage.js';
 import { createLogger } from '../../shared/logger.js';
-import {
-    FAVOURITE_BUTTON_SELECTOR,
-    GRID_ITEM_SELECTOR,
-} from '../../vinted/selectors.js';
+import { FAVOURITE_BUTTON_SELECTOR, GRID_ITEM_SELECTOR } from '../../vinted/selectors.js';
 
 const log = createLogger('trash');
 

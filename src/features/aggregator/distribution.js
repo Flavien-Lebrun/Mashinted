@@ -5,7 +5,7 @@
 
 /**
  * @brief Calculates target item allocation per saved search based on total item volume.
- * 
+ *
  * @param {Array<Object>} scannedItems - List of scanned saved search descriptor records.
  * @param {number} [thresholdCapTrigger=99] - Global threshold count triggering per-search capping.
  * @param {number} [maxCappedPerSearch=30] - Maximum item count cap per search when overloaded.
@@ -29,7 +29,7 @@ export function calculateFetchDistribution(scannedItems, thresholdCapTrigger = 9
 
         return {
             ...item,
-            targetToFetch: fetchCount
+            targetToFetch: fetchCount,
         };
     });
 }

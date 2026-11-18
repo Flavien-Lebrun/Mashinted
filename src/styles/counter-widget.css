@@ -7,7 +7,9 @@
     right: 20px;
     z-index: 999999;
     transform-origin: bottom right;
-    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition:
+        opacity 0.3s ease,
+        transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     opacity: 0;
     transform: translateY(12px) scale(0.96);
     pointer-events: none;
@@ -24,16 +26,17 @@
     cursor: pointer !important;
     position: relative;
     overflow: hidden;
-    transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                padding 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.2s ease,
-                background-color 0.2s ease !important;
+    transition:
+        width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        padding 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+        border-color 0.2s ease,
+        background-color 0.2s ease !important;
     will-change: width, padding;
 }
 
 .mashinted-counter-widget-wrapper button:hover::after {
-    content: "";
-    background-color: rgba(var(--greyscale-level-1), .02);
+    content: '';
+    background-color: rgba(var(--greyscale-level-1), 0.02);
     width: 100%;
     height: 100%;
     position: absolute;
@@ -92,4 +95,3 @@
         color: rgba(var(--amplified-default), 1);
     }
 }
-

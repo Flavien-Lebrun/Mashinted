@@ -20,7 +20,9 @@ describe('config modal counters', () => {
         stats.set('bar', 3);
         modal.updateList(['foo', 'bar']);
 
-        const counters = [...document.querySelectorAll('.mashinted-brand-minimal-counter')].map((node) => node.textContent);
+        const counters = [...document.querySelectorAll('.mashinted-brand-minimal-counter')].map(
+            (node) => node.textContent,
+        );
         expect(counters).toEqual(['+3']);
     });
 });

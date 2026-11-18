@@ -18,8 +18,17 @@ describe('health report', () => {
     });
 
     it('summarises pages as pending, ok or problem', () => {
-        const stored = mergeResults({}, [result('a', 'home', 'ok'), result('b', 'feed', 'missing'), result('c', 'inbox', 'warn')], 't');
-        expect(summarizePages(stored)).toMatchObject({ home: 'ok', feed: 'problem', inbox: 'ok', favourites: 'pending' });
+        const stored = mergeResults(
+            {},
+            [result('a', 'home', 'ok'), result('b', 'feed', 'missing'), result('c', 'inbox', 'warn')],
+            't',
+        );
+        expect(summarizePages(stored)).toMatchObject({
+            home: 'ok',
+            feed: 'problem',
+            inbox: 'ok',
+            favourites: 'pending',
+        });
     });
 
     it('builds a report with hints for failures, pending pages and no extra data', () => {

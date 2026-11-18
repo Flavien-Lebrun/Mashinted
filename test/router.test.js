@@ -74,8 +74,20 @@ describe('router', () => {
         const started = [];
         const router = createRouter(
             [
-                { name: 'a', match: (path) => path === '/', start: () => () => { throw new Error('boom'); } },
-                { name: 'b', match: () => true, start: () => { started.push('b'); } },
+                {
+                    name: 'a',
+                    match: (path) => path === '/',
+                    start: () => () => {
+                        throw new Error('boom');
+                    },
+                },
+                {
+                    name: 'b',
+                    match: () => true,
+                    start: () => {
+                        started.push('b');
+                    },
+                },
             ],
             () => pathname,
         );

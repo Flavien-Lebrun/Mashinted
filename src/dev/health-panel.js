@@ -12,7 +12,7 @@ const PANEL_ID = 'mashinted-health-panel';
 const STORAGE_KEY = 'mashinted_health_report';
 // A click on the panel closes Vinted's dropdowns, so state-dependent checks run after a delay.
 const DELAYED_RERUN_MS = 5000;
-const MARKS ={ ok: '✓', problem: '✗', pending: '○' };
+const MARKS = { ok: '✓', problem: '✗', pending: '○' };
 
 const STYLE = `
 #${PANEL_ID} { position: fixed; left: 12px; bottom: 12px; z-index: 2147483647; width: 300px; font: 12px/1.4 system-ui, sans-serif;
@@ -34,7 +34,8 @@ function el(tag, props = {}, children = []) {
     return node;
 }
 
-const readStored = () => new Promise((resolve) => chrome.storage.local.get([STORAGE_KEY], (r) => resolve(r[STORAGE_KEY] || {})));
+const readStored = () =>
+    new Promise((resolve) => chrome.storage.local.get([STORAGE_KEY], (r) => resolve(r[STORAGE_KEY] || {})));
 const writeStored = (value) => new Promise((resolve) => chrome.storage.local.set({ [STORAGE_KEY]: value }, resolve));
 
 async function copyText(text) {
@@ -78,7 +79,9 @@ export async function mountHealthPanel({ run, getPage, autoRunDelayMs }) {
     function render() {
         const summary = summarizePages(stored);
         const steps = PAGES.map((page) => {
-            const items = [el('span', { className: `mh-${summary[page]}`, textContent: `${MARKS[summary[page]]} ${page}` })];
+            const items = [
+                el('span', { className: `mh-${summary[page]}`, textContent: `${MARKS[summary[page]]} ${page}` }),
+            ];
             if (summary[page] !== 'ok') items.push(el('span', { className: 'mh-text', textContent: STEP_TEXT[page] }));
             return el('li', {}, items);
         });
@@ -128,7 +131,9 @@ export async function mountHealthPanel({ run, getPage, autoRunDelayMs }) {
             },
         });
 
-        const body = collapsed ? [] : [el('div', { className: 'mh-body' }, [el('ul', {}, steps), buttons, el('div', { textContent: notice })])];
+        const body = collapsed
+            ? []
+            : [el('div', { className: 'mh-body' }, [el('ul', {}, steps), buttons, el('div', { textContent: notice })])];
         panel.replaceChildren(head, ...body);
     }
 

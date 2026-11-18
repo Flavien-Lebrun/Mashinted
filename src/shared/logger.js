@@ -22,8 +22,12 @@ function isDebugEnabled() {
 export function createLogger(scope) {
     const tag = scope ? `${PREFIX}:${scope}` : PREFIX;
     return {
-        debug: (...args) => { if (isDebugEnabled()) console.debug(tag, ...args); },
-        info: (...args) => { if (isDebugEnabled()) console.info(tag, ...args); },
+        debug: (...args) => {
+            if (isDebugEnabled()) console.debug(tag, ...args);
+        },
+        info: (...args) => {
+            if (isDebugEnabled()) console.info(tag, ...args);
+        },
         warn: (...args) => console.warn(tag, ...args),
         error: (...args) => console.error(tag, ...args),
     };

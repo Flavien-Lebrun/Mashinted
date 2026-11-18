@@ -27,8 +27,7 @@ const en = {
     addToFavourites: 'Add to favourites',
     favourite: 'Favourite',
     favouriteAdded: 'Added! ',
-    removeFromFavourites: ({ count }) =>
-        `Remove from favourites, favourited by ${count} user${count > 1 ? 's' : ''}`,
+    removeFromFavourites: ({ count }) => `Remove from favourites, favourited by ${count} user${count > 1 ? 's' : ''}`,
     priceIncl: 'incl.',
     priceIncludesProtection: ({ price }) => `${price} includes Buyer Protection`,
     itemCount: ({ count }) => `${count} item${count > 1 ? 's' : ''}`,
@@ -105,7 +104,8 @@ const fr = {
     infoLoadingLabel: 'Informations sur les limites de chargement',
     tooltipTitle: 'Agrégateur de nouveautés',
     tooltipDesc: 'Ce bouton affiche toutes les nouveautés de vos recherches sauvegardées.',
-    tooltipLimits: 'Pour optimiser les performances et éviter les limitations, des plafonds de chargement s’appliquent :',
+    tooltipLimits:
+        'Pour optimiser les performances et éviter les limitations, des plafonds de chargement s’appliquent :',
     tooltipUnderCapLabel: 'Total ≤ 99 articles :',
     tooltipUnderCapText: 'Toutes les nouveautés sont chargées.',
     tooltipOverCapLabel: 'Total > 99 articles :',

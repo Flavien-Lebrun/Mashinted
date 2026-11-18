@@ -1,7 +1,7 @@
 /**
  * @file index.js
  * @brief Main execution orchestrator for the Mashinted Feed Aggregator.
- * @details Handles feed clearing, active grid detection/reconstruction, distribution calculation, 
+ * @details Handles feed clearing, active grid detection/reconstruction, distribution calculation,
  *          DOM node injection, and mutation guard lifecycles.
  */
 
@@ -11,7 +11,7 @@ import {
     startGridInterceptorGuard,
     purgeUnwantedGridItems,
     hideLoadMoreButton,
-    markAsMashintedElement
+    markAsMashintedElement,
 } from './clean-guard.js';
 import { isBlacklistedBrand } from '../../shared/storage.js';
 import { calculateFetchDistribution } from './distribution.js';
@@ -36,7 +36,12 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
  * @returns {string} Formatted section ID selector.
  */
 function getSectionId(searchName) {
-    return 'mashinted-sec-' + String(searchName).toLowerCase().replace(/[^a-z0-9]/g, '-');
+    return (
+        'mashinted-sec-' +
+        String(searchName)
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, '-')
+    );
 }
 
 /**
@@ -46,7 +51,7 @@ function getSectionId(searchName) {
 export function getActiveGridContainer() {
     // 1. Check if standard Vinted homepage block container exists
     let grid = queryFirst(document, HOMEPAGE_FEED_SELECTORS, 'homepage feed');
-        log.debug('Active grid container located:', grid);
+    log.debug('Active grid container located:', grid);
 
     if (grid && document.body.contains(grid)) {
         return grid;
@@ -69,7 +74,7 @@ function insertInGrid(newNode, feedGrid, progressBanner) {
 
 /**
  * @brief Processes scanned saved searches, fetches items, and injects cards into the feed grid.
- * 
+ *
  * @param {Array<Object>} scannedItems - Array of scanned saved search descriptor objects.
  * @param {Function} [onProgress] - Callback function receiving progress status strings.
  * @param {Object} [progressBanner=null] - Interactive progress banner controller.
@@ -110,7 +115,12 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
     try {
         for (let i = 0; i < activeSearches.length; i++) {
             const search = activeSearches[i];
-            const statusMsg = t('progressLoading', { index: i + 1, total: activeSearches.length, count: search.targetToFetch, name: search.name });
+            const statusMsg = t('progressLoading', {
+                index: i + 1,
+                total: activeSearches.length,
+                count: search.targetToFetch,
+                name: search.name,
+            });
 
             if (onProgress) onProgress(statusMsg);
 
@@ -121,9 +131,7 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
                 const items = parseCatalogItems(html, search.targetToFetch);
                 if (!Array.isArray(items) || items.length === 0) continue;
 
-                const validItems = items.filter((itemData) =>
-                    itemData && !isBlacklistedBrand(itemData.brandName)
-                );
+                const validItems = items.filter((itemData) => itemData && !isBlacklistedBrand(itemData.brandName));
 
                 if (validItems.length > 0) {
                     const dividerNode = createSearchDividerNode(search.name, validItems.length, search.url);
@@ -136,10 +144,10 @@ export async function processScannedSearches(scannedItems, onProgress, progressB
                     const createdCards = [];
                     for (let index = 0; index < validItems.length; index++) {
                         const itemData = validItems[index];
-        
+
                         const cardNode = createAggregatedItemCard(itemData, {
-                            isFirstInSection: (index === 0),
-                            dividerSectionId: sectionId
+                            isFirstInSection: index === 0,
+                            dividerSectionId: sectionId,
                         });
 
                         if (!cardNode || !(cardNode instanceof HTMLElement)) continue;

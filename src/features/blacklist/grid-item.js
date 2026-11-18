@@ -35,7 +35,7 @@ import { isBlacklistedBrand } from '../../shared/storage.js';
 function extractBrandName(gridItem) {
     const brandNames = gridItem.matches?.(BRAND_NAME_SELECTOR)
         ? [gridItem]
-        : gridItem.querySelectorAll?.(BRAND_NAME_SELECTOR) ?? [];
+        : (gridItem.querySelectorAll?.(BRAND_NAME_SELECTOR) ?? []);
 
     for (const brandName of brandNames) {
         const text = brandName.textContent?.trim();
@@ -101,10 +101,13 @@ function finalizeHiddenGridItem(gridItem) {
 function scheduleHideFinalization(gridItem) {
     stopHideFinalization(gridItem);
 
-    const timerId = window.setTimeout(() => {
-        finalizeHiddenGridItem(gridItem);
-        hideFinalizationTimers.delete(gridItem);
-    }, getCssDurationMs('--mashinted-hide-duration', HIDE_TRANSITION_DURATION_MS) + 40);
+    const timerId = window.setTimeout(
+        () => {
+            finalizeHiddenGridItem(gridItem);
+            hideFinalizationTimers.delete(gridItem);
+        },
+        getCssDurationMs('--mashinted-hide-duration', HIDE_TRANSITION_DURATION_MS) + 40,
+    );
 
     hideFinalizationTimers.set(gridItem, timerId);
 }
@@ -264,12 +267,11 @@ function watchGridItemForBrandName(gridItem) {
         const productId = getProductId(gridItem);
 
         // Keep listing hidden if its product ID or DOM object is in our blacklist
-        if (
-            isGridItemBlocked(gridItem, productId) ||
-            gridItem.getAttribute(HIDDEN_BY_BLACKLIST_ATTRIBUTE) === 'true'
-        ) {
-            if (!gridItem.classList.contains(HIDDEN_BY_BLACKLIST_ACTIVE_CLASS)
-                || gridItem.getAttribute(HIDDEN_BY_BLACKLIST_ATTRIBUTE) !== 'true') {
+        if (isGridItemBlocked(gridItem, productId) || gridItem.getAttribute(HIDDEN_BY_BLACKLIST_ATTRIBUTE) === 'true') {
+            if (
+                !gridItem.classList.contains(HIDDEN_BY_BLACKLIST_ACTIVE_CLASS) ||
+                gridItem.getAttribute(HIDDEN_BY_BLACKLIST_ATTRIBUTE) !== 'true'
+            ) {
                 enforceHiddenGridItem(gridItem);
             }
             return;
@@ -286,9 +288,7 @@ function watchGridItemForBrandName(gridItem) {
 }
 
 function watchGridItemsWithin(root) {
-    const gridItems = root.matches?.(GRID_ITEM_SELECTOR)
-        ? [root]
-        : root.querySelectorAll?.(GRID_ITEM_SELECTOR) ?? [];
+    const gridItems = root.matches?.(GRID_ITEM_SELECTOR) ? [root] : (root.querySelectorAll?.(GRID_ITEM_SELECTOR) ?? []);
 
     for (const gridItem of gridItems) {
         watchGridItemForBrandName(gridItem);
@@ -305,5 +305,5 @@ export {
     stopRetryingGridItem,
     stopHideFinalization,
     blockGridItem,
-    extractBrandName
+    extractBrandName,
 };

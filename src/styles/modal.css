@@ -34,7 +34,7 @@
     transform: translateY(15px);
     transition: transform 0.25s cubic-bezier(0.1, 0.8, 0.25, 1);
     overflow: hidden;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 .mashinted-modal-overlay.active .mashinted-modal-window {
@@ -101,7 +101,9 @@
     align-items: center;
     box-sizing: border-box;
     border: 1px solid transparent;
-    transition: background-color 0.15s ease, border-color 0.15s ease;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .mashinted-search-bar-container .web_ui__InputBar__input-bar:focus-within {
@@ -195,7 +197,9 @@ li.pile__element:not(:last-child) {
     justify-content: center;
     border-radius: 4px;
     flex-shrink: 0;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
 }
 
 .mashinted-delete-btn:hover {
@@ -269,4 +273,3 @@ li.pile__element:not(:last-child) {
 .mashinted-inline-add-btn:hover {
     background-color: rgba(0, 0, 0, 0.06);
 }
-

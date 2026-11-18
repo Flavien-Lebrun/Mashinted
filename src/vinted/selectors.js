@@ -79,9 +79,18 @@ export const CARD_PART = {
 /** Card parts inside fetched catalog HTML (looser, with legacy class fallbacks). */
 export const CATALOG_PART = {
     container: join(GRID_ITEM_SELECTOR, '.feed-grid__item', '.web_ui__ItemBox__container'),
-    brand: join('[data-testid$="--description-title"]', '[data-testid*="description-title"]', '.new-item-box__description p'),
+    brand: join(
+        '[data-testid$="--description-title"]',
+        '[data-testid*="description-title"]',
+        '.new-item-box__description p',
+    ),
     subtitle: join('[data-testid$="--description-subtitle"]', '[data-testid*="description-subtitle"]'),
-    price: join('[data-testid$="--price-text"]', '[data-testid*="price-text"]', '.title-content p', '.web_ui__ItemBox__title--price'),
+    price: join(
+        '[data-testid$="--price-text"]',
+        '[data-testid*="price-text"]',
+        '.title-content p',
+        '.web_ui__ItemBox__title--price',
+    ),
     totalPrice: join('[data-testid="total-combined-price"]', '[data-testid*="total-combined-price"]'),
     image: join('[data-testid$="--image--img"]', '[data-testid*="image--img"]', 'img'),
     link: 'a[href*="/items/"]',

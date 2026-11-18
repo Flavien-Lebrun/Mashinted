@@ -12,7 +12,7 @@ import {
 
 /**
  * @brief Inspects a saved search link row element to verify if it is bookmarked.
- * 
+ *
  * @param {HTMLElement} searchRowElement - DOM row element to check.
  * @returns {boolean} True if search is bookmarked, false otherwise.
  */
@@ -32,7 +32,7 @@ export function isSearchBookmarked(searchRowElement) {
 
 /**
  * @brief Scans saved search DOM nodes within a container and compiles item counts.
- * 
+ *
  * @param {HTMLElement} containerElement - Parent container element holding saved search rows.
  * @returns {Object} Structured scan results containing active items list and summary texts.
  */
@@ -42,7 +42,7 @@ export function scanSavedSearches(containerElement) {
             items: [],
             totalCount: 0,
             totalFormatted: '',
-            breakdownText: t('upToDate')
+            breakdownText: t('upToDate'),
         };
     }
 
@@ -60,8 +60,8 @@ export function scanSavedSearches(containerElement) {
         const rawCountText = countSpan ? countSpan.textContent.trim() : '0';
         const numericCount = parseInt(rawCountText.replace(/\+/g, ''), 10) || 0;
 
-        const titleSpan = cell.querySelector('.web_ui__Cell__title span.u-ellipsis') ||
-                          cell.querySelector('.web_ui__Cell__title');
+        const titleSpan =
+            cell.querySelector('.web_ui__Cell__title span.u-ellipsis') || cell.querySelector('.web_ui__Cell__title');
         const searchName = titleSpan ? titleSpan.textContent.trim() : t('defaultSearchName');
         const searchUrl = cell.getAttribute('href') || '';
 
@@ -70,7 +70,7 @@ export function scanSavedSearches(containerElement) {
             name: searchName,
             url: searchUrl,
             count: numericCount,
-            rawCount: rawCountText
+            rawCount: rawCountText,
         });
 
         cumulativeCount += numericCount;
@@ -80,17 +80,15 @@ export function scanSavedSearches(containerElement) {
 
     let breakdownText = t('upToDate');
     if (activeSearches.length > 0) {
-        breakdownText = activeSearches
-            .map((s) => `${s.name} (+${s.count > 99 ? '99' : s.count})`)
-            .join(', ');
+        breakdownText = activeSearches.map((s) => `${s.name} (+${s.count > 99 ? '99' : s.count})`).join(', ');
     }
 
-    const totalFormatted = cumulativeCount > 99 ? '+99' : (cumulativeCount > 0 ? `+${cumulativeCount}` : '');
+    const totalFormatted = cumulativeCount > 99 ? '+99' : cumulativeCount > 0 ? `+${cumulativeCount}` : '';
 
     return {
         items: bookmarkedSearches,
         totalCount: cumulativeCount,
         totalFormatted: totalFormatted,
-        breakdownText: breakdownText
+        breakdownText: breakdownText,
     };
 }

@@ -68,10 +68,8 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
             // Secondary sort: alphabetical for brands with the same count (or both 0)
             return a.localeCompare(b, undefined, { sensitivity: 'base' });
         });
-        
-        const filteredBrands = allVisibleBrands.filter(brand =>
-            brand.toLowerCase().includes(query)
-        );
+
+        const filteredBrands = allVisibleBrands.filter((brand) => brand.toLowerCase().includes(query));
 
         if (filteredBrands.length === 0 && !query) {
             listContainer.innerHTML = `<div class="mashinted-empty-state">${escapeHtml(t('modalEmpty'))}</div>`;
@@ -118,7 +116,7 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
         }
 
         // Quick Add Row Injection Mechanics
-        const hasExactMatch = activeBannedBrands.some(b => b.toLowerCase() === query);
+        const hasExactMatch = activeBannedBrands.some((b) => b.toLowerCase() === query);
         if (query && !hasExactMatch) {
             const addActionLi = document.createElement('li');
             addActionLi.className = 'pile__element mashinted-quick-add-row-wrapper';
@@ -157,7 +155,7 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
     searchInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && currentSearchQuery.trim()) {
             const query = currentSearchQuery.trim();
-            const hasExactMatch = activeBannedBrands.some(b => b.toLowerCase() === query.toLowerCase());
+            const hasExactMatch = activeBannedBrands.some((b) => b.toLowerCase() === query.toLowerCase());
 
             if (!hasExactMatch) {
                 unselectedBrands.delete(query);
@@ -194,6 +192,6 @@ export function createConfigModal({ bannedBrands, onAddBrand, onDeleteBrand, onC
                 activeBannedBrands = [...updatedList];
             }
             renderListItems();
-        }
+        },
     };
 }

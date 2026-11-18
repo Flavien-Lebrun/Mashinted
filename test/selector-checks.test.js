@@ -52,13 +52,14 @@ describe('selector checks', () => {
 });
 
 describe('findFavouritesGrid', () => {
-    it('prefers the class selector, then falls back to the first card\'s parent', async () => {
+    it("prefers the class selector, then falls back to the first card's parent", async () => {
         const { findFavouritesGrid } = await import('../src/features/favourites/favourite-filter.js');
 
         document.body.innerHTML = '<div id="a" class="x__feed-grid"><div data-testid="grid-item"></div></div>';
         expect(findFavouritesGrid().id).toBe('a');
 
-        document.body.innerHTML = '<section><div id="b" class="whatever"><div data-testid="grid-item"></div></div></section>';
+        document.body.innerHTML =
+            '<section><div id="b" class="whatever"><div data-testid="grid-item"></div></div></section>';
         expect(findFavouritesGrid().id).toBe('b');
 
         document.body.innerHTML = '<div>no cards</div>';

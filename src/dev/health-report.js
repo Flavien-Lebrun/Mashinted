@@ -40,7 +40,8 @@ export function summarizePages(stored) {
     for (const page of PAGES) {
         const entries = Object.values(stored).filter((entry) => entry.page === page);
         if (entries.length === 0) summary[page] = 'pending';
-        else if (entries.some((entry) => entry.status === 'missing' || entry.status === 'invalid')) summary[page] = 'problem';
+        else if (entries.some((entry) => entry.status === 'missing' || entry.status === 'invalid'))
+            summary[page] = 'problem';
         else summary[page] = 'ok';
     }
     return summary;

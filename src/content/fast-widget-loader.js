@@ -2,18 +2,18 @@ import { t, setLanguage } from '../shared/i18n.js';
 import { detectVintedLanguage } from '../vinted/language.js';
 
 (function () {
-  // Selector isn't rendered yet at document_start: falls back to html lang / domain / navigator.
-  setLanguage(detectVintedLanguage());
+    // Selector isn't rendered yet at document_start: falls back to html lang / domain / navigator.
+    setLanguage(detectVintedLanguage());
 
-  const WIDGET_ID = 'mashinted-counter-widget'; 
+    const WIDGET_ID = 'mashinted-counter-widget';
 
-  if (document.getElementById(WIDGET_ID)) return;
+    if (document.getElementById(WIDGET_ID)) return;
 
-  const wrapper = document.createElement('div');
-  wrapper.id = WIDGET_ID;
-  wrapper.className = 'mashinted-counter-widget-wrapper is-visible';
+    const wrapper = document.createElement('div');
+    wrapper.id = WIDGET_ID;
+    wrapper.className = 'mashinted-counter-widget-wrapper is-visible';
 
-  wrapper.innerHTML = `
+    wrapper.innerHTML = `
     <div class="u-ui-margin-right-regular u-ui-margin-bottom-regular">
       <div>
         <div class="u-position-relative">
@@ -42,6 +42,6 @@ import { detectVintedLanguage } from '../vinted/language.js';
     </div>
   `;
 
-  const target = document.body || document.documentElement;
-  target.appendChild(wrapper);
+    const target = document.body || document.documentElement;
+    target.appendChild(wrapper);
 })();
