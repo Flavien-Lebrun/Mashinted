@@ -434,6 +434,18 @@ function getProductId(gridItem) {
 * **Verified on the live site (18-11-2026):** favouriting from an aggregated card works with the new token lookup; lazy-loaded favourites batches join their Sold/Available section.
 * **React #418:** seen once with a dev build, never with the normal build, and not reproducible afterwards. Cause unknown; it is also unknown whether the chip appended at `document_start` could ever cause it. Revisit only if it comes back.
 
+### 7.23 Rescan After a Brand Is Added & Live Modal Counters [18-11-2026]
+
+* **Issue:** adding a brand (trash click, modal checkbox, quick-add row, another tab) only hid the clicked card; other cards of that brand stayed visible until their own DOM changed. The modal also never showed the `+N` of a brand added while it was open.
+* **Causes:** `watchGridItemForBrandName` skips cards already observed, and nothing re-checked the page when the blacklist changed. The modal received `statsSnapshot` once, at open, and never read the stats again.
+* **Fix:**
+  * `storage.js` gains `subscribeToBrandListChanges` (fires only when the list really changes, local or from another tab). `grid-item.js` gains `rescanGridItems`, which re-checks every card not already hidden. `observers.js` `startBlacklistRescan()` wires the two on the default route only.
+  * `trash-engine.js` now blocks the clicked card **before** `addBrand`. The rescan runs inside `addBrand`; hiding the clicked card afterwards would go through the animated path and bring back the ghost gap (§7.2).
+  * The modal takes `getStats()` and reads a fresh snapshot on every render instead of a frozen `statsSnapshot`; the rescan counts each hidden card per brand, so the render after `addBrand` already shows the right `+N`.
+* **Intentional limits:** the rescan only hides. Unchecking a brand does not un-hide cards or lower its counter during the session (reload to see them again). Counters do not refresh while the modal stays open with no change; a subscription to `subscribeToBrandStatsChanges` would add that.
+* **Open finding:** `counter-widget.js` calls `activeModalRef.destroyModal()`, which `createConfigModal` never returns. Probably unreachable (the overlay covers the chip), not fixed.
+* **Tests:** `test/blacklist-rescan.test.js` (chrome.storage stub), `test/modal-stats.test.js`.
+
 ---
 
 ## 8. Progress Tracker
@@ -464,7 +476,7 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Todo | Split `features/blacklist/observers.js` (page-transition vs grid) | — |
 | Done | Dev-only selector health panel (`npm run build:check`), CSRF token and favourites grid fixes | `src/dev/` — §7.22 |
 | Todo | Empty blacklist: show a visual prompt instead of re-seeding defaults | `src/shared/storage.js` |
-| Todo | Rescan visible cards after a trash click (`addBrand`) | `src/features/blacklist/trash-engine.js` |
+| Done | Rescan visible cards when a brand is added; live `+N` in the modal | `src/features/blacklist/`, `src/shared/storage.js` — §7.23 |
 | Done | Remove dead `hasInitialScanCompleted` / hide branch and unused `mountLoadingWidget` (chip always visible) | `src/features/blacklist/counter-widget.js` |
 | Todo | Verify in browser: scan of new grids after SPA navigation (root observer disconnects after 5 s) | `src/features/blacklist/observers.js` |
 | Todo | Browser test pipeline | — |
