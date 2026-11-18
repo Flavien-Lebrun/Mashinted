@@ -19,7 +19,7 @@ const en = {
     modalClose: 'Close',
     modalCloseLabel: 'Close UI',
     modalBrandsBlocked: 'Brands Blocked',
-    modalEmpty: 'No blacklisted brands yet.',
+    modalEmpty: 'No blocked brands yet. Click the trash icon on a listing, or type a brand name above.',
     modalBlockBrand: ({ name }) => `Block "${name}"`,
     modalAddLabel: 'Add to blacklist',
 
@@ -85,7 +85,7 @@ const fr = {
     modalClose: 'Fermer',
     modalCloseLabel: "Fermer l'interface",
     modalBrandsBlocked: 'Marques bloquées',
-    modalEmpty: 'Aucune marque bloquée pour le moment.',
+    modalEmpty: 'Aucune marque bloquée. Cliquez sur la corbeille d’un article ou saisissez une marque ci-dessus.',
     modalBlockBrand: ({ name }) => `Bloquer « ${name} »`,
     modalAddLabel: 'Ajouter à la liste noire',
 
@@ -146,7 +146,7 @@ const es = {
     modalClose: 'Cerrar',
     modalCloseLabel: 'Cerrar interfaz',
     modalBrandsBlocked: 'Marcas bloqueadas',
-    modalEmpty: 'Aún no hay marcas bloqueadas.',
+    modalEmpty: 'Aún no hay marcas bloqueadas. Pulsa la papelera de un artículo o escribe una marca arriba.',
     modalBlockBrand: ({ name }) => `Bloquear "${name}"`,
     modalAddLabel: 'Añadir a la lista negra',
 
@@ -207,7 +207,7 @@ const nl = {
     modalClose: 'Sluiten',
     modalCloseLabel: 'Venster sluiten',
     modalBrandsBlocked: 'Geblokkeerde merken',
-    modalEmpty: 'Nog geen geblokkeerde merken.',
+    modalEmpty: 'Nog geen geblokkeerde merken. Klik op de prullenbak bij een artikel of typ hierboven een merk.',
     modalBlockBrand: ({ name }) => `Blokkeer "${name}"`,
     modalAddLabel: 'Toevoegen aan zwarte lijst',
 

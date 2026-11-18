@@ -203,11 +203,21 @@ li.pile__element:not(:last-child) {
     color: var(--mashinted-danger);
 }
 
+/* The list keeps a minimum height whether it holds brands or not (also gives the empty message a "middle"). */
+.mashinted-brands-list {
+    min-height: 40vh;
+}
+
+/* Centred both ways inside the list's minimum height. */
 .mashinted-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: inherit;
+    padding: 24px;
     text-align: center;
     color: var(--mashinted-muted);
-    padding: 24px 0;
-    font-size: 0.95rem;
     font-style: italic;
 }
 
