@@ -70,6 +70,22 @@ export function cleanupPreviousAggregation() {
     }
 }
 
+// Matches `"csrf_token":"…"` and the escaped form `\"CSRF_TOKEN\":\"…\"` found in streamed page data.
+const CSRF_TOKEN_PATTERN = /\\?"csrf_token\\?"\s*:\s*\\?"([^"\\]+)\\?"/i;
+
+/**
+ * @brief Looks for Vinted's CSRF token in inline script contents.
+ * @param {Iterable<{textContent: string}>} scripts
+ * @returns {string} The token, or an empty string when none is found.
+ */
+export function findCsrfTokenInScripts(scripts) {
+    for (const script of scripts) {
+        const match = script.textContent?.match(CSRF_TOKEN_PATTERN);
+        if (match && match[1]) return match[1];
+    }
+    return '';
+}
+
 /**
  * @brief Toggles a Vinted item's favorite state using the dynamic CSRF token and full cookie session.
  * 
@@ -93,15 +109,8 @@ export async function toggleVintedNativeFavorite(itemId, buttonElement = null) {
     if (csrfMeta) {
         csrfToken = csrfMeta.content;
     } else {
-        // Try searching script tags or global window state if Vinted exposes it
-        const scripts = document.querySelectorAll('script');
-        for (const script of scripts) {
-            const match = script.textContent.match(/"csrf_token"\s*:\s*"([^"]+)"/);
-            if (match && match[1]) {
-                csrfToken = match[1];
-                break;
-            }
-        }
+        // Vinted no longer ships the meta tag; the token is in the streamed page data.
+        csrfToken = findCsrfTokenInScripts(document.querySelectorAll('script'));
     }
 
     if (!csrfToken) {

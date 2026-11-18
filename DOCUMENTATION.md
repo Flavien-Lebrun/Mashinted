@@ -16,6 +16,7 @@ The primary objective of **Mashup Vinted** is to filter product listings from th
 * **Real-Time Analytics:** The extension tracks both total listings blocked and per-brand session statistics (`statsSnapshot`).
 * **Cross-Search Feed Aggregation:** Extracts pending items from bookmarked saved searches via a specialized background fetcher/parser, clearing default page grids progressively and injecting multi-search results into unified catalog grids.
 * **Favorites Storage Management:** Persists cross-page aggregated favorite items locally using `chrome.storage.local` with `FAVORITES_STORAGE_KEY`.
+* **RGPD compliance:** The extension operates entirely through local scripts. No data from Vinted or its users is collected, stored, or transmitted externally. All processing remains local and is intended solely for the user's personal use.
 
 ---
 
@@ -23,7 +24,7 @@ The primary objective of **Mashup Vinted** is to filter product listings from th
 
 ### 2.1 Product Listings (Behavior)
 
-When a listing is determined to be from a blacklisted brand—either during initial page load, dynamically via user click on the trash icon, or through real-time updates—the following behavior applies:
+When a listing is determined to be from a blacklisted brand, either during initial page load, dynamically via user click on the trash icon, or through real-time updates, the following behavior applies:
 
 * **Automated Scanner Hide:** Uses a smooth CSS `max-height` transition and opacity fade-out to prevent abrupt visual jumps while the user scrolls.
 * **Manual Trash Click Collapse:** Bypasses animation timers entirely, applying an instant `display: none !important` hard collapse to prevent layout ghost gaps when React unmounts inner children mid-click.
@@ -295,7 +296,6 @@ function getProductId(gridItem) {
 * **Root Cause:** The feed cleanup routine (`clearGridProgressively`) previously wiped out the parent grid wrapper `<div class="homepage-blocks" data-testid="homepage-blocks">` itself. During subsequent aggregation runs, `getActiveGridContainer()` failed to locate the grid container and fell back to higher-level elements like `<main>`.
 * **Fix:**
   * Modified `clearGridProgressively` to target only child nodes via `targetGrid.querySelectorAll(REMOVABLE_SELECTORS)` and empty remaining children via `targetGrid.replaceChildren()`, preserving the parent grid wrapper shell.
-  * Updated `getActiveGridContainer()` with a self-healing fallback that detects if `homepage-blocks` was destroyed by React hydration and dynamically reconstructs the `<div class="HomeBlocks-module-scss-module__BQ-Taq__homepage-blocks" data-testid="homepage-blocks">` element inside `.HomeLayout-module-scss-module__XNM03a__homepage`.
 
 ### 7.9 DOM Ordering vs CSS Grid Placement in Reverse Injection Loops [31-07-2026]
 
@@ -422,6 +422,17 @@ function getProductId(gridItem) {
 * **Cutting a release:** bump `version` in `package.json`, merge to `main` via PR, then on a clean `main` run `make release` (tags `vX.Y.Z` and pushes it).
 * **Not covered:** Chrome Web Store / Firefox AMO / Safari submission; the zips are for manual "Load unpacked" / temporary add-on installs.
 
+### 7.22 Dev Selector Health Panel & Live-Markup Fixes [18-11-2026]
+
+* **Why:** most features need a logged-in account (saved searches, inbox, favourites) and their actions change real data, so they can't run in CI. Instead, a dev-only panel checks that every Vinted selector still matches on the real pages, without clicking anything.
+* **Tool:** `npm run build:check` (`MASHINTED_DEV=1`) bundles `src/dev/`. `__MASHINTED_DEV__` is `false` in normal builds, so the bundler removes the whole branch. Checks live in `selector-checks.js` (per page: `any`, `home`, `feed`, `saved-searches`, `favourites`, `inbox`; state-dependent ones are `optional` and only warn). `health-panel.js` shows one line per page, keeps results across page loads in `chrome.storage.local`, never lets a later miss erase a pass, and **Copy report** produces plain text (ids, statuses, counts: no item text or tokens). **Re-run in 5s** exists because clicking the panel closes Vinted's dropdowns.
+* **Found on the live site:**
+  1. **CSRF token:** `meta[name="csrf-token"]` is gone; the token is in the streamed page data as an escaped, upper-case `\"CSRF_TOKEN\":\"…\"`. The old lookup only matched lowercase unescaped JSON, so favouriting from an aggregated card could not find a token. Fixed in `findCsrfTokenInScripts` (modal-helpers.js).
+  2. **Favourites grid:** `FAVOURITES_GRID_SELECTOR` no longer matched the container, so grouping silently did nothing. `findFavouritesGrid()` now falls back to the parent of the first card. It also skips our own regrouped cards (`mashinted__feed-grid__item`), which match the class selector too (same trap as §7.13).
+  3. `card-inner` only exists on catalog pages (optional); `feed-container` must not count the catch-all `main`.
+* **Noise to ignore in the console:** `GET chrome-extension://invalid/ ERR_FAILED` comes from Vinted's `tags.js`, not from us. `ERR_ABORTED` 404s on `/assets/*.js` came only from the dev build's dynamic import.
+* **Open:** one React #418 hydration error was seen with a dev build and not with the normal build; not reproduced since. It is unknown whether the chip appended at `document_start` can ever cause it.
+
 ---
 
 ## 8. Progress Tracker
@@ -450,4 +461,9 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Todo | Reduce `!important` (~35) and inline `style=""` in templates | — |
 | Todo | Router: handle SPA navigation (feature `mount`/`unmount`) | — |
 | Todo | Split `features/blacklist/observers.js` (page-transition vs grid) | — |
-| Todo | Dev-only selector health check | — |
+| Done | Dev-only selector health panel (`npm run build:check`), CSRF token and favourites grid fixes | `src/dev/` — §7.22 |
+| Todo | Empty blacklist: show a visual prompt instead of re-seeding defaults | `src/shared/storage.js` |
+| Todo | Rescan visible cards after a trash click (`addBrand`) | `src/features/blacklist/trash-engine.js` |
+| Todo | Remove dead `hasInitialScanCompleted` / hide branch (chip always visible) | `src/features/blacklist/counter-widget.js` |
+| Todo | Verify in browser: scan of new grids after SPA navigation (root observer disconnects after 5 s) | `src/features/blacklist/observers.js` |
+| Todo | Browser test pipeline | — |

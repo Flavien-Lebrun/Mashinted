@@ -32,3 +32,4 @@ scratch/
 
 # Claude Code project instructions (local only)
 CLAUDE.md
+.claude/

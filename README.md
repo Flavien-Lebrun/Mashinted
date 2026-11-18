@@ -1,16 +1,18 @@
-# Vinted Mashup
+# Mashinted
 
 > **A third-party enhancement layer for a cleaner, personalized Vinted experience.**
 
-Vinted Mashup is a web browser extension that seamlessly wraps around the official Vinted website to inject a highly customizable user experience. By intercepting raw data streams and introducing advanced client-side processing, it aims to make shopping clearer, faster, and tailored to you—most notably by stripping away low-quality listings through a powerful **blacklist filtering module**.
+Mashinted is a web browser extension that runs on top of the official Vinted website to make shopping clearer and faster, most notably by hiding listings from brands you never want to see through a **blacklist filtering module**.
 
 ---
 
 ## 🚀 Key Features
 
-* **UI Layer Hijack:** Seamlessly intercepts Vinted's frontend data to reconstruct a cleaner layout without the clutter.
-* **Blacklist Filtering Module:** Say goodbye to garbage items, repetitive commercial sellers, or tags you never want to see again.
-* **Advanced Sorting & Personalization:** Custom data processing that gives you control over how listings are filtered and displayed.
+* **Blacklist Filtering:** Hide listings by brand, either automatically or with a one-click trash button on each card. A counter chip shows how many were hidden and opens a modal to manage the list.
+* **Saved Search Aggregator:** Gather the new items of all your bookmarked saved searches into one feed, grouped by search.
+* **Favourites Grouping:** Split your favourites into *Sold* and *Available*, with a "delete all sold" action.
+* **Inbox Helper:** Open all unread conversations in one click.
+* **Multilingual UI:** Follows the language Vinted is displayed in (en, fr, es, nl).
 
 ## 📖 Project Evolution & History
 
@@ -23,7 +25,8 @@ If you want to follow the step-by-step progression of this extension, every mino
 ## 🛠️ Tech Stack & Architecture
 
 * **Context:** Chrome/Web Extension (Manifest V3)
-* **Core Mechanics:** Network interception (`fetch` monkeypatching), Script Injection (`MAIN` world execution), and custom DOM rebuilding.
+* **Core Mechanics:** Content scripts observing the rendered DOM (`MutationObserver`), `chrome.storage.local` persistence, and a small `MAIN`-world probe (`public/checker.js`) that only waits for React hydration.
+* **Architecture & behaviour map:** see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 ## 🚀 Getting Started
 

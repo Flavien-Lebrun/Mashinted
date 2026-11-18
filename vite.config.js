@@ -8,8 +8,15 @@ import pkg from './package.json';
 // `BROWSER=firefox vite build` -> dist-firefox/ with a Firefox-compatible manifest.
 const isFirefox = process.env.BROWSER === 'firefox';
 
+// `MASHINTED_DEV=1 vite build` (npm run build:check) bundles the selector health check.
+// Otherwise the flag is false and the bundler drops the dev tools from the build.
+const isDevTools = process.env.MASHINTED_DEV === '1';
+
 export default defineConfig({
   publicDir: 'public',
+  define: {
+    __MASHINTED_DEV__: JSON.stringify(isDevTools),
+  },
   build: {
     // Older machines: Chrome 91+ (module service worker floor), Safari 14+, Firefox 121+ (MV3).
     target: ['chrome89', 'safari14', 'firefox115', 'es2020'],

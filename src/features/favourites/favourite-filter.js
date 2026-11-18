@@ -77,6 +77,20 @@ function injectGridStyles() {
 }
 
 /**
+ * Finds the favourites grid. Vinted's grid classes vary with source and viewport, so when the
+ * class selector misses we use the parent of the first card (cards are direct children of the grid).
+ * @param {ParentNode} [root]
+ * @returns {Element|null}
+ */
+export function findFavouritesGrid(root = document) {
+    // After grouping, our own cards (`mashinted__feed-grid__item`) also match the class selector: skip them.
+    const byClass = Array.from(root.querySelectorAll(FAVOURITES_GRID_SELECTOR)).find(
+        (candidate) => !candidate.matches(GRID_ITEM_SELECTOR) && !candidate.className.includes('mashinted'),
+    );
+    return byClass ?? root.querySelector(GRID_ITEM_SELECTOR)?.parentElement ?? null;
+}
+
+/**
  * Checks if a grid item is marked as sold
  */
 function isItemSold(gridItem) {
@@ -97,7 +111,7 @@ function organizeFavouriteGrid() {
         return false;
     }
 
-    const gridContainer = document.querySelector(FAVOURITES_GRID_SELECTOR); 
+    const gridContainer = findFavouritesGrid();
     if (!gridContainer) {
         return false; 
     }

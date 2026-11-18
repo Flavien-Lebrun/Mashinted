@@ -27,6 +27,11 @@ async function boot() {
     setLanguage(detectVintedLanguage());
 
     log.debug(`Starting route: ${startRoute()}`);
+
+    // Dev-only selector health check; the whole branch is removed from normal builds.
+    if (__MASHINTED_DEV__) {
+        import('../dev/health-console.js').then((module) => module.startHealthConsole());
+    }
 }
 
 boot();
