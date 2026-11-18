@@ -404,6 +404,14 @@ Conventions: durations come from the tokens above; `prefers-reduced-motion` shor
 * **New:** §2.5 favourites and inbox, §2.6 routing, §5.2 where selectors and markup facts live, a per-file table of the stylesheets in §6.
 * **Companion:** ARCHITECTURE.md remains the place for stimulus -> reaction flows and intentional quirks; §2–§6 describe the specs and point to it.
 
+### 7.28 `!important` Reduction in the Stylesheets [18-11-2026]
+
+* **What:** real `!important` declarations in `src/styles/` went from 26 to 8. Most were replaced with specificity: a qualifier such as `.mashinted-trash-container .mashinted-trash-btn`, `button.web_ui__Chip__chip` or `.mashinted-modal-overlay li.pile__element` outranks Vinted's single-class rules. Others (spinner colour, checkbox `:checked` colours) were removed because nothing else styles those elements. The unused `.mashinted__homepage-blocks*` replica rules (57 lines) were deleted.
+* **Method:** only the properties that used to carry `!important` were moved to the higher-specificity selector; the rest of each rule kept its original selector, so ties with Vinted's later stylesheet resolve as before. Checked visually in a browser after each batch (trash button, counter chip, modal, inbox chip, spinner, checkboxes, aggregator and favourites sections).
+* **Kept on purpose (8), each with a comment in the CSS:** the hard-collapse `display: none` for blacklisted cards and for collapsed aggregator cards; the section divider's full-row `grid-column` and `width`; `grid-column: 1 / span 1` on `.mashinted-section-start` and `grid-column: auto` on regular cards, which have to beat a Vinted rule of specificity (0,3,0) (§7.17); the `.mashinted-u-hidden` utility; the reduced-motion `animation: none`.
+* **Not done:** inline styles in JS and templates (`style.setProperty` in `grid-item.js`, `style=""` attributes) and the `<style>` block injected by `favourite-filter.js`, which carries its own `!important`.
+* **Limit of the method:** Vinted's stylesheet is cross-origin and cannot be read from JS, so a rule that looks safe can still be beaten by a selector we cannot see. That is why each batch was verified by eye.
+
 ---
 
 ## 8. Progress Tracker
@@ -429,7 +437,8 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Todo | Inbox: lazy-load handling of the conversation list | §7.19 |
 | Done | Run Prettier repo-wide (dedicated formatting-only commit) | `.prettierignore` — §7.26 |
 | Done | Update §2–§6 for the new layout (feature sections, tokens, selectors, CSS files) | §2–§6 — §7.27 |
-| Todo | Reduce `!important` (~35) and inline `style=""` in templates | — |
+| Done | Reduce `!important` in the stylesheets (26 -> 8, each kept one documented) | `src/styles/` — §7.28 |
+| Todo | Move the remaining inline styles (`style.setProperty` in `grid-item.js`, `style=""` in templates, the `<style>` injected by `favourite-filter.js` with its own `!important`) into the stylesheets | — |
 | Done | Router: SPA navigation with per-route start/stop; grid observer follows the grid | `src/content/router.js`, `src/features/blacklist/observers.js` — §7.25 |
 | Todo | Split `features/blacklist/observers.js` (page-transition vs grid) | — |
 | Done | Dev-only selector health panel (`npm run build:check`), CSRF token and favourites grid fixes | `src/dev/` — §7.22 |
