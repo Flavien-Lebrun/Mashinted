@@ -17,6 +17,7 @@ export default [
         ...globals.browser,
         ...globals.webextensions,
         ...globals.node,
+        __MASHINTED_DEV__: 'readonly', // injected by vite.config.js (true only for MASHINTED_DEV=1 builds)
       },
     },
     plugins: {
@@ -38,7 +39,7 @@ export default [
     },
   },
   {
-    files: ['src/shared/logger.js'],
+    files: ['src/shared/logger.js', 'src/dev/**/*.js'], // dev tools print tables on purpose
     rules: { 'no-console': 'off' },
   },
 ];
