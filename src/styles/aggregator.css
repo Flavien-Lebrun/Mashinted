@@ -255,63 +255,6 @@
 }
 
 /* --- Replicating Vinted Hashed CSS classes --- */
-.mashinted__homepage-blocks {
-    grid-auto-flow: row !important;
-    /*grid-auto-flow: dense; Original Vinted behavior suppressed */
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: stretch;
-    column-gap: 8px;
-    display: grid;
-}
-
-@media only screen and (min-width: 721px) {
-    .mashinted__homepage-blocks {
-        column-gap: 16px;
-    }
-}
-
-@media only screen and (min-width: 721px) and (max-width: 959px) {
-    .mashinted__homepage-blocks {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-@media only screen and (min-width: 960px) {
-    .mashinted__homepage-blocks {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-}
-
-@media only screen and (min-width: 1200px) {
-    .mashinted__homepage-blocks {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-}
-
-.mashinted__homepage-blocks
-    > :not(.mashinted__homepage-blocks__item--one-fifth):not(.mashinted__homepage-blocks__item--two-fifths) {
-    grid-column: 1/-1;
-}
-
-.mashinted__homepage-blocks__item {
-    box-sizing: border-box;
-    width: 100%;
-    min-width: 0;
-    position: relative;
-}
-
-.mashinted__homepage-blocks__item--one-fifth {
-    grid-column: span 1;
-    width: 100%;
-    padding-bottom: 8px;
-}
-
-.mashinted__homepage-blocks__item--two-fifths {
-    grid-column: span 2;
-    width: 100%;
-    padding-bottom: 8px;
-}
-
 .mashinted__feed-grid {
     margin: 0 calc(-1 * var(--space-100));
     flex-wrap: wrap;
