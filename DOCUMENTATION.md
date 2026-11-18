@@ -1,20 +1,20 @@
-# Mashup Vinted (Mashinted) — Technical Documentation & Specifications
+# Mashinted — Technical Documentation & Specifications
 
-This document details the functional specifications, technical constraints, UI/UX behaviors, and structural DOM patterns for **Mashup Vinted** (Mashinted), a web extension designed to improve user experience on Vinted by allowing users to blacklist and filter out listings from specific brands.
+This document details the functional specifications, technical constraints, UI/UX behaviors, and structural DOM patterns for **Mashinted**, a web extension designed to improve user experience on Vinted by allowing users to blacklist and filter out listings from specific brands.
 
 ---
 
 ## 1. Project Goal & Overview
 
-The primary objective of **Mashup Vinted** is to filter product listings from the user's view based on a customized blacklist of brands.
+The primary objective of **Mashinted** is to filter product listings from the user's view based on a customized blacklist of brands.
 
 ### Core Flow:
 
-* **Blacklist Storage:** The blacklist is persisted in the browser's `localStorage` (or extension storage) as a JSON object containing brand names standardized in **lowercase**.
+* **Blacklist Storage:** The blacklist is persisted in `chrome.storage.local` (key `bannedBrands`) as a list of brand names standardized in **lowercase**. There are no default brands: a fresh install starts empty.
 * **On-Demand Blacklisting:** A trash icon is injected into every product listing card. Clicking this icon immediately adds the associated brand to the blacklist.
 * **Dynamic Filtering:** Any matching product listing is smoothly hidden from view without breaking the native page flow or leaving layout gaps.
-* **Real-Time Analytics:** The extension tracks both total listings blocked and per-brand session statistics (`statsSnapshot`).
-* **Cross-Search Feed Aggregation:** Extracts pending items from bookmarked saved searches via a specialized background fetcher/parser, clearing default page grids progressively and injecting multi-search results into unified catalog grids.
+* **Real-Time Analytics:** The extension tracks both total listings blocked and per-brand session statistics (`brandSessionStats`, read with `getBrandSessionSnapshot`).
+* **Cross-Search Feed Aggregation:** Extracts pending items from bookmarked saved searches through a content-script `fetch` and `DOMParser` parser (there is no background script), clearing default page grids progressively and injecting multi-search results into unified catalog grids.
 * **Favorites Storage Management:** Persists cross-page aggregated favorite items locally using `chrome.storage.local` with `FAVORITES_STORAGE_KEY`.
 * **RGPD compliance:** The extension operates entirely through local scripts. No data from Vinted or its users is collected, stored, or transmitted externally. All processing remains local and is intended solely for the user's personal use.
 
@@ -22,83 +22,60 @@ The primary objective of **Mashup Vinted** is to filter product listings from th
 
 ## 2. Component Specifications
 
+What each feature does, and which files implement it. For stimulus → reaction flows and the behaviours that look like bugs but are intentional, see [ARCHITECTURE.md](./ARCHITECTURE.md). Section 7 below is the dated history of how it got here.
+
 ### 2.1 Product Listings (Behavior)
 
-When a listing is determined to be from a blacklisted brand, either during initial page load, dynamically via user click on the trash icon, or through real-time updates, the following behavior applies:
+Files: `src/features/blacklist/{grid-item,state,trash-engine,observers}.js`.
 
-* **Automated Scanner Hide:** Uses a smooth CSS `max-height` transition and opacity fade-out to prevent abrupt visual jumps while the user scrolls.
-* **Manual Trash Click Collapse:** Bypasses animation timers entirely, applying an instant `display: none !important` hard collapse to prevent layout ghost gaps when React unmounts inner children mid-click.
-* **Accessibility Safety:** Sets `inert = true` and explicitly calls `.blur()` on active elements to prevent browser focus-trap exceptions on `aria-hidden` ancestors.
+When a listing belongs to a blacklisted brand, whether found on load, after a trash click, after a brand is added, or on a React re-render:
 
----
+* **Automated hide:** fade-out and height collapse sharing one duration (`--mashinted-hide-duration`, 450 ms, read from CSS through `shared/css-duration.js`), then `display: none`.
+* **Manual trash click and re-enforcement of an already blocked card:** instant `display: none !important`, with no animation timers, so React unmounting children mid-click cannot leave a ghost gap (§7.2).
+* **Accessibility:** `inert = true` and `.blur()` on the active element before hiding, to avoid focus-trap errors on `aria-hidden` ancestors.
+* **Adding a brand rescans the page** (trash click, modal, or another tab), so every matching card on screen is hidden, not only the clicked one (§7.23). The rescan only hides: removing a brand does not un-hide cards until reload.
 
 ### 2.2 Hydration Shell & Counter Widget
 
-To eliminate UI flashing and resist React tree reconciliation wipes, the widget uses a **two-phase mounting lifecycle** (`fast-widget-loader.js` -> `counter-widget.js`).
+Files: `src/content/{fast-widget-loader,hydration,index}.js`, `public/checker.js`, `src/features/blacklist/counter-widget.js`.
 
-#### Phase 1: Fast Loading Shell (`fast-widget-loader.js`)
+A two-phase lifecycle avoids UI flashing and survives React wiping the DOM.
 
-* Executes immediately at `document_start` / early DOM load.
-* Mounts a non-interactive loading chip to ensure zero layout shift.
-* **Primary Spinner:** Contains an inline SVG circle loader using Vinted's primary color token (`rgba(var(--primary-default), 1)`), animated with CSS keyframe rotation (`@keyframes mashinted-spinner-rotate`).
-* Displays label: `Blocked: Loading...`
-
-#### Phase 2: Hydration & Exit Transition (`counter-widget.js`)
-
-* **Guaranteed Visibility Window:** Enforces a minimum artificial delay (`MIN_LOADING_TIME_MS = 600ms`) so users can register the loading state even on ultra-fast network calls.
-* **Exit / Entry Animation:**
-1. Applies `.mashinted-is-exiting` to fade and slide the "Loading..." text up (`translateY(-4px)`).
-2. Swaps the DOM payload after a 200ms delay.
-3. Triggers `@keyframes mashintedContentEnter` to spring the interactive badge and chevron up into position (`translateY(0)`).
-
-
-* **Interactive Counter State:**
-* Displays real-time count badge derived from `latestCountMemory`.
-* Contains a trailing **Chevron Icon** pointing downwards.
-* Clicking toggles active states (`web_ui__Chip__activated`, `aria-pressed="true"`) and opens the Management Modal.
-
-
-
----
+* **Phase 1, `fast-widget-loader.js` (document_start):** mounts a non-interactive chip with an inline SVG spinner (Vinted's `--primary-default` colour) and the localised label `widgetFiltering` ("Filtering..."). No layout shift.
+* **Hydration gate:** `boot()` waits for `public/checker.js`, which runs in the page's MAIN world (React internals are invisible from the isolated content-script world) and posts a message when React has hydrated, or after a 10 s timeout. `hydration.js` adds a 15 s fallback.
+* **Phase 2, `counter-widget.js`:** enforces a minimum loading time (`MIN_LOADING_TIME_MS = 600`), adds `.mashinted-is-exiting` (200 ms), swaps in the real chip (logo, "Blocked:", count badge, chevron) and plays the entry animation.
+* **Interactive state:** the badge shows the page-scoped count (`latestCountMemory`, reset when the URL changes). Clicking the chip toggles `web_ui__Chip__activated` / `aria-pressed` and opens or closes the modal. The chip is never hidden once mounted, even at 0.
+* **Self-healing:** if React wipes the widget, `startPageTransitionObserver` re-mounts it without losing the count.
 
 ### 2.3 Management Modal (`createConfigModal`)
 
-The modal acts as the main control center for managing the local blocklist.
+File: `src/features/blacklist/modal.js`.
 
-#### Top Section (Header)
+* **Header:** search field (`.mashinted-filter-search-input`) and a close button that fades out over 220 ms. The returned handle exposes `updateList` and `destroyModal`.
+* **Counters:** `getStats()` returns a fresh per-brand session snapshot on every render, so a brand added while the modal is open shows its `+N` straight away. Rows are sorted by count (descending), then alphabetically.
+* **Checkboxes:** unchecking calls `onDeleteBrand` and mutes the row (`.mashinted-row-muted`); re-checking calls `onAddBrand`.
+* **Quick add:** typing a query with no exact match adds a "Block *query*" row with a `+` button; Enter adds it too.
+* **Empty state:** there are no default brands. An empty list stays empty, and the list keeps a 40vh minimum height with a centred message explaining the trash icon and manual input.
 
-* **Search Bar:** Filter box with SVG search icon (`.mashinted-filter-search-input`).
-* **Close Action:** Close button (`.mashinted-close-btn`) that clears overlay state with a 220ms fade-out transition.
+### 2.4 Saved Search Aggregator (`src/features/aggregator/`)
 
-#### Main Body (Brand List)
+Scans bookmarked saved searches and replaces the home feed with their new items, one section per search.
 
-* **State-Connected Counters (`statsSnapshot`):** Receives a live `statsSnapshot` Map/Object from `state.js`. Items rendering in the list check `statsSnapshot.get(normalizedName)` to render a session counter tag (e.g., `+12`) next to the brand name if count `> 0`.
-* **Interactive Checkboxes:** Unchecking a brand removes it from `unselectedBrands`, calls `onDeleteBrand(brand)`, and dims the row (`.mashinted-row-muted`). Re-checking invokes `onAddBrand(brand)`.
-* **Inline Quick-Add Row:** Typing a search query with no exact match dynamically injects a `"Block <Query>"` row at the bottom with a `+` action button for 1-click addition.
+* **`scanner.js` and `distribution.js`:** read the bookmarked rows (`a[data-testid^="saved-search-"]`). If the total of pending items is **≤ 99**, every search fetches all its items; above 99, each search is capped at **30**.
+* **`api.js`:** fetches each search page from the content script (a same-origin `GET` with an 8 s timeout; it adds an `X-CSRF-Token` header only if the old `<meta name="csrf-token">` exists, which it no longer does on Vinted, and works without it) and parses it with `DOMParser`. There is no background script.
+* **`clean-guard.js`:** clears the native feed in `requestAnimationFrame` batches of 12 and runs a `MutationObserver` that removes native cards React re-adds during a run. Everything the extension injects is tagged `data-mashinted-aggregated="true"` so this guard never removes it.
+* **`grid-item-transfer.js` and `modal-helpers.js`:** build the section dividers and cards (title, brand, price, favourite and trash buttons) and the progress banner. The favourite button calls Vinted's `POST /api/v2/user_favourites/toggle`; the CSRF token is read from the page's streamed data (`"CSRF_TOKEN"`, §7.22) and the item is mirrored in `chrome.storage.local` under `FAVORITES_STORAGE_KEY`.
+* **`modal-injector.js`:** injects the aggregator row into the saved-searches dropdown, with a tooltip and live status.
+* **`index.js`:** orchestrates a run. Blacklisted brands are filtered out of the fetched items, so "injected" can be lower than the `+N` on the button.
 
-### 2.4 Saved Search Aggregator & Injection UI (`src/features/aggregator/`)
+### 2.5 Favourites Page & Inbox
 
-The aggregator scans bookmarked saved searches and fetches pending updates into a unified view.
+* **Favourites (`features/favourites/favourite-filter.js`):** regroups the page into **Sold** and **Available** sections (sold first) with a "delete all sold" action that clicks Vinted's native un-favourite buttons. The grid is found with `findFavouritesGrid()`: the class selector first, then the parent of the first card, because Vinted's grid classes vary.
+* **Inbox (`features/inbox/`):** a floating chip that opens every unread conversation one after the other (opening marks it read on Vinted's side).
 
-#### Architectural Components & Distribution
+### 2.6 Routing
 
-* **Scan & Distribution (`scanner.js` & `distribution.js`):**
-  * Evaluates bookmarked search rows (`a[data-testid^="saved-search-"]`).
-  * If the global pending total across all searches is **$\le 99$ items**, all new items are fetched.
-  * If the global pending total **$> 99$ items**, an overload cap is triggered, limiting each search to a maximum of **30 items**.
-* **Clean & Guard Observer (`clean-guard.js`):**
-  * Progressively purges default Vinted feed elements (`REMOVABLE_SELECTORS`) using `requestAnimationFrame` frame batches.
-  * Attaches a dedicated `MutationObserver` (`startGridInterceptorGuard`) that intercepts and removes default feed items while background fetching takes place.
-  * Tags injected extension cards with `data-mashinted-aggregated="true"` (`markAsMashintedElement`) so the guard observer never removes them.
-* **Frame-Buffered Feed Clearance (`getRemovableGridElements` & `removeBatchInFrames`):**
-  * Instead of blocking execution with artificial delays (`sleep`), feed purging utilizes `requestAnimationFrame` to batch-remove native Vinted items in 12-element frame windows.
-  * Targets native feed elements using `REMOVABLE_SELECTORS` while explicitly skipping any nodes marked with `data-mashinted-aggregated="true"` to ensure custom injected cards are preserved during background sweeps.
-* **Card & Divider Factory (`grid-item-transfer.js`):**
-  * Constructs aggregated item cards with title, brand, price, user handle, favorite buttons, and search group divider nodes (`createSearchDividerNode`).
-  * Integrates favorite toggles directly with `saveFavorite` and `removeFavorite` in `storage.js`.
-* **Modal UI Injector (`modal-injector.js`):**
-  * Injects the "New items" button (`#mashinted-aggregator-a`) into `.saved-searches__content`.
-  * Renders interactive tooltip popups explaining loading limitations and real-time execution statuses (`Fetching items...`, `✅ X item(s) injected!`).
+File: `src/content/router.js`. Vinted is a SPA, so `createRouter().sync()` runs on every frame-batched DOM change. When the matching route (`favourites`, `inbox`, `default`) changes, the previous route's `stop()` runs and the new route's `start()` begins; navigating inside the same route keeps its features running (§7.25).
 
 ---
 
@@ -106,123 +83,71 @@ The aggregator scans bookmarked saved searches and fetches pending updates into 
 
 ### React Server Components (RSC) Streaming & SSR
 
-The majority of Vinted's product display feed is delivered via Server-Side Rendering (SSR) and hydrated dynamically via **React Server Components (RSC) Streaming**.
+Most of Vinted's feed is server-rendered and hydrated by React.
 
-#### Critical Precautions:
-
-1. **Avoid React Architecture Collision:** Direct DOM deletions crash React's internal shadow/virtual reconciliation engine.
-2. **Observer Isolation:** The `MutationObserver` attaches only to hydrated feed containers (`.feed-grid` or `.homepage-blocks[data-testid="homepage-blocks"]`), ignoring raw skeleton containers.
-3. **Self-Healing Layout Shell:** The widget presence check runs on `document.getElementById(WIDGET_ID)`. If React wipes the custom DOM node during page transition, the shell instantly snaps back into `document.body` without losing stored count memory (`latestCountMemory`).
+1. **Avoid React collisions:** deleting or restructuring React-owned DOM can crash reconciliation. Hiding uses classes and styles, and the extension's own nodes are tagged so they can be told apart.
+2. **Hydration gate:** features start only after `checker.js` reports hydration, because touching the DOM earlier can cause hydration mismatches. The loading chip is the only thing mounted earlier.
+3. **Observer scope:** the card observer attaches to the current feed grid (`HOMEPAGE_BLOCKS_SELECTOR`, whose last entry is a `main` fallback) and re-attaches when the grid element changes.
+4. **Self-healing widget:** the widget presence check runs on `document.getElementById('mashinted-counter-widget')`; if React wipes it, it is re-mounted with the stored count.
+5. **Unstable markup:** Vinted's CSS-module class names contain hashes that change on every deploy, and layouts vary by source and viewport. All selectors that target Vinted live in `src/vinted/selectors.js`, and `npm run build:check` bundles a dev-only health panel that checks them on the real site (§7.22).
 
 ---
 
 ## 4. Design System & CSS Token Mapping
 
-| Token / Visual Item | Target Usage | Value Mapping |
+Extension tokens live in `src/styles/tokens.css`:
+
+| Token | Value | Use |
 | --- | --- | --- |
-| **Primary Text** | Body copy, brand names, statistics labels | `color: #565656;` |
-| **Accent / Hover Green** | Hover states, search borders, spinner stroke | `rgba(var(--primary-default), 1);` |
-| **Search Input Background** | Input background filling | `background-color: rgba(var(--greyscale-level-5), 1);` |
-| **Light Selection Green** | Highlighted list elements or hover row items | `background-color: rgba(var(--primary-extra-light), 1);` |
+| `--mashinted-text` | `#111111` | Body copy, brand names |
+| `--mashinted-muted` | `#7c7c7c` | Secondary text, empty state, icons |
+| `--mashinted-primary` / `-hover` | `#007784` / `#005f6a` | Accents, focus, checkbox |
+| `--mashinted-danger` | `#d93838` | Destructive hover |
+| `--mashinted-bg` / `-border` | `#ffffff` / `#e6e6e6` | Surfaces and separators |
+| `--mashinted-hide-duration` | `450ms` | Blacklist fade and collapse |
+| `--mashinted-collapse-duration` | `250ms` | Aggregator section fold / unfold |
+| `--mashinted-ease` | `cubic-bezier(0.4, 0, 0.2, 1)` | Shared easing |
+
+Where the extension blends with Vinted, it uses Vinted's own variables so it follows their theme: `rgba(var(--primary-default), 1)` for accents and spinner strokes, `rgb(var(--greyscale-level-5))` for input backgrounds. JS timers read the duration tokens through `shared/css-duration.js`; the constants in `shared/constants.js` are fallbacks only.
 
 ---
 
 ## 5. Structural DOM References
 
-### 5.1 Multi-Strategy ID Extraction (`getProductId`)
+### 5.1 Multi-Strategy Product ID (`getProductId`)
 
-Due to Vinted's continuous layout variation tests, product IDs are resolved through a hierarchical fallback lookup:
+Vinted keeps testing layouts, so a card's product id is resolved through a fallback chain (`src/features/blacklist/grid-item.js`):
 
-```javascript
-function getProductId(gridItem) {
-    // Strategy 1: Immutable product URL path (Most reliable)
-    const itemLink = gridItem.querySelector('a[href^="/items/"]');
-    if (itemLink) {
-        const href = itemLink.getAttribute('href');
-        const match = href.match(/\/items\/(\d+)/);
-        if (match) return match[1];
-    }
+1. The product link: `a[href^="/items/"]`, taking the digits after `/items/` (most reliable).
+2. The inner container's `data-testid`, with prefix `product-item-id-`, `other_user_items-` or `similar_items-`.
+3. The favourite button's `data-testid`, with the same prefixes.
 
-    // Strategy 2: Standard feed template data attribute
-    const innerContainer = gridItem.querySelector('[data-testid^="product-item-id-"]');
-    if (innerContainer) {
-        const match = innerContainer.getAttribute('data-testid')?.match(/product-item-id-(\d+)/);
-        if (match) return match[1];
-    }
-    
-    // Strategy 3: Favorite button context signature lookup
-    const favBtn = gridItem.querySelector('[data-testid$="--favourite"]');
-    if (favBtn) {
-        const match = favBtn.getAttribute('data-testid')?.match(/product-item-id-(\d+)/);
-        if (match) return match[1];
-    }
-    
-    return null;
-}
+If no id is found, the card is tracked by element identity (`WeakSet`). The selectors for each step are in `src/vinted/selectors.js`.
 
-```
+### 5.2 Where Selectors and Markup Notes Live
+
+* **One source:** `src/vinted/selectors.js` holds every selector that targets Vinted-owned markup, grouped by area (grid and cards, saved searches, language selector, inbox, page-level). Fix breakage there, not at call sites.
+* **Known markup facts:** the home grid is a CSS grid whose item classes are hashed; `card-inner` testids exist on catalog pages but not on the home feed; the CSRF token is no longer in a `<meta>` tag but in the streamed page data (`\"CSRF_TOKEN\"`); unread inbox rows carry `web_ui__Cell__highlighted`.
+* **Checking them:** the dev panel (`npm run build:check`) runs the selector checks per page, keeps results across page loads and copies a plain-text report.
 
 ---
 
 ## 6. CSS & Animation Specifications
 
-### 6.1 Primary Spinner Keyframes
+Styles are split per feature in `src/styles/` and imported in a fixed order by `index.css` (the order preserves the cascade). Vite bundles them into `assets/index.css`, which the manifest injects at `document_start` (§7.14).
 
-```css
-/* Color and rotation animation for the loading spinner */
-.mashinted-spinner-icon {
-    animation: mashinted-spinner-rotate 0.85s linear infinite;
-    transform-origin: center center;
-    color: rgba(var(--primary-default), 1) !important;
-    display: inline-block;
-    vertical-align: middle;
-}
+| File | Covers |
+| --- | --- |
+| `tokens.css` | Colour and timing tokens |
+| `blacklist.css` | Blacklist hide animation, trash button (`mashintedSpringIn`) |
+| `progress-banner.css` | Aggregator progress banner and spinner (`mashinted-spin`, 0.85 s linear) |
+| `counter-widget.css` | Counter chip, exit/entry swap (`mashintedContentSwap`, 0.35 s) and badge bump (`counter-smooth-increment`) |
+| `modal.css` | Blacklist modal, brand list, empty state, checkboxes |
+| `widget-chip.css` | Chevron, active chip state and custom checkbox framework |
+| `aggregator.css` | Aggregated grid sections, dividers, cards, fold animation (`mashinted-slide-down`) |
+| `inbox.css` | Inbox floating widget |
 
-.mashinted-spinner-circle {
-    stroke: currentColor;
-}
-
-@keyframes mashinted-spinner-rotate {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-```
-
-### 6.2 Widget Exit & Entry Transitions
-
-```css
-/* Smooth exit transition when swapping out 'Loading...' */
-.mashinted-counter-widget-wrapper button .web_ui__Chip__text {
-    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-                transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform, opacity;
-}
-
-/* Exit state triggered right before DOM swap */
-.mashinted-counter-widget-wrapper button.mashinted-is-exiting .web_ui__Chip__text {
-    opacity: 0;
-    transform: translateY(-4px) scale(0.95);
-}
-
-/* Entry animation for active badge content */
-.mashinted-counter-widget-wrapper .web_ui__Chip__suffix,
-.mashinted-counter-widget-wrapper[data-hydrated="true"] .web_ui__Chip__text {
-    animation: mashintedContentEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes mashintedContentEnter {
-    0% {
-        opacity: 0;
-        transform: translateY(4px) scale(0.95);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-```
+Conventions: durations come from the tokens above; `prefers-reduced-motion` shortens them to 1 ms; on aggregator cards, `will-change`, `overflow: hidden` and `transform` are applied only during a fold or unfold, not permanently (§7.16).
 
 ---
 
@@ -472,6 +397,13 @@ function getProductId(gridItem) {
 * **Not just whitespace:** quotes, trailing commas and line wraps changed too, so equivalence was checked on the build: the Chrome bundle before and after is byte-identical for every JS file. Only `assets/index.css` differs, in whitespace inside media queries (`(max-width:959px)` -> `(max-width: 959px)`) and around `*` in `calc()`, which is the same CSS.
 * **Tooling note:** `npm run format:check` passes; it is not part of CI.
 
+### 7.27 Documentation Refresh [18-11-2026]
+
+* **What:** §2–§6 rewritten for the current layout and behaviour. §1 and the title now say Mashinted and describe `chrome.storage.local`, no default brands and no background script. Stale code blocks are gone: the `getProductId` sample (the code is the source of truth, §5.1 describes the three strategies), and the spinner/entry keyframe snippets, whose names had changed (`mashinted-spin`, `mashintedContentSwap`).
+* **Corrected:** the loading chip label is "Filtering..." (it was documented as "Blocked: Loading..."), the colour table listed `#565656`, which is not used anywhere in `src/styles/` (the real tokens are documented), and the "modal receives `statsSnapshot`" description (now `getStats()`).
+* **New:** §2.5 favourites and inbox, §2.6 routing, §5.2 where selectors and markup facts live, a per-file table of the stylesheets in §6.
+* **Companion:** ARCHITECTURE.md remains the place for stimulus -> reaction flows and intentional quirks; §2–§6 describe the specs and point to it.
+
 ---
 
 ## 8. Progress Tracker
@@ -496,7 +428,7 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Todo | Test the build in Firefox and Safari (macOS) | §7.20 |
 | Todo | Inbox: lazy-load handling of the conversation list | §7.19 |
 | Done | Run Prettier repo-wide (dedicated formatting-only commit) | `.prettierignore` — §7.26 |
-| Todo | Update §2–§6 for the new layout | — |
+| Done | Update §2–§6 for the new layout (feature sections, tokens, selectors, CSS files) | §2–§6 — §7.27 |
 | Todo | Reduce `!important` (~35) and inline `style=""` in templates | — |
 | Done | Router: SPA navigation with per-route start/stop; grid observer follows the grid | `src/content/router.js`, `src/features/blacklist/observers.js` — §7.25 |
 | Todo | Split `features/blacklist/observers.js` (page-transition vs grid) | — |
