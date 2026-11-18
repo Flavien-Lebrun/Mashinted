@@ -9,7 +9,6 @@ import { escapeHtml } from '../../shared/escape-html.js';
 const WIDGET_ID = 'mashinted-counter-widget';
 let latestCountMemory = 0;
 let activeModalRef = null; // Keeps track of the open modal instance
-let hasInitialScanCompleted = false; // Track if we've received actual data
 
 function setupCounterWidgetSubscription() {
     subscribeToCountChanges((newCount) => {
@@ -30,11 +29,9 @@ function setupCounterWidgetSubscription() {
             }
         }
 
-        // Only allow hiding the widget if initial scanning has actually finished
+        // The chip is never hidden: it goes from "loading" to the count, even at 0.
         if (newCount > 0) {
             liveWrapper.classList.add('is-visible');
-        } else if (hasInitialScanCompleted) {
-            liveWrapper.classList.remove('is-visible');
         }
     });
 }
