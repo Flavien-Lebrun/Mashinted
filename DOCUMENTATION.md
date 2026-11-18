@@ -409,8 +409,8 @@ function getProductId(gridItem) {
 * **Audit result:** no newer-than-ES2020 runtime APIs in `src/`. Real Chrome floor is **91** (module service worker), not 89; `minimum_chrome_version: "91"` added to `manifest.json`.
 * **CSS:** `-webkit-backdrop-filter` (Safari < 18) and a `100dvh` override (iOS toolbar) in `modal.css`. `:has()` in `aggregator.css` (Chrome 105 / Safari 15.4) is a focus-ring nicety and degrades harmlessly.
 * **Build:** target is now `chrome89`, `safari14`, `firefox115`, `es2020`.
-* **Firefox:** `src/manifest.firefox.json` (`background.scripts`, `browser_specific_settings.gecko`, min 121). Build with `npm run build:firefox` / `make firefox` into `dist-firefox/` (gitignored). Builds fine but is **not yet tested in Firefox**.
-* **Safari:** not testable from Linux. Needs a Mac: `xcrun safari-web-extension-converter dist/`, then grant per-site access in Safari. Points to verify: module service worker (fallback: non-module background), `checker.js` injection via `getURL`, per-site permission prompt.
+* **Firefox:** `src/manifest.firefox.json` (`browser_specific_settings.gecko`, min 121). Build with `npm run build:firefox` / `make firefox` into `dist-firefox/` (gitignored). Builds fine but is **not yet tested in Firefox**.
+* **Safari:** not testable from Linux. Needs a Mac: `xcrun safari-web-extension-converter dist/`, then grant per-site access in Safari. Points to verify: `checker.js` injection via `getURL`, per-site permission prompt.
 * **macOS vs Windows:** code is OS-independent; expect only font/scrollbar rendering differences.
 
 ---
@@ -446,6 +446,14 @@ function getProductId(gridItem) {
 * **Open finding:** `counter-widget.js` calls `activeModalRef.destroyModal()`, which `createConfigModal` never returns. Probably unreachable (the overlay covers the chip), not fixed.
 * **Tests:** `test/blacklist-rescan.test.js` (chrome.storage stub), `test/modal-stats.test.js`.
 
+### 7.24 No Hardcoded Brands & Empty-State Modal [18-11-2026]
+
+* **Issue:** `ensureBrandBlacklistStorageReady` treated an empty stored list as a first run and wrote `h&m`, `shein`, `zara` again on the next page load, so the blacklist could never stay empty.
+* **Fix:** `DEFAULT_BANNED_BRANDS` is gone and an empty or missing list stays empty. The background script only seeded those defaults on install, so `src/background/index.js` and the `background` entries of both manifests were removed. Existing users keep whatever is stored.
+* **Modal:** `.mashinted-brands-list` has a `min-height: 40vh` (with or without brands); the empty message (`modalEmpty`, reworded in en/fr/es/nl to explain the trash icon and manual input) is centred in it via `min-height: inherit`.
+* **Side effects:** no service worker anymore. The Chrome 91 floor (§7.20) was justified by the module service worker; `minimum_chrome_version` was deliberately left unchanged and could be lowered after testing on older builds. Safari conversion no longer has the service-worker point to verify.
+* **Tests:** `test/blacklist-rescan.test.js` checks that a list emptied by removal stays empty. A fresh install with nothing stored is covered by code reading only.
+
 ---
 
 ## 8. Progress Tracker
@@ -475,7 +483,7 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Todo | Router: handle SPA navigation (feature `mount`/`unmount`) | — |
 | Todo | Split `features/blacklist/observers.js` (page-transition vs grid) | — |
 | Done | Dev-only selector health panel (`npm run build:check`), CSRF token and favourites grid fixes | `src/dev/` — §7.22 |
-| Todo | Empty blacklist: show a visual prompt instead of re-seeding defaults | `src/shared/storage.js` |
+| Done | No hardcoded brands; empty list stays empty with a centred how-to message | `src/shared/storage.js`, `src/styles/modal.css` — §7.24 |
 | Done | Rescan visible cards when a brand is added; live `+N` in the modal | `src/features/blacklist/`, `src/shared/storage.js` — §7.23 |
 | Done | Remove dead `hasInitialScanCompleted` / hide branch and unused `mountLoadingWidget` (chip always visible) | `src/features/blacklist/counter-widget.js` |
 | Todo | Verify in browser: scan of new grids after SPA navigation (root observer disconnects after 5 s) | `src/features/blacklist/observers.js` |

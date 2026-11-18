@@ -31,7 +31,6 @@ Everything runs **once per full page load** (see §3.2: the router is not SPA-aw
 
 ```
 src/
-├─ background/index.js        Seeds default brands on first install only
 ├─ content/
 │  ├─ fast-widget-loader.js   document_start: paints the "Filtering…" chip (no layout shift)
 │  ├─ index.js                boot(): storage → language → counter subscription → await hydration → router
@@ -96,7 +95,7 @@ Route table: `favourites` → counter widget + favourites filter **only** (no bl
 
 * Stored in `chrome.storage.local["bannedBrands"]` as lowercase, trimmed, deduplicated strings.
 * `storage.js` keeps an in-memory `cachedBannedBrands`, synced across tabs by `chrome.storage.onChanged`. `isBlacklistedBrand()` is **synchronous** and reads only the cache.
-* Defaults: `h&m`, `shein`, `zara`.
+* No defaults: a fresh install starts with an empty list, and an emptied list stays empty.
 
 ### 4.2 Detection path (automatic)
 
@@ -233,7 +232,7 @@ click on button
 
 | # | Finding | Status | Impact |
 | --- | --- | --- | --- |
-| 1 | **Emptying the blacklist re-seeds the defaults.** `ensureBrandBlacklistStorageReady` treats an empty stored list as "first run" and writes `h&m/shein/zara` again on next page load. | [Confirmed in code] | **Decision: TODO.** Show a visual prompt when the list is empty instead of re-seeding. Until then, you can't persist an empty blacklist |
+| 1 | **Emptying the blacklist re-seeds the defaults.** `ensureBrandBlacklistStorageReady` treats an empty stored list as "first run" and writes `h&m/shein/zara` again on next page load. | [Confirmed in code] | **Resolved (DOCUMENTATION §7.24):** no hardcoded brands; an empty list stays empty and the modal shows a centred how-to message |
 | 2 | `hasInitialScanCompleted` is declared and read but **never set to `true`**; the "hide the widget when count is 0" branch is dead code. `ensureCounterWidgetMounted` also always adds `is-visible`. | [Confirmed in code] | **Decision: leftover from when the widget worked alone.** The chip must always stay visible (loading → count). **Resolved:** dead flag and hide branch removed |
 | 3 | Trash click only hides the clicked card; the comment says other cards of that brand are caught by the observer. `addBrand` triggers **no rescan**, and per-card observers only react to mutations inside that card. | [Confirmed by owner] | **Resolved (DOCUMENTATION §7.23):** adding a brand now rescans the page and hides every matching card |
 | 4 | The root observer disconnects 5 s after the grid appears. After an SPA navigation to a new grid, new cards may not be scanned by brand (only already-blocked ids are re-enforced via the trash engine). | [To verify] | Blacklisted brands may appear after navigating without reload |
@@ -259,7 +258,6 @@ click on button
 | Animation speed | [src/styles/tokens.css](src/styles/tokens.css) (JS reads it via `css-duration.js`) |
 | A string | [src/shared/locales.js](src/shared/locales.js) (en/fr/es/nl; `test/i18n.test.js` enforces key parity) |
 | Fetch caps (99 / 30) | `calculateFetchDistribution` call in [aggregator/index.js](src/features/aggregator/index.js) |
-| Default brands | `DEFAULT_BANNED_BRANDS` in [constants.js](src/shared/constants.js) (applied only on empty storage) |
 | Build / releases | [vite.config.js](vite.config.js), [Makefile](Makefile), `.github/workflows/` |
 
 Always load a **`make build`** output when testing: a stale `dist/` from `npm run dev` contains HMR stubs and makes fixes look ineffective (§7.14, §7.17).
