@@ -58,3 +58,13 @@ describe('blacklist rescan', () => {
         expect(isHidden(document.querySelector('[data-testid="grid-item"]'))).toBe(false);
     });
 });
+
+describe('empty blacklist', () => {
+    it('stays empty: nothing is seeded from defaults', async () => {
+        const storage = await import('../src/shared/storage.js');
+        await storage.removeBrand('foo');
+        await storage.removeBrand('bar');
+        expect(await storage.getAllBrands()).toEqual([]);
+        expect(storage.isBlacklistedBrand('zara')).toBe(false);
+    });
+});

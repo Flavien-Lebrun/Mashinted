@@ -1,8 +1,4 @@
-import { 
-    BLACKLIST_STORAGE_KEY, 
-    FAVORITES_STORAGE_KEY, 
-    DEFAULT_BANNED_BRANDS 
-} from './constants.js';
+import { BLACKLIST_STORAGE_KEY, FAVORITES_STORAGE_KEY } from './constants.js';
 import { createLogger } from './logger.js';
 
 const log = createLogger('storage');
@@ -87,14 +83,8 @@ function ensureBrandBlacklistStorageReady() {
 
         blacklistReadyPromise = new Promise((resolve) => {
             chrome.storage.local.get([BLACKLIST_STORAGE_KEY], (result) => {
-                const storedBrandList = normalizeBrandList(result[BLACKLIST_STORAGE_KEY]);
-
-                if (storedBrandList.length > 0) {
-                    resolve(setCachedBrandList(storedBrandList));
-                    return;
-                }
-
-                persistBrandList(DEFAULT_BANNED_BRANDS).then(resolve);
+                // No defaults: an empty (or missing) list simply stays empty.
+                resolve(setCachedBrandList(result[BLACKLIST_STORAGE_KEY]));
             });
         });
     }

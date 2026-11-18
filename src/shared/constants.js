@@ -26,5 +26,3 @@ export const COUNTER_WIDGET_ID = 'mashinted-counter-widget';
 export const INBOX_WIDGET_ID = 'mashinted-inbox-widget';
 export const INBOX_OPEN_TIMEOUT_MS = 4000;
 export const INBOX_STEP_DELAY_MS = 400;
-
-export const DEFAULT_BANNED_BRANDS = ['h&m', 'shein', 'zara'];

@@ -5,12 +5,6 @@
   "permissions": [
     "storage"
   ],
-  "background": {
-    "scripts": [
-      "src/background/index.js"
-    ],
-    "type": "module"
-  },
   "host_permissions": [
     "https://www.vinted.fr/*",
     "https://www.vinted.com/*"
