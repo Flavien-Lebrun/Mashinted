@@ -6,7 +6,7 @@
  */
 
 import { ensureCounterWidgetMounted } from '../features/blacklist/counter-widget.js';
-import { startObserver, startPageTransitionObserver } from '../features/blacklist/observers.js';
+import { startBlacklistRescan, startObserver, startPageTransitionObserver } from '../features/blacklist/observers.js';
 import { initializeTrashEngine } from '../features/blacklist/trash-engine.js';
 import { startSavedSearchesObserver } from '../features/aggregator/modal-injector.js';
 import { startFavouriteListFilter } from '../features/favourites/favourite-filter.js';
@@ -36,6 +36,7 @@ const routes = [
             ensureCounterWidgetMounted();
             startObserver();
             startPageTransitionObserver();
+            startBlacklistRescan();
             initializeTrashEngine();
             startSavedSearchesObserver();
         },

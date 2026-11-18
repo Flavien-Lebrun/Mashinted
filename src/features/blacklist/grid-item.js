@@ -209,6 +209,17 @@ function logBrandNameWithin(gridItem) {
     return true; // Found a brand name string, even if it wasn't blacklisted yet
 }
 
+/**
+ * @brief Re-checks every card already on the page against the current blacklist.
+ *        Only hides: cards of a brand that was just removed stay hidden until reload.
+ */
+function rescanGridItems(root = document) {
+    for (const gridItem of root.querySelectorAll(GRID_ITEM_SELECTOR)) {
+        if (gridItem.getAttribute(HIDDEN_BY_BLACKLIST_ATTRIBUTE) === 'true') continue;
+        logBrandNameWithin(gridItem);
+    }
+}
+
 function retryLogBrandNameWithin(gridItem, attempt = 0) {
     if (!gridItem.isConnected || blockedGridElements.has(gridItem)) {
         stopRetryingGridItem(gridItem);
@@ -286,6 +297,7 @@ function watchGridItemsWithin(root) {
 
 export {
     getProductId,
+    rescanGridItems,
     finalizeHiddenGridItem,
     enforceHiddenGridItem,
     watchGridItemForBrandName,

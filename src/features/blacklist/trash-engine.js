@@ -50,12 +50,12 @@ function verifyAndInjectTrashButtons() {
             if (brandName) {
                 log.debug(`Trash clicked. Adding brand to blacklist: "${brandName}"`);
 
-                // 1. Add to chrome.storage.local via your existing storage framework
-                await addBrand(brandName);
-
-                // 2. Instantly visually hide this specific item.
-                // (Your MutationObserver will catch and hide all other matching brands on the page automatically)
+                // 1. Hide the clicked card first, instantly. addBrand() triggers a rescan that would
+                //    otherwise hide it through the animated path and bring back the ghost gap (§7.2).
                 blockGridItem(gridItem, brandName);
+
+                // 2. Persist the brand; the blacklist rescan then hides every other card of that brand.
+                await addBrand(brandName);
             } else {
                 log.warn('Could not extract brand name from this grid item layout.');
             }

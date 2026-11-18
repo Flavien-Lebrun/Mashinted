@@ -5,7 +5,9 @@ import {
     watchGridItemsWithin,
     stopRetryingGridItem,
     stopHideFinalization,
+    rescanGridItems,
 } from './grid-item.js';
+import { subscribeToBrandListChanges } from '../../shared/storage.js';
 
 import { resetPageBlockedCount } from './state.js';
 import { ensureCounterWidgetMounted } from './counter-widget.js';
@@ -128,7 +130,19 @@ function startObserver() {
     });
 }
 
+let blacklistRescanStarted = false;
+
+/**
+ * @brief Hides cards already on screen whenever a brand is added (trash click, modal, other tab).
+ */
+function startBlacklistRescan() {
+    if (blacklistRescanStarted) return;
+    blacklistRescanStarted = true;
+    subscribeToBrandListChanges(() => rescanGridItems());
+}
+
 export {
     startPageTransitionObserver,
-    startObserver
+    startObserver,
+    startBlacklistRescan
 };

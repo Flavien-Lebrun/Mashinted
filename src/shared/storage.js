@@ -3,6 +3,9 @@ import {
     FAVORITES_STORAGE_KEY, 
     DEFAULT_BANNED_BRANDS 
 } from './constants.js';
+import { createLogger } from './logger.js';
+
+const log = createLogger('storage');
 
 let cachedBannedBrands = [];
 let blacklistReadyPromise = null;
@@ -20,8 +23,35 @@ function normalizeBrandList(brandNames) {
     return [...new Set(brandNames.map(normalizeBrandName).filter(Boolean))];
 }
 
+const brandListListeners = new Set();
+
+/**
+ * @brief Calls `callback` whenever the blacklist changes (this tab, the modal, or another tab).
+ * @returns {() => void} Unsubscribe function.
+ */
+function subscribeToBrandListChanges(callback) {
+    brandListListeners.add(callback);
+    return () => brandListListeners.delete(callback);
+}
+
 function setCachedBrandList(brandNames) {
+    const previous = cachedBannedBrands;
     cachedBannedBrands = normalizeBrandList(brandNames);
+
+    const hasChanged =
+        previous.length !== cachedBannedBrands.length ||
+        previous.some((brandName, index) => brandName !== cachedBannedBrands[index]);
+
+    if (hasChanged) {
+        for (const listener of brandListListeners) {
+            try {
+                listener([...cachedBannedBrands]);
+            } catch (error) {
+                log.error('Brand list listener failed.', error);
+            }
+        }
+    }
+
     return [...cachedBannedBrands];
 }
 
@@ -154,6 +184,7 @@ export {
     getAllBrands,
     isBlacklistedBrand,
     removeBrand,
+    subscribeToBrandListChanges,
     getFavorites,
     saveFavorite,
     removeFavorite,
