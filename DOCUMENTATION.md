@@ -454,6 +454,17 @@ function getProductId(gridItem) {
 * **Side effects:** no service worker anymore. The Chrome 91 floor (§7.20) was justified by the module service worker; `minimum_chrome_version` was deliberately left unchanged and could be lowered after testing on older builds. Safari conversion no longer has the service-worker point to verify.
 * **Tests:** `test/blacklist-rescan.test.js` checks that a list emptied by removal stays empty. A fresh install with nothing stored is covered by code reading only.
 
+### 7.25 SPA-Aware Router & Cleanups [18-11-2026]
+
+* **Issue:** the router ran once per page load, so after in-app navigation (home → favourites, → inbox) the favourites filter or inbox chip never started and the default features kept running on the wrong page. The root observer also disconnected 5 s after the first grid, so grids loaded after navigating were not scanned by brand.
+* **Fix:**
+  * Every route's `start()` returns a `stop()` (observers disconnected, inbox chip removed). `createRouter().sync()` compares the current path with the active route, stops the old one and starts the new one, and does nothing within the same route. `content/index.js` calls it through `observeDom`, so every DOM change is a navigation check (frame-batched, a cheap comparison).
+  * `startObserver()` no longer disconnects: a frame-batched check attaches the card observer to the current grid, re-attaches when the grid element changes and detaches when it disappears. `ROOT_OBSERVER_DISCONNECT_DELAY_MS` is gone.
+  * `startFavouriteListFilter`, `startInbox`, `initializeTrashEngine`, `startSavedSearchesObserver`, `startPageTransitionObserver` and `startBlacklistRescan` all return stop functions.
+* **Not verified in a browser:** tested with jsdom only (`test/router.test.js`: one start per route, stop before start on navigation, no restart inside a route, a throwing `stop` does not block the next route). Needs a manual pass: home → favourites → inbox → home by clicking, and brand blocking on a catalog page reached by navigation.
+* **Cleanups in the same pass:** `createConfigModal` now returns `destroyModal` (counter-widget already called it); the unused `renderFetchControlsContainer`, `clearAllBrands` and their `loadButton` / `infoLimitsLabel` locale keys are removed.
+* **Left for later:** the `!important` / inline-style cleanup needs a visual pass in a browser; inbox lazy-loading needs a DOM snippet; Firefox and Safari are manual tests.
+
 ---
 
 ## 8. Progress Tracker
@@ -480,11 +491,11 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Todo | Run Prettier repo-wide (dedicated whitespace-only commit) | — |
 | Todo | Update §2–§6 for the new layout | — |
 | Todo | Reduce `!important` (~35) and inline `style=""` in templates | — |
-| Todo | Router: handle SPA navigation (feature `mount`/`unmount`) | — |
+| Done | Router: SPA navigation with per-route start/stop; grid observer follows the grid | `src/content/router.js`, `src/features/blacklist/observers.js` — §7.25 |
 | Todo | Split `features/blacklist/observers.js` (page-transition vs grid) | — |
 | Done | Dev-only selector health panel (`npm run build:check`), CSRF token and favourites grid fixes | `src/dev/` — §7.22 |
 | Done | No hardcoded brands; empty list stays empty with a centred how-to message | `src/shared/storage.js`, `src/styles/modal.css` — §7.24 |
 | Done | Rescan visible cards when a brand is added; live `+N` in the modal | `src/features/blacklist/`, `src/shared/storage.js` — §7.23 |
 | Done | Remove dead `hasInitialScanCompleted` / hide branch and unused `mountLoadingWidget` (chip always visible) | `src/features/blacklist/counter-widget.js` |
-| Todo | Verify in browser: scan of new grids after SPA navigation (root observer disconnects after 5 s) | `src/features/blacklist/observers.js` |
+| Todo | Verify in browser: SPA navigation between home, favourites and inbox, and brand scan of grids loaded after navigating | `src/content/router.js` — §7.25 |
 | Todo | Browser test pipeline | — |

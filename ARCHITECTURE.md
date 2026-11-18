@@ -23,7 +23,7 @@ Four features, each triggered by something the user (or React) does:
 | **Favourites page** | User opens `/member/items/favourite_list` | Items are regrouped into *Sold* / *Available*, with a "delete all sold" action |
 | **Inbox** | User opens `/inbox/*` | Floating chip opens every unread conversation one by one |
 
-Everything runs **once per full page load** (see §3.2: the router is not SPA-aware).
+Features start and stop per route as the user navigates inside the SPA (see §3.2); the boot sequence itself runs once per full page load.
 
 ---
 
@@ -75,15 +75,15 @@ document_start ─┬─ fast-widget-loader.js  → appends #mashinted-counter-w
 
 Why this order: touching the DOM before React hydrates causes hydration mismatches, so nothing mutates Vinted's tree until step 6. The loading chip is the only thing allowed earlier. **Unverified:** at `document_start` `document.body` is usually still `null`, so the chip is probably attached to `<html>`, and whether that is outside React's hydration root is not confirmed (`checker.js` itself falls back to `body` as the root). A React #418 hydration error was seen once with a dev build and not with the normal build; see the DOCUMENTATION.md journal if it comes back.
 
-### 3.2 Router: **not SPA-aware** [Confirmed in code]
+### 3.2 Router: SPA-aware, start/stop per route
 
-`startRoute()` runs once. Vinted is a SPA, so navigating *without a reload* means:
+`createRouter().sync()` is called on every DOM change (frame-batched through `observeDom`). It finds the route matching `location.pathname`:
 
-* Home → Favourites via a link: favourites filter is **not** started (default route features run instead).
-* Anything → Inbox via a link: inbox chip is **not** mounted.
-* Reload (F5) fixes it. This is the "Router: handle SPA navigation" TODO in DOCUMENTATION §8.
+* **Same route as before:** nothing happens, so features keep running while you move between pages of one route (home → product page → catalog).
+* **Different route:** the previous route's `stop()` runs, then the new route's `start()`. Every `start()` returns a function that disconnects its observers and removes what it mounted (inbox chip).
+* Home → Favourites or Inbox by clicking a link therefore starts the right features without a reload, and leaving them restores the default ones.
 
-If a feature "doesn't work until I refresh", check this first. It is an architecture limit, not a feature bug.
+Not verified in a browser yet: this was written with jsdom tests of the router logic only (`test/router.test.js`).
 
 Route table: `favourites` → counter widget + favourites filter **only** (no blacklist observer, no trash buttons, no aggregator). `inbox` → removes the counter chip, mounts the inbox chip. `default` → everything else.
 
@@ -110,7 +110,7 @@ observers.startObserver()
                  └─ per-card MutationObserver: if React re-renders the card, re-enforce or re-check
 ```
 
-* The root observer **disconnects 5 s after the grid is first found** (`ROOT_OBSERVER_DISCONNECT_DELAY_MS`) to save CPU. The grid-level observer stays.
+* `startObserver()` re-checks for the grid on every frame-batched DOM change (`observeDom`) and re-attaches the card observer when the grid element changes, so new grids after in-app navigation are scanned. (It used to disconnect 5 s after the first grid.)
 * `getProductId` tries 3 strategies (link href → inner `data-testid` → favourite button `data-testid`) so blocking survives React re-keying the DOM. Falls back to element identity (`WeakSet`) when no id can be found.
 
 ### 4.3 Manual path (trash click)
@@ -218,7 +218,6 @@ click on button
 
 | Symptom | Real cause |
 | --- | --- |
-| Widget needs F5 on Favourites/Inbox after SPA navigation | Router runs once per load (§3.2) |
 | Badge shows 0 but modal shows `+N` | Page-scoped count vs session-scoped stats (§4.5) |
 | Hidden items don't come back after un-checking a brand | Blocked ids persist until reload (§4.5) |
 | Aggregator injected fewer items than the `+N` | Blacklist filter applied (§6.3) |
@@ -235,7 +234,7 @@ click on button
 | 1 | **Emptying the blacklist re-seeds the defaults.** `ensureBrandBlacklistStorageReady` treats an empty stored list as "first run" and writes `h&m/shein/zara` again on next page load. | [Confirmed in code] | **Resolved (DOCUMENTATION §7.24):** no hardcoded brands; an empty list stays empty and the modal shows a centred how-to message |
 | 2 | `hasInitialScanCompleted` is declared and read but **never set to `true`**; the "hide the widget when count is 0" branch is dead code. `ensureCounterWidgetMounted` also always adds `is-visible`. | [Confirmed in code] | **Decision: leftover from when the widget worked alone.** The chip must always stay visible (loading → count). **Resolved:** dead flag and hide branch removed |
 | 3 | Trash click only hides the clicked card; the comment says other cards of that brand are caught by the observer. `addBrand` triggers **no rescan**, and per-card observers only react to mutations inside that card. | [Confirmed by owner] | **Resolved (DOCUMENTATION §7.23):** adding a brand now rescans the page and hides every matching card |
-| 4 | The root observer disconnects 5 s after the grid appears. After an SPA navigation to a new grid, new cards may not be scanned by brand (only already-blocked ids are re-enforced via the trash engine). | [To verify] | Blacklisted brands may appear after navigating without reload |
+| 4 | The root observer disconnected 5 s after the grid appeared, so new grids after an SPA navigation were not scanned by brand. | [Confirmed in code] | **Resolved (DOCUMENTATION §7.25)**, pending a browser check |
 | 5 | `HOMEPAGE_BLOCKS_SELECTOR` ends with `main` as "ultimate fallback", so the observer can attach to the whole page content on unknown layouts. | [Confirmed in code] | Heavier observation, possible unexpected matches |
 | 6 | **DOCUMENTATION §7.8 is stale**: it describes `getActiveGridContainer()` rebuilding `homepage-blocks`. The current function only returns the grid or `undefined`. | **Resolved** | Stale claim removed from §7.8. The fallback dates from an earlier version with React resets that no longer occur |
 | 7 | Dead code (`mountLoadingWidget` already removed): `renderFetchControlsContainer` (modal-injector.js), `clearAllBrands`, `getFavorites` has no reader outside storage.js. | [Confirmed in code] | Confusing "which one runs?"; favourites mirror is write-only |
