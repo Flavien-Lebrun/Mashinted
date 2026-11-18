@@ -185,66 +185,6 @@ export function injectSavedSearchButton() {
 }
 
 /**
- * @brief Renders a secondary fetch control button with tooltip container.
- * @param {HTMLElement} parentElement - DOM container to receive controls.
- */
-export function renderFetchControlsContainer(parentElement) {
-    if (!parentElement) return;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'mashinted-controls-wrapper';
-
-    const actionBtn = document.createElement('button');
-    actionBtn.id = 'mashinted-load-btn';
-    actionBtn.className = 'web_ui__Button__button web_ui__Button__primary';
-    actionBtn.innerText = t('loadButton');
-
-    const infoContainer = document.createElement('div');
-    infoContainer.className = 'mashinted-info-tooltip-container';
-
-    const infoIcon = document.createElement('button');
-    infoIcon.type = 'button';
-    infoIcon.className = 'mashinted-info-btn';
-    infoIcon.innerText = '?';
-    infoIcon.setAttribute('aria-label', t('infoLimitsLabel'));
-
-    const tooltip = document.createElement('div');
-    tooltip.className = 'mashinted-controls-tooltip';
-    tooltip.innerHTML = createAggregatorTooltipContent();
-
-    let isOpen = false;
-
-    const setControlTooltipState = (visible) => {
-        tooltip.classList.toggle('mashinted-tooltip--visible', visible);
-        infoIcon.classList.toggle('mashinted-info-btn--active', visible);
-    };
-
-    infoIcon.addEventListener('mouseenter', () => setControlTooltipState(true));
-    infoIcon.addEventListener('mouseleave', () => {
-        if (!isOpen) setControlTooltipState(false);
-    });
-
-    infoIcon.addEventListener('click', (e) => {
-        e.stopPropagation();
-        isOpen = !isOpen;
-        setControlTooltipState(isOpen);
-    });
-
-    document.addEventListener('click', () => {
-        isOpen = false;
-        setControlTooltipState(false);
-    });
-
-    infoContainer.appendChild(infoIcon);
-    infoContainer.appendChild(tooltip);
-
-    wrapper.appendChild(actionBtn);
-    wrapper.appendChild(infoContainer);
-
-    parentElement.appendChild(wrapper);
-}
-
-/**
  * @brief Starts observing the DOM body for saved search overlay arrivals and auto-injects the action button.
  */
 export function startSavedSearchesObserver() {

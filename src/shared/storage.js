@@ -125,10 +125,6 @@ async function removeBrand(brandName) {
     return persistBrandList(brandList.filter((existingBrandName) => existingBrandName !== normalizedBrandName));
 }
 
-async function clearAllBrands() {
-    return persistBrandList([]);
-}
-
 function isBlacklistedBrand(brandName) {
     return cachedBannedBrands.includes(normalizeBrandName(brandName));
 }
@@ -169,7 +165,6 @@ async function removeFavorite(productId) {
 
 export {
     addBrand,
-    clearAllBrands,
     ensureBrandBlacklistStorageReady,
     getAllBrands,
     isBlacklistedBrand,
