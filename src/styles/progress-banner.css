@@ -4,7 +4,7 @@
 .mashinted-spinner-icon {
     animation: mashinted-spin 0.85s linear infinite;
     transform-origin: center center;
-    color: rgba(var(--primary-default), 1) !important;
+    color: rgba(var(--primary-default), 1);
     display: inline-block;
     vertical-align: middle;
 }

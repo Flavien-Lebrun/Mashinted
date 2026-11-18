@@ -6,7 +6,7 @@
     gap: 8px;
 }
 
-.mashinted-inbox-widget button:disabled {
-    cursor: default !important;
+.mashinted-inbox-widget button.web_ui__Chip__chip:disabled {
+    cursor: default;
     opacity: 0.6;
 }

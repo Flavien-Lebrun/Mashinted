@@ -24,6 +24,7 @@
         --mashinted-collapse-duration: 1ms;
     }
 
+    /* `!important` kept on purpose: an accessibility override must beat every animation rule. */
     .mashinted-trash-btn,
     .mashinted-grid-divider {
         animation: none !important;

@@ -162,6 +162,7 @@
     display: none !important;
 }
 
+/* Layout invariant, `!important` kept on purpose: the divider must always span a full row (see journal 7.11). */
 .mashinted-grid-divider {
     grid-column: 1 / -1 !important;
     width: 100% !important;
@@ -186,8 +187,9 @@
 }
 
 /* Sparse row flow: a full-width divider must end the previous row, never get backfilled. */
-.mashinted-sectioned-grid {
-    grid-auto-flow: row !important;
+/* Doubled class: outranks Vinted's grid rules without `!important`. */
+div.mashinted-sectioned-grid.mashinted-sectioned-grid {
+    grid-auto-flow: row;
 }
 
 /* Force the very first item card of a section to clear and start on a brand new row */
@@ -248,7 +250,7 @@
     color: #018849;
 }
 
-/* Utility Guards */
+/* Utility guards: `!important` kept on purpose, a hidden element must stay hidden. */
 .mashinted-u-hidden,
 [data-mashinted-hidden='true'] {
     display: none !important;

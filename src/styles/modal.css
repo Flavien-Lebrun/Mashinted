@@ -145,14 +145,18 @@ ul.pile {
 }
 
 li.pile__element {
-    margin: 0 !important;
-    padding: 0 !important;
     width: 100%;
 }
 
-li.pile__element:not(:last-child) {
+/* Scoped to our overlay so these beat Vinted's `pile` rules without `!important`. */
+.mashinted-modal-overlay li.pile__element {
+    margin: 0;
+    padding: 0;
+}
+
+.mashinted-modal-overlay li.pile__element:not(:last-child) {
     border-bottom: 1px solid var(--mashinted-border);
-    margin-top: 1px !important;
+    margin-top: 1px;
 }
 
 .mashinted-row-container {
@@ -237,7 +241,7 @@ li.pile__element:not(:last-child) {
 
 .mashinted-quick-add-row {
     border-radius: 4px;
-    margin: 4px 0 !important;
+    margin: 4px 0;
     cursor: pointer;
     transition: background-color 0.15s ease;
 }

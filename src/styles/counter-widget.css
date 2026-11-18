@@ -23,15 +23,19 @@
 }
 
 .mashinted-counter-widget-wrapper button {
-    cursor: pointer !important;
     position: relative;
     overflow: hidden;
+    will-change: width, padding;
+}
+
+/* The `.web_ui__Chip__chip` qualifier outranks Vinted's chip rules; it replaces the former `!important` flags. */
+.mashinted-counter-widget-wrapper button.web_ui__Chip__chip {
+    cursor: pointer;
     transition:
         width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
         padding 0.35s cubic-bezier(0.16, 1, 0.3, 1),
         border-color 0.2s ease,
-        background-color 0.2s ease !important;
-    will-change: width, padding;
+        background-color 0.2s ease;
 }
 
 .mashinted-counter-widget-wrapper button:hover::after {

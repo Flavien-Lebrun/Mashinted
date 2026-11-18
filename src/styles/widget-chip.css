@@ -59,8 +59,8 @@
 }
 
 .mashinted-custom-checkbox input:checked ~ .mashinted-checkbox-box {
-    background-color: var(--mashinted-primary) !important;
-    border-color: var(--mashinted-primary) !important;
+    background-color: var(--mashinted-primary);
+    border-color: var(--mashinted-primary);
 }
 
 .mashinted-custom-checkbox input:checked ~ .mashinted-checkbox-box::after {
