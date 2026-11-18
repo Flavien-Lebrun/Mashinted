@@ -26,13 +26,14 @@
 }
 
 .mashinted-hidden-by-blacklist.mashinted-hidden-by-blacklist-final {
+    /* Kept on purpose: the hard collapse must beat Vinted's own `display` rules (see journal 7.2). */
     display: none !important;
 }
 
-/* --- Trash Icon Entry & Spring Animations --- */
+/* --- Trash Icon Entry & Spring Animations ---
+   The `.mashinted-trash-container` prefix raises specificity above Vinted's single-class button rules,
+   which replaces the former `!important` flags. */
 .mashinted-trash-btn {
-    outline: none !important;
-    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     will-change: transform, opacity;
     animation: mashintedSpringIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     border: 1px solid var(--v-sys-theme-greyscale-level-3, #f2f2f2);
@@ -43,19 +44,29 @@
     overflow: hidden;
 }
 
-.mashinted-trash-btn:active {
-    transform: scale(0.92) !important;
+.mashinted-trash-container .mashinted-trash-btn {
+    transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.mashinted-trash-btn svg {
+.mashinted-trash-container .mashinted-trash-btn,
+.mashinted-trash-container .mashinted-trash-btn:focus,
+.mashinted-trash-container .mashinted-trash-btn:focus-visible {
+    outline: none;
+}
+
+.mashinted-trash-container .mashinted-trash-btn:active {
+    transform: scale(0.92);
+}
+
+.mashinted-trash-container .mashinted-trash-btn svg {
     transition:
         stroke 0.15s ease,
-        color 0.15s ease !important;
+        color 0.15s ease;
     fill: none;
 }
 
-.mashinted-trash-btn:hover .web_ui__Icon__greyscale-level-2 {
-    color: rgba(var(--primary-default), 1) !important;
+.mashinted-trash-container .mashinted-trash-btn:hover .web_ui__Icon__greyscale-level-2 {
+    color: rgba(var(--primary-default), 1);
 }
 
 @keyframes mashintedSpringIn {
