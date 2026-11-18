@@ -461,7 +461,8 @@ function getProductId(gridItem) {
   * Every route's `start()` returns a `stop()` (observers disconnected, inbox chip removed). `createRouter().sync()` compares the current path with the active route, stops the old one and starts the new one, and does nothing within the same route. `content/index.js` calls it through `observeDom`, so every DOM change is a navigation check (frame-batched, a cheap comparison).
   * `startObserver()` no longer disconnects: a frame-batched check attaches the card observer to the current grid, re-attaches when the grid element changes and detaches when it disappears. `ROOT_OBSERVER_DISCONNECT_DELAY_MS` is gone.
   * `startFavouriteListFilter`, `startInbox`, `initializeTrashEngine`, `startSavedSearchesObserver`, `startPageTransitionObserver` and `startBlacklistRescan` all return stop functions.
-* **Not verified in a browser:** tested with jsdom only (`test/router.test.js`: one start per route, stop before start on navigation, no restart inside a route, a throwing `stop` does not block the next route). Needs a manual pass: home → favourites → inbox → home by clicking, and brand blocking on a catalog page reached by navigation.
+* **Tests:** `test/router.test.js` (one start per route, stop before start on navigation, no restart inside a route, a throwing `stop` does not block the next route).
+* **Verified in a browser (18-11-2026):** navigating home → favourites → inbox → home by clicking raises no console errors, and brand blocking works on a catalog page reached by clicking.
 * **Cleanups in the same pass:** `createConfigModal` now returns `destroyModal` (counter-widget already called it); the unused `renderFetchControlsContainer`, `clearAllBrands` and their `loadButton` / `infoLimitsLabel` locale keys are removed.
 * **Left for later:** the `!important` / inline-style cleanup needs a visual pass in a browser; inbox lazy-loading needs a DOM snippet; Firefox and Safari are manual tests.
 
@@ -497,5 +498,4 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Done | No hardcoded brands; empty list stays empty with a centred how-to message | `src/shared/storage.js`, `src/styles/modal.css` — §7.24 |
 | Done | Rescan visible cards when a brand is added; live `+N` in the modal | `src/features/blacklist/`, `src/shared/storage.js` — §7.23 |
 | Done | Remove dead `hasInitialScanCompleted` / hide branch and unused `mountLoadingWidget` (chip always visible) | `src/features/blacklist/counter-widget.js` |
-| Todo | Verify in browser: SPA navigation between home, favourites and inbox, and brand scan of grids loaded after navigating | `src/content/router.js` — §7.25 |
 | Todo | Browser test pipeline | — |

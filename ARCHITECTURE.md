@@ -83,7 +83,7 @@ Why this order: touching the DOM before React hydrates causes hydration mismatch
 * **Different route:** the previous route's `stop()` runs, then the new route's `start()`. Every `start()` returns a function that disconnects its observers and removes what it mounted (inbox chip).
 * Home → Favourites or Inbox by clicking a link therefore starts the right features without a reload, and leaving them restores the default ones.
 
-Not verified in a browser yet: this was written with jsdom tests of the router logic only (`test/router.test.js`).
+Verified in a browser on 18-11-2026 (click-through navigation, no console errors, brand blocking on a catalog page reached by clicking). Router logic is also covered by `test/router.test.js`.
 
 Route table: `favourites` → counter widget + favourites filter **only** (no blacklist observer, no trash buttons, no aggregator). `inbox` → removes the counter chip, mounts the inbox chip. `default` → everything else.
 
@@ -234,7 +234,7 @@ click on button
 | 1 | **Emptying the blacklist re-seeds the defaults.** `ensureBrandBlacklistStorageReady` treats an empty stored list as "first run" and writes `h&m/shein/zara` again on next page load. | [Confirmed in code] | **Resolved (DOCUMENTATION §7.24):** no hardcoded brands; an empty list stays empty and the modal shows a centred how-to message |
 | 2 | `hasInitialScanCompleted` is declared and read but **never set to `true`**; the "hide the widget when count is 0" branch is dead code. `ensureCounterWidgetMounted` also always adds `is-visible`. | [Confirmed in code] | **Decision: leftover from when the widget worked alone.** The chip must always stay visible (loading → count). **Resolved:** dead flag and hide branch removed |
 | 3 | Trash click only hides the clicked card; the comment says other cards of that brand are caught by the observer. `addBrand` triggers **no rescan**, and per-card observers only react to mutations inside that card. | [Confirmed by owner] | **Resolved (DOCUMENTATION §7.23):** adding a brand now rescans the page and hides every matching card |
-| 4 | The root observer disconnected 5 s after the grid appeared, so new grids after an SPA navigation were not scanned by brand. | [Confirmed in code] | **Resolved (DOCUMENTATION §7.25)**, pending a browser check |
+| 4 | The root observer disconnected 5 s after the grid appeared, so new grids after an SPA navigation were not scanned by brand. | [Confirmed in code] | **Resolved (DOCUMENTATION §7.25)**, verified in a browser |
 | 5 | `HOMEPAGE_BLOCKS_SELECTOR` ends with `main` as "ultimate fallback", so the observer can attach to the whole page content on unknown layouts. | [Confirmed in code] | Heavier observation, possible unexpected matches |
 | 6 | **DOCUMENTATION §7.8 is stale**: it describes `getActiveGridContainer()` rebuilding `homepage-blocks`. The current function only returns the grid or `undefined`. | **Resolved** | Stale claim removed from §7.8. The fallback dates from an earlier version with React resets that no longer occur |
 | 7 | Dead code (`mountLoadingWidget` already removed): `renderFetchControlsContainer` (modal-injector.js), `clearAllBrands`, `getFavorites` has no reader outside storage.js. | [Confirmed in code] | Confusing "which one runs?"; favourites mirror is write-only |
