@@ -466,6 +466,12 @@ function getProductId(gridItem) {
 * **Cleanups in the same pass:** `createConfigModal` now returns `destroyModal` (counter-widget already called it); the unused `renderFetchControlsContainer`, `clearAllBrands` and their `loadButton` / `infoLimitsLabel` locale keys are removed.
 * **Left for later:** the `!important` / inline-style cleanup needs a visual pass in a browser; inbox lazy-loading needs a DOM snippet; Firefox and Safari are manual tests.
 
+### 7.26 Prettier Run [18-11-2026]
+
+* **What:** `prettier --write src test` in one formatting-only commit (38 files). `test/fixtures/` is excluded through `.prettierignore`: those are captured page markup and reformatting could change the text the tests read.
+* **Not just whitespace:** quotes, trailing commas and line wraps changed too, so equivalence was checked on the build: the Chrome bundle before and after is byte-identical for every JS file. Only `assets/index.css` differs, in whitespace inside media queries (`(max-width:959px)` -> `(max-width: 959px)`) and around `*` in `calc()`, which is the same CSS.
+* **Tooling note:** `npm run format:check` passes; it is not part of CI.
+
 ---
 
 ## 8. Progress Tracker
@@ -489,7 +495,7 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Done | Tag-triggered GitHub Release workflow, version from `package.json`, `make release` | `.github/workflows/release.yml` — §7.21 |
 | Todo | Test the build in Firefox and Safari (macOS) | §7.20 |
 | Todo | Inbox: lazy-load handling of the conversation list | §7.19 |
-| Todo | Run Prettier repo-wide (dedicated whitespace-only commit) | — |
+| Done | Run Prettier repo-wide (dedicated formatting-only commit) | `.prettierignore` — §7.26 |
 | Todo | Update §2–§6 for the new layout | — |
 | Todo | Reduce `!important` (~35) and inline `style=""` in templates | — |
 | Done | Router: SPA navigation with per-route start/stop; grid observer follows the grid | `src/content/router.js`, `src/features/blacklist/observers.js` — §7.25 |
