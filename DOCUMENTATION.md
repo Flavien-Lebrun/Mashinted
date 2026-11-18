@@ -431,7 +431,8 @@ function getProductId(gridItem) {
   2. **Favourites grid:** `FAVOURITES_GRID_SELECTOR` no longer matched the container, so grouping silently did nothing. `findFavouritesGrid()` now falls back to the parent of the first card. It also skips our own regrouped cards (`mashinted__feed-grid__item`), which match the class selector too (same trap as §7.13).
   3. `card-inner` only exists on catalog pages (optional); `feed-container` must not count the catch-all `main`.
 * **Noise to ignore in the console:** `GET chrome-extension://invalid/ ERR_FAILED` comes from Vinted's `tags.js`, not from us. `ERR_ABORTED` 404s on `/assets/*.js` came only from the dev build's dynamic import.
-* **Open:** one React #418 hydration error was seen with a dev build and not with the normal build; not reproduced since. It is unknown whether the chip appended at `document_start` can ever cause it.
+* **Verified on the live site (18-11-2026):** favouriting from an aggregated card works with the new token lookup; lazy-loaded favourites batches join their Sold/Available section.
+* **React #418:** seen once with a dev build, never with the normal build, and not reproducible afterwards. Cause unknown; it is also unknown whether the chip appended at `document_start` could ever cause it. Revisit only if it comes back.
 
 ---
 
@@ -464,6 +465,6 @@ Living checklist of the maintainability roadmap. Update it (and add a §7 entry)
 | Done | Dev-only selector health panel (`npm run build:check`), CSRF token and favourites grid fixes | `src/dev/` — §7.22 |
 | Todo | Empty blacklist: show a visual prompt instead of re-seeding defaults | `src/shared/storage.js` |
 | Todo | Rescan visible cards after a trash click (`addBrand`) | `src/features/blacklist/trash-engine.js` |
-| Todo | Remove dead `hasInitialScanCompleted` / hide branch (chip always visible) | `src/features/blacklist/counter-widget.js` |
+| Done | Remove dead `hasInitialScanCompleted` / hide branch and unused `mountLoadingWidget` (chip always visible) | `src/features/blacklist/counter-widget.js` |
 | Todo | Verify in browser: scan of new grids after SPA navigation (root observer disconnects after 5 s) | `src/features/blacklist/observers.js` |
 | Todo | Browser test pipeline | — |
